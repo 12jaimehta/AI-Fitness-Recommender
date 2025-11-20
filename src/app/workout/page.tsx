@@ -9,28 +9,17 @@ import UnifiedFooter from "../../components/shared/UnifiedFooter";
 import WorkoutPlanActions from "../../components/workout/WorkoutPlanActions";
 import { generateAIWorkoutPlan, WorkoutPlanData } from "@/lib/service/dietWorkoutplan";
 import { WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
+import PageLoader from "@/components/ui/PageLoader";
 
 // Dynamic imports to prevent hydration mismatch
 const WorkoutMultiStepForm = dynamic(() => import("../../components/workout").then(mod => ({ default: mod.WorkoutMultiStepForm })), {
   ssr: false,
-  loading: () => <div style={{ 
-    height: '400px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    color: '#667eea'
-  }}>Loading form...</div>
+  loading: () => <PageLoader title="Generating AI Workout plan..."/>
 });
 
 const WorkoutPlanDisplay = dynamic(() => import("../../components/workout").then(mod => ({ default: mod.WorkoutPlanDisplay })), {
   ssr: false,
-  loading: () => <div style={{ 
-    height: '400px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    color: '#667eea'
-  }}>Loading workout plan...</div>
+  loading: () => <PageLoader title="Generating AI Workout plan..."/>
 });
 
 const LoadingSpinner = dynamic(() => import("../../components/shared").then(mod => ({ default: mod.LoadingSpinner })), {

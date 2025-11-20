@@ -9,28 +9,18 @@ import UnifiedNavbar from "../../components/shared/UnifiedNavbar";
 import UnifiedFooter from "../../components/shared/UnifiedFooter";
 import PlanActions from "../../components/diet/PlanActions";
 import { DietPlanData, generateAIDietPlan } from "@/lib/service/dietWorkoutplan";
+import PageLoader from "@/components/ui/PageLoader";
 
 // Dynamic imports to prevent hydration mismatch
 const RefactoredMultiStepForm = dynamic(() => import("../../components/diet").then(mod => ({ default: mod.RefactoredMultiStepForm })), {
   ssr: false,
-  loading: () => <div style={{ 
-    height: '400px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    color: '#667eea'
-  }}>Loading form...</div>
+  loading: () => <PageLoader title="Generating AI diet plan..."/>
 });
 
 const RefactoredDietPlanDisplay = dynamic(() => import("../../components/diet").then(mod => ({ default: mod.RefactoredDietPlanDisplay })), {
   ssr: false,
-  loading: () => <div style={{ 
-    height: '400px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center',
-    color: '#667eea'
-  }}>Loading diet plan...</div>
+ loading: () => <PageLoader title="Generating AI diet plan..."/>
+
 });
 
 const LoadingSpinner = dynamic(() => import("../../components/shared").then(mod => ({ default: mod.LoadingSpinner })), {
