@@ -11,7 +11,7 @@ import {
 import ProgressInput from "@/components/progress/ProgressInput";
 import UserProfileSetup from "@/components/progress/user-profile";
 import { useUser } from "@/lib/hooks/use-user";
-import { UnifiedFooter } from "@/components";
+import { UnifiedNavbar, UnifiedFooter } from "@/components";
 import PageLoader from "@/components/ui/PageLoader";
 import { generateAIInsights } from "@/components/progress/generateInsights";
 import { databaseService } from "@/lib/service/progress-database";
@@ -223,161 +223,181 @@ export default function ProgressPage() {
     loadUserData();
   };
 
-  if (userLoading || loading) return <PageLoader />;
-  if (showProfileSetup && user) return <UserProfileSetup user={user} onComplete={() => { setShowProfileSetup(false); loadUserData(); }} />;
-  if (!isSignedIn && !userLoading) { router.push('/sign-in'); return null; }
+  // 1. Auth Redirect (Keep this early return)
+  if (!isSignedIn && !userLoading) {
+    router.push('/sign-in');
+    return null;
+  }
 
+  // 2. Profile Setup (Keep this early return)
+  if (showProfileSetup && user) {
+    return <UserProfileSetup user={user} onComplete={() => { setShowProfileSetup(false); loadUserData(); }} />;
+  }
+
+  // 3. MAIN RENDER
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Premium-Feel Header */}
-      <div className="bg-[#162a41] pt-24 pb-20 relative overflow-hidden rounded-b-[3rem]">
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="flex items-center gap-2 mb-2 text-emerald-400 font-medium bg-emerald-500/10 w-fit px-3 py-1 rounded-full border border-emerald-500/20">
-                <Brain size={16} />
-                <span className="text-sm">AI Analysis Active</span>
+      {/* ✅ FIX: Navbar is ALWAYS rendered now, outside the loading check */}
+      <UnifiedNavbar />
+
+      {(userLoading || loading) ? (
+        /* ✅ FIX: Loader replaces CONTENT, not the whole page */
+        <div className="pt-32 flex items-center justify-center min-h-[60vh]">
+          <PageLoader />
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="bg-[#162a41] pt-24 pb-20 relative overflow-hidden rounded-b-[3rem]">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                  <div className="flex items-center gap-2 mb-2 text-emerald-400 font-medium bg-emerald-500/10 w-fit px-3 py-1 rounded-full border border-emerald-500/20">
+                    <Brain size={16} />
+                    <span className="text-sm">AI Analysis Active</span>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
+                    Progress Hub
+                  </h1>
+                  <p className="text-blue-200 text-lg max-w-xl">
+                    Tracking {weightData.length} data points. AI is analyzing your trends in real-time.
+                  </p>
+                </motion.div>
+
+                <div className="flex gap-3">
+                  <button onClick={() => {
+                    setInputType('weight');
+                    setIsInputOpen(true);
+                  }}
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-5 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 border border-white/10">
+                    <TrendingUp size={18} /> Log Weight
+                  </button>
+                  <button onClick={() => {
+                    setInputType('workout');
+                    setIsInputOpen(true);
+                  }}
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
+                    <Plus size={18} /> Log Activity
+                  </button>
+                </div>
               </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
-                Progress Hub
-              </h1>
-              <p className="text-blue-200 text-lg max-w-xl">
-                Tracking {weightData.length} data points. AI is analyzing your trends in real-time.
-              </p>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="max-w-7xl mx-auto px-6 -mt-12 relative z-20">
+            {/* Stats Grid */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+            >
+              {stats.map((stat, i) => (
+                <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: `${stat.color}15`, color: stat.color }}>
+                    <stat.icon size={20} />
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-xs font-medium uppercase tracking-wider">{stat.label}</p>
+                    <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Live Weight Card */}
+              <div className="bg-[#162a41] p-5 rounded-2xl shadow-lg text-white flex flex-col justify-between h-32 relative overflow-hidden">
+                <div className="relative z-10">
+                  <p className="text-blue-200 text-xs font-medium uppercase tracking-wider">Current Weight</p>
+                  <p className="text-3xl font-bold mt-1">{weightData[0]?.weight || userProfile?.initial_weight || '--'} <span className="text-lg font-medium text-blue-300">kg</span></p>
+                </div>
+                <div className="relative z-10 text-emerald-400 text-xs font-medium flex items-center gap-1">
+                  <TrendingUp size={14} />
+                  <span>Latest Entry</span>
+                </div>
+                <div className="absolute -right-4 -bottom-4 text-white/5">
+                  <Weight size={100} />
+                </div>
+              </div>
             </motion.div>
 
-            <div className="flex gap-3">
-              <button onClick={() => {
-                setInputType('weight');
-                setIsInputOpen(true);
-              }}
-                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-5 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 border border-white/10">
-                <TrendingUp size={18} /> Log Weight
-              </button>
-              <button onClick={() => {
-                setInputType('workout');
-                setIsInputOpen(true);
-              }}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
-                <Plus size={18} /> Log Activity
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column */}
+              <div className="lg:col-span-2 space-y-8">
 
-      <div className="max-w-7xl mx-auto px-6 -mt-12 relative z-20">
-        {/* Stats Grid */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-        >
-          {stats.map((stat, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: `${stat.color}15`, color: stat.color }}>
-                <stat.icon size={20} />
-              </div>
-              <div>
-                <p className="text-slate-500 text-xs font-medium uppercase tracking-wider">{stat.label}</p>
-                <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
-              </div>
-            </div>
-          ))}
-
-          {/* Live Weight Card */}
-          <div className="bg-[#162a41] p-5 rounded-2xl shadow-lg text-white flex flex-col justify-between h-32 relative overflow-hidden">
-            <div className="relative z-10">
-              <p className="text-blue-200 text-xs font-medium uppercase tracking-wider">Current Weight</p>
-              <p className="text-3xl font-bold mt-1">{weightData[0]?.weight || userProfile?.initial_weight || '--'} <span className="text-lg font-medium text-blue-300">kg</span></p>
-            </div>
-            <div className="relative z-10 text-emerald-400 text-xs font-medium flex items-center gap-1">
-              <TrendingUp size={14} />
-              <span>Latest Entry</span>
-            </div>
-            {/* Background decoration */}
-            <div className="absolute -right-4 -bottom-4 text-white/5">
-              <Weight size={100} />
-            </div>
-          </div>
-        </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-8">
-
-            {/* AI Insights Section - Fully Dynamic */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                  <Brain className="text-indigo-600" size={24} />
-                  AI Coach Insights
-                </h3>
-                <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">LIVE</span>
-              </div>
-              <div className="grid gap-4">
-                {insights.map((insight, idx) => (
-                  <AIInsightCard key={idx} {...insight} />
-                ))}
-              </div>
-            </section>
-
-            {/* Macro Tracker */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-slate-800">Daily Nutrition</h3>
-                <button className="text-sm text-slate-500 hover:text-slate-800">Details</button>
-              </div>
-              <MacroTracker nutrition={nutritionData} onUpdate={handleLogMacros} />
-            </section>
-
-            {/* Weight Chart Area */}
-            <section className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-              <h3 className="text-lg font-bold text-slate-800 mb-4">Weight History</h3>
-              <div className="h-48 flex items-end gap-2">
-                {weightData.slice(0, 10).reverse().map((entry, i) => (
-                  <div key={i} className="flex-1 bg-blue-50 rounded-t-lg relative group hover:bg-blue-100 transition-colors" style={{ height: `${(entry.weight / 150) * 100}%` }}>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      {entry.weight}kg
-                    </div>
+                {/* AI Insights Section */}
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                      <Brain className="text-indigo-600" size={24} />
+                      AI Coach Insights
+                    </h3>
+                    <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">LIVE</span>
                   </div>
-                ))}
-                {weightData.length === 0 && <div className="w-full text-center text-slate-400 pt-20">No data yet</div>}
-              </div>
-            </section>
-          </div>
+                  <div className="grid gap-4">
+                    {insights.map((insight, idx) => (
+                      <AIInsightCard key={idx} {...insight} />
+                    ))}
+                  </div>
+                </section>
 
-          {/* Right Column */}
-          <div className="space-y-8">
-            {/* Photo Gallery */}
-            <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-800">Body Transformation</h3>
-                <Camera size={18} className="text-slate-400" />
-              </div>
-              <PhotoGallery photos={photos} onUpload={handlePhotoUpload} />
-            </section>
+                {/* Macro Tracker */}
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-slate-800">Daily Nutrition</h3>
+                    <button className="text-sm text-slate-500 hover:text-slate-800">Details</button>
+                  </div>
+                  <MacroTracker nutrition={nutritionData} onUpdate={handleLogMacros} />
+                </section>
 
-            {/* Motivation / Gamification */}
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-              <h4 className="font-bold text-lg mb-2">Keep it up!</h4>
-              <p className="text-indigo-100 text-sm mb-4">You are in the top 15% of consistent users this week. Log one more workout to reach the next tier.</p>
-              <div className="w-full bg-black/20 rounded-full h-2">
-                <div className="bg-white w-[85%] h-full rounded-full"></div>
+                {/* Weight Chart Area */}
+                <section className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Weight History</h3>
+                  <div className="h-48 flex items-end gap-2">
+                    {weightData.slice(0, 10).reverse().map((entry, i) => (
+                      <div key={i} className="flex-1 bg-blue-50 rounded-t-lg relative group hover:bg-blue-100 transition-colors" style={{ height: `${(entry.weight / 150) * 100}%` }}>
+                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                          {entry.weight}kg
+                        </div>
+                      </div>
+                    ))}
+                    {weightData.length === 0 && <div className="w-full text-center text-slate-400 pt-20">No data yet</div>}
+                  </div>
+                </section>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-8">
+                {/* Photo Gallery */}
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-slate-800">Body Transformation</h3>
+                    <Camera size={18} className="text-slate-400" />
+                  </div>
+                  <PhotoGallery photos={photos} onUpload={handlePhotoUpload} />
+                </section>
+
+                {/* Motivation / Gamification */}
+                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+                  <h4 className="font-bold text-lg mb-2">Keep it up!</h4>
+                  <p className="text-indigo-100 text-sm mb-4">You are in the top 15% of consistent users this week. Log one more workout to reach the next tier.</p>
+                  <div className="w-full bg-black/20 rounded-full h-2">
+                    <div className="bg-white w-[85%] h-full rounded-full"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <ProgressInput
-        isOpen={isInputOpen}
-        onClose={() => setIsInputOpen(false)}
-        onSubmit={() => { loadUserData(); setIsInputOpen(false); }}
-        inputType={inputType}
-      />
-      <div className="mt-20">
-        <UnifiedFooter />
-      </div>
+          <ProgressInput
+            isOpen={isInputOpen}
+            onClose={() => setIsInputOpen(false)}
+            onSubmit={() => { loadUserData(); setIsInputOpen(false); }}
+            inputType={inputType}
+          />
+          <div className="mt-20">
+            <UnifiedFooter />
+          </div>
+        </>
+      )}
     </div>
   );
 }
