@@ -3,689 +3,381 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { 
-  TrendingUp, 
-  Calendar, 
-  Weight, 
-  Target, 
-  Award, 
-  Activity,
-  ChevronRight,
-  Plus,
-  Clock,
-  Flame,
-  Heart,
-  User
+import {
+  TrendingUp, Calendar, Activity, Plus,
+  Flame, Brain, Camera, Sparkles, Upload, X,
+  Weight
 } from "lucide-react";
 import ProgressInput from "@/components/progress/ProgressInput";
 import UserProfileSetup from "@/components/progress/user-profile";
-import { databaseService } from "@/lib/service/database";
 import { useUser } from "@/lib/hooks/use-user";
-import { UnifiedFooter, UnifiedNavbar } from "@/components";
+import { UnifiedFooter } from "@/components";
+import PageLoader from "@/components/ui/PageLoader";
+import { generateAIInsights } from "@/components/progress/generateInsights";
+import { databaseService } from "@/lib/service/progress-database";
+
+// --- Sub-Components (Integrated dynamically) ---
+
+const AIInsightCard = ({ title, message, type }: { title: string, message: string, type: 'warning' | 'success' | 'info' }) => {
+  const colors = {
+    warning: 'bg-amber-50 border-amber-100 text-amber-900',
+    success: 'bg-emerald-50 border-emerald-100 text-emerald-900',
+    info: 'bg-blue-50 border-blue-100 text-blue-900',
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={`p-4 rounded-xl border ${colors[type]} flex gap-4 items-start shadow-sm`}
+    >
+      <div className="mt-0.5 shrink-0">
+        <Sparkles size={18} className={type === 'warning' ? 'text-amber-600' : type === 'success' ? 'text-emerald-600' : 'text-blue-600'} />
+      </div>
+      <div>
+        <h4 className="font-bold text-sm mb-1">{title}</h4>
+        <p className="text-sm opacity-90 leading-relaxed">{message}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+const MacroTracker = ({ nutrition, onUpdate }: { nutrition: any, onUpdate: () => void }) => {
+  // Default targets (In real app, fetch from user profile)
+  const targets = { calories: 2200, protein: 160, carbs: 250, fats: 70 };
+  const current = nutrition || { calories: 0, protein: 0, carbs: 0, fats: 0 };
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+      <div className="flex justify-between items-end mb-6">
+        <div>
+          <p className="text-slate-400 text-xs font-semibold uppercase">Daily Calories</p>
+          <p className="text-2xl font-bold text-slate-800">
+            {current.calories.toLocaleString()} <span className="text-sm font-normal text-slate-400">/ {targets.calories} kcal</span>
+          </p>
+        </div>
+        <div className="h-2 w-24 bg-slate-100 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.min((current.calories / targets.calories) * 100, 100)}%` }}
+            className="h-full bg-slate-800"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {[
+          { label: 'Protein', val: current.protein, target: targets.protein, color: 'bg-blue-500' },
+          { label: 'Carbs', val: current.carbs, target: targets.carbs, color: 'bg-emerald-500' },
+          { label: 'Fats', val: current.fats, target: targets.fats, color: 'bg-amber-500' },
+        ].map((m) => (
+          <div key={m.label}>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="font-medium text-slate-700">{m.label}</span>
+              <span className="text-slate-500">{m.val} / {m.target}g</span>
+            </div>
+            <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min((m.val / m.target) * 100, 100)}%` }}
+                className={`h-full rounded-full ${m.color}`}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <button onClick={onUpdate} className="w-full mt-6 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors border border-dashed border-slate-300 rounded-lg py-2">
+        + Log Meal Macros
+      </button>
+    </div>
+  );
+};
+
+const PhotoGallery = ({ photos, onUpload }: { photos: any[], onUpload: (e: any) => void }) => {
+  const beforePhoto = photos[photos.length - 1]; // Oldest photo
+  const currentPhoto = photos[0]; // Newest photo
+
+  return (
+    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        {/* Start Photo */}
+        <div className="aspect-[3/4] rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center overflow-hidden relative">
+          {beforePhoto ? (
+            <img src={beforePhoto.photo_url} alt="Start" className="w-full h-full object-cover" />
+          ) : (
+            <div className="text-center p-2">
+              <span className="text-xs font-bold text-slate-400 block mb-1">START</span>
+              <Camera size={20} className="text-slate-300 mx-auto" />
+            </div>
+          )}
+          {beforePhoto && <div className="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[10px] p-1 text-center">Day 1</div>}
+        </div>
+
+        {/* Recent Photo */}
+        <div className="aspect-[3/4] rounded-xl bg-slate-800 relative overflow-hidden group cursor-pointer">
+          {currentPhoto ? (
+            <img src={currentPhoto.photo_url} alt="Current" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center text-white/50">
+              <span className="text-xs">No recent photo</span>
+            </div>
+          )}
+
+          <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+            <input type="file" className="hidden" accept="image/*" onChange={onUpload} />
+            <div className="text-white flex flex-col items-center gap-1">
+              <Upload size={20} />
+              <span className="text-xs font-bold">Update</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div className="flex justify-between items-center text-xs text-slate-500 px-1">
+        <span>Transformation view</span>
+        <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Free Unlocked</span>
+      </div>
+    </div>
+  );
+};
+
+// --- Main Page ---
 
 export default function ProgressPage() {
   const router = useRouter();
   const { user, isSignedIn, isLoading: userLoading } = useUser();
-  const [selectedPeriod, setSelectedPeriod] = useState('week');
   const [isInputOpen, setIsInputOpen] = useState(false);
   const [inputType, setInputType] = useState<'weight' | 'workout' | 'goal'>('weight');
   const [showProfileSetup, setShowProfileSetup] = useState(false);
-  
+
+  // Data State
   const [userProfile, setUserProfile] = useState<any>(null);
   const [weightData, setWeightData] = useState<any[]>([]);
   const [workoutData, setWorkoutData] = useState<any[]>([]);
-  const [goals, setGoals] = useState<any[]>([]);
-  const [achievements, setAchievements] = useState<any[]>([]);
+  const [nutritionData, setNutritionData] = useState<any>(null);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [insights, setInsights] = useState<any[]>([]);
   const [stats, setStats] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const periods = [
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'year', label: 'This Year' }
-  ];
-
-  // Load user data
   useEffect(() => {
-    if (user && isSignedIn) {
-      loadUserData();
-    }
+    if (user && isSignedIn) loadUserData();
   }, [user, isSignedIn]);
 
   const loadUserData = async () => {
     if (!user) return;
-
     try {
       setLoading(true);
-      
-      // Check if user has profile
       const profile = await databaseService.getUserProfile(user.id);
-      
-      if (!profile) {
-        setShowProfileSetup(true);
-        return;
-      }
-
+      if (!profile) { setShowProfileSetup(true); return; }
       setUserProfile(profile);
 
-      // Load all data in parallel
-      const [weightEntries, workoutEntries, userGoals, userAchievements, userStats] = await Promise.all([
+      const today = new Date().toISOString().split('T')[0];
+
+      const [weightEntries, workoutEntries, dailyNutri, photoEntries, userStats] = await Promise.all([
         databaseService.getWeightEntries(user.id),
         databaseService.getWorkoutEntries(user.id),
-        databaseService.getGoals(user.id),
-        databaseService.getAchievements(user.id),
+        databaseService.getDailyNutrition(user.id, today),
+        databaseService.getProgressPhotos(user.id),
         databaseService.getUserStats(user.id)
       ]);
 
-      setWeightData(weightEntries);
-      setWorkoutData(workoutEntries);
-      setGoals(userGoals);
-      setAchievements(userAchievements);
+      setWeightData(weightEntries || []);
+      setWorkoutData(workoutEntries || []);
+      setNutritionData(dailyNutri);
+      setPhotos(photoEntries || []);
 
-      // Update stats
+      // Generate Dynamic AI Insights
+      const aiMessages = generateAIInsights(profile, dailyNutri, workoutEntries || []);
+      setInsights(aiMessages);
+
       setStats([
-        { label: 'Total Workouts', value: userStats.totalWorkouts.toString(), icon: Activity, color: '#10b981' },
-        { label: 'Calories Burned', value: userStats.totalCalories.toLocaleString(), icon: Flame, color: '#f59e0b' },
-        { label: 'Weight Lost', value: `${userStats.weightLost} kg`, icon: TrendingUp, color: '#ef4444' },
-        { label: 'Active Days', value: userStats.activeDays.toString(), icon: Calendar, color: '#3b82f6' }
+        { label: 'Total Workouts', value: userStats?.totalWorkouts || '0', icon: Activity, color: '#10b981' },
+        { label: 'Calories Burned', value: userStats?.totalCalories?.toLocaleString() || '0', icon: Flame, color: '#f59e0b' },
+        { label: 'Active Streak', value: '3 Days', icon: Calendar, color: '#3b82f6' } // You can calculate real streak later
       ]);
 
     } catch (error) {
-      console.error('Error loading user data:', error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputSubmit = async (data: any) => {
-    if (!user) return;
-
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0] || !user) return;
     try {
-      if (data.type === 'weight') {
-        const newEntry = await databaseService.addWeightEntry({
-          user_id: user.id,
-          weight: parseFloat(data.weight),
-          date: data.date,
-          notes: data.notes || null
-        });
-
-        if (newEntry) {
-          setWeightData(prev => [newEntry, ...prev]);
-          await loadUserData(); // Refresh stats
-        }
-      }
-
-      if (data.type === 'workout') {
-        const newEntry = await databaseService.addWorkoutEntry({
-          user_id: user.id,
-          workout_type: data.workoutType,
-          duration_minutes: parseInt(data.duration),
-          calories_burned: parseInt(data.calories),
-          date: new Date().toISOString().split('T')[0],
-          notes: data.notes || null
-        });
-
-        if (newEntry) {
-          setWorkoutData(prev => [newEntry, ...prev]);
-          await loadUserData(); // Refresh stats
-        }
-      }
-
-      if (data.type === 'goal') {
-        const newGoal = await databaseService.addGoal({
-          user_id: user.id,
-          title: data.goalTitle,
-          category: data.goalCategory,
-          target_value: parseFloat(data.goalTarget),
-          current_value: 0,
-          unit: data.goalUnit,
-          deadline: null,
-          is_completed: false
-        });
-
-        if (newGoal) {
-          setGoals(prev => [newGoal, ...prev]);
-        }
-      }
+      await databaseService.uploadProgressPhoto(user.id, e.target.files[0]);
+      loadUserData(); // Refresh to show new photo
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error("Upload failed", error);
+      alert("Failed to upload photo");
     }
   };
 
-  const openInput = (type: 'weight' | 'workout' | 'goal') => {
-    setInputType(type);
-    setIsInputOpen(true);
+  // Mock function to log random macros for demo purposes
+  const handleLogMacros = async () => {
+    if (!user) return;
+    // In reality, open a modal to input these
+    const demoMacros = { calories: 1850, protein: 130, carbs: 200, fats: 55 };
+    await databaseService.updateDailyNutrition(user.id, demoMacros);
+    loadUserData();
   };
 
-  // Format weight data for chart
-  const chartWeightData = weightData.slice(0, 7).reverse().map(entry => ({
-    date: new Date(entry.date).toLocaleDateString('en', { weekday: 'short' }),
-    weight: entry.weight
-  }));
-
-  // Show loading state
-  if (userLoading || loading) {
-    return (
-      <div style={{ 
-        minHeight: '100vh', 
-        background: '#f8fafc',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            width: '50px', 
-            height: '50px', 
-            border: '4px solid #f3f4f6',
-            borderTop: '4px solid #162a41',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px'
-          }} />
-          <p style={{ color: '#6b7280', fontSize: '16px' }}>Loading your progress...</p>
-        </div>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  // Show profile setup if needed
-  if (showProfileSetup && user) {
-    return <UserProfileSetup user={user} onComplete={() => {
-      setShowProfileSetup(false);
-      loadUserData();
-    }} />;
-  }
-
-  // Redirect if not signed in
-  if (!isSignedIn && !userLoading) {
-    router.push('/sign-in');
-    return null;
-  }
+  if (userLoading || loading) return <PageLoader />;
+  if (showProfileSetup && user) return <UserProfileSetup user={user} onComplete={() => { setShowProfileSetup(false); loadUserData(); }} />;
+  if (!isSignedIn && !userLoading) { router.push('/sign-in'); return null; }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
-      {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #162a41 0%, #1e3a5f 100%)',
-        padding: '80px 0 60px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-        }} />
-        
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 24px',
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-          >
-            <div>
-              <h1 style={{
-                fontSize: '48px',
-                fontWeight: '800',
-                color: '#ffffff',
-                margin: '0 0 16px',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-              }}>
-                Track Your Progress
+    <div className="min-h-screen bg-slate-50 pb-20">
+      {/* Premium-Feel Header */}
+      <div className="bg-[#162a41] pt-24 pb-20 relative overflow-hidden rounded-b-[3rem]">
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <div className="flex items-center gap-2 mb-2 text-emerald-400 font-medium bg-emerald-500/10 w-fit px-3 py-1 rounded-full border border-emerald-500/20">
+                <Brain size={16} />
+                <span className="text-sm">AI Analysis Active</span>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">
+                Progress Hub
               </h1>
-              <p style={{
-                fontSize: '20px',
-                color: 'rgba(255, 255, 255, 0.8)',
-                margin: 0,
-                maxWidth: '600px'
-              }}>
-                {userProfile?.full_name ? `Welcome back, ${userProfile.full_name}!` : 'Monitor your fitness journey and celebrate achievements.'}
+              <p className="text-blue-200 text-lg max-w-xl">
+                Tracking {weightData.length} data points. AI is analyzing your trends in real-time.
               </p>
+            </motion.div>
+
+            <div className="flex gap-3">
+              <button onClick={() => {
+                setInputType('weight');
+                setIsInputOpen(true);
+              }}
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-5 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 border border-white/10">
+                <TrendingUp size={18} /> Log Weight
+              </button>
+              <button onClick={() => {
+                setInputType('workout');
+                setIsInputOpen(true);
+              }}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2">
+                <Plus size={18} /> Log Activity
+              </button>
             </div>
-            
-            {userProfile && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                padding: '16px 24px',
-                borderRadius: '16px',
-                backdropFilter: 'blur(10px)'
-              }}>
-                <User size={24} color="#ffffff" />
-                <div>
-                  <p style={{
-                    fontSize: '14px',
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    margin: '0 0 4px'
-                  }}>
-                    Current Weight
-                  </p>
-                  <p style={{
-                    fontSize: '20px',
-                    fontWeight: '700',
-                    color: '#ffffff',
-                    margin: 0
-                  }}>
-                    {weightData[0]?.weight || userProfile.initial_weight} kg
-                  </p>
-                </div>
-              </div>
-            )}
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* Rest of your ProgressPage component remains similar but uses real data */}
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 24px" }}>
-        {/* Stats cards */}
+      <div className="max-w-7xl mx-auto px-6 -mt-12 relative z-20">
+        {/* Stats Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-            gap: '24px',
-            marginBottom: '40px',
-          }}
+          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <div
-                key={stat.label}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '18px',
-                  padding: '20px',
-                  boxShadow: '0 6px 18px rgba(15, 23, 42, 0.08)',
-                  border: '1px solid rgba(15, 23, 42, 0.06)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '14px',
-                    background: `${stat.color}15`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Icon size={24} color={stat.color} />
-                </div>
-                <div>
-                  <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 4px', fontWeight: 500 }}>{stat.label}</p>
-                  <p style={{ fontSize: '24px', fontWeight: 800, color: '#0f172a', margin: 0 }}>{stat.value}</p>
-                </div>
+          {stats.map((stat, i) => (
+            <div key={i} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between h-32">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ background: `${stat.color}15`, color: stat.color }}>
+                <stat.icon size={20} />
               </div>
-            );
-          })}
+              <div>
+                <p className="text-slate-500 text-xs font-medium uppercase tracking-wider">{stat.label}</p>
+                <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+              </div>
+            </div>
+          ))}
+
+          {/* Live Weight Card */}
+          <div className="bg-[#162a41] p-5 rounded-2xl shadow-lg text-white flex flex-col justify-between h-32 relative overflow-hidden">
+            <div className="relative z-10">
+              <p className="text-blue-200 text-xs font-medium uppercase tracking-wider">Current Weight</p>
+              <p className="text-3xl font-bold mt-1">{weightData[0]?.weight || userProfile?.initial_weight || '--'} <span className="text-lg font-medium text-blue-300">kg</span></p>
+            </div>
+            <div className="relative z-10 text-emerald-400 text-xs font-medium flex items-center gap-1">
+              <TrendingUp size={14} />
+              <span>Latest Entry</span>
+            </div>
+            {/* Background decoration */}
+            <div className="absolute -right-4 -bottom-4 text-white/5">
+              <Weight size={100} />
+            </div>
+          </div>
         </motion.div>
 
-        {/* Weight + workouts */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1.2fr) minmax(0,1fr)',
-            gap: '28px',
-            marginBottom: '40px',
-          }}
-        >
-          {/* Weight history */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            style={{
-              background: '#ffffff',
-              borderRadius: '18px',
-              padding: '20px',
-              boxShadow: '0 6px 18px rgba(15, 23, 42, 0.08)',
-              border: '1px solid rgba(15, 23, 42, 0.06)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '16px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Weight size={20} color="#162a41" />
-                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#111827' }}>Weight trend</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-8">
+
+            {/* AI Insights Section - Fully Dynamic */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  <Brain className="text-indigo-600" size={24} />
+                  AI Coach Insights
+                </h3>
+                <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">LIVE</span>
               </div>
-              <button
-                onClick={() => openInput('weight')}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '999px',
-                  border: '1px solid rgba(15,23,42,0.12)',
-                  background: '#ffffff',
-                  fontSize: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                }}
-              >
-                <Plus size={14} /> Log weight
-              </button>
-            </div>
-
-            <div
-              style={{
-                height: '200px',
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: '8px',
-                marginBottom: '10px',
-              }}
-            >
-              {chartWeightData.map((point, idx) => (
-                <motion.div
-                  key={`${point.date}-${idx}`}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${Math.max(12, Number(point.weight) * 2)}px` }}
-                  transition={{ duration: 0.4, delay: 0.05 * idx }}
-                  style={{
-                    flex: 1,
-                    background: 'linear-gradient(to top, #162a41, #3b82f6)',
-                    borderRadius: '8px 8px 0 0',
-                    position: 'relative',
-                  }}
-                >
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '-18px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      color: '#111827',
-                    }}
-                  >
-                    {point.weight}kg
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '11px',
-                color: '#6b7280',
-              }}
-            >
-              {chartWeightData.map((point, idx) => (
-                <span key={`label-${point.date}-${idx}`} style={{ flex: 1, textAlign: 'center' }}>
-                  {point.date}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Recent workouts */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-            style={{
-              background: '#ffffff',
-              borderRadius: '18px',
-              padding: '20px',
-              boxShadow: '0 6px 18px rgba(15, 23, 42, 0.08)',
-              border: '1px solid rgba(15, 23, 42, 0.06)',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '16px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Activity size={20} color="#162a41" />
-                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#111827' }}>Recent workouts</h3>
+              <div className="grid gap-4">
+                {insights.map((insight, idx) => (
+                  <AIInsightCard key={idx} {...insight} />
+                ))}
               </div>
-              <button
-                onClick={() => openInput('workout')}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '999px',
-                  border: '1px solid rgba(15,23,42,0.12)',
-                  background: '#ffffff',
-                  fontSize: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  cursor: 'pointer',
-                }}
-              >
-                <Plus size={14} /> Add workout
-              </button>
-            </div>
+            </section>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {workoutData.slice(0, 7).map((w) => (
-                <div
-                  key={w.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    background: 'rgba(16, 185, 129, 0.06)',
-                    border: '1px solid rgba(16, 185, 129, 0.18)',
-                  }}
-                >
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>{w.workout_type}</p>
-                    <p style={{ fontSize: '12px', color: '#6b7280', margin: 0 }}>
-                      {new Date(w.date).toLocaleDateString('en', { weekday: 'short' })} · {w.duration_minutes} min · {w.calories_burned} cal
-                    </p>
+            {/* Macro Tracker */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-slate-800">Daily Nutrition</h3>
+                <button className="text-sm text-slate-500 hover:text-slate-800">Details</button>
+              </div>
+              <MacroTracker nutrition={nutritionData} onUpdate={handleLogMacros} />
+            </section>
+
+            {/* Weight Chart Area */}
+            <section className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-800 mb-4">Weight History</h3>
+              <div className="h-48 flex items-end gap-2">
+                {weightData.slice(0, 10).reverse().map((entry, i) => (
+                  <div key={i} className="flex-1 bg-blue-50 rounded-t-lg relative group hover:bg-blue-100 transition-colors" style={{ height: `${(entry.weight / 150) * 100}%` }}>
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                      {entry.weight}kg
+                    </div>
                   </div>
-                  <ChevronRight size={18} color="#10b981" />
-                </div>
-              ))}
-              {workoutData.length === 0 && (
-                <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>No workouts logged yet.</p>
-              )}
+                ))}
+                {weightData.length === 0 && <div className="w-full text-center text-slate-400 pt-20">No data yet</div>}
+              </div>
+            </section>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Photo Gallery */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-slate-800">Body Transformation</h3>
+                <Camera size={18} className="text-slate-400" />
+              </div>
+              <PhotoGallery photos={photos} onUpload={handlePhotoUpload} />
+            </section>
+
+            {/* Motivation / Gamification */}
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+              <h4 className="font-bold text-lg mb-2">Keep it up!</h4>
+              <p className="text-indigo-100 text-sm mb-4">You are in the top 15% of consistent users this week. Log one more workout to reach the next tier.</p>
+              <div className="w-full bg-black/20 rounded-full h-2">
+                <div className="bg-white w-[85%] h-full rounded-full"></div>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
-
-        {/* Goals & achievements */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          style={{
-            background: '#ffffff',
-            borderRadius: '18px',
-            padding: '24px',
-            boxShadow: '0 6px 18px rgba(15, 23, 42, 0.08)',
-            border: '1px solid rgba(15, 23, 42, 0.06)',
-            marginBottom: '32px',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '18px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <Target size={20} color="#162a41" />
-              <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#111827' }}>Your goals</h3>
-            </div>
-            <button
-              onClick={() => openInput('goal')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: '999px',
-                border: '1px solid rgba(15,23,42,0.12)',
-                background: '#ffffff',
-                fontSize: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                cursor: 'pointer',
-              }}
-            >
-              <Plus size={14} /> Set goal
-            </button>
-          </div>
-
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '18px',
-            }}
-          >
-            {goals.map((goal) => {
-              const progress = goal.target_value > 0 ? (goal.current_value / goal.target_value) * 100 : 0;
-              return (
-                <div
-                  key={goal.id}
-                  style={{
-                    padding: '18px',
-                    borderRadius: '14px',
-                    border: '1px solid rgba(15, 23, 42, 0.08)',
-                    background: 'rgba(15, 23, 42, 0.01)',
-                  }}
-                >
-                  <p style={{ fontSize: '15px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{goal.title}</p>
-                  <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 10px' }}>
-                    {goal.current_value} / {goal.target_value} {goal.unit}
-                  </p>
-                  <div
-                    style={{
-                      height: '8px',
-                      borderRadius: '999px',
-                      background: 'rgba(209,213,219,0.7)',
-                      overflow: 'hidden',
-                      marginBottom: '6px',
-                    }}
-                  >
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(progress, 100)}%` }}
-                      transition={{ duration: 0.5 }}
-                      style={{
-                        height: '100%',
-                        borderRadius: '999px',
-                        background: progress >= 100 ? '#10b981' : '#3b82f6',
-                      }}
-                    />
-                  </div>
-                  <p
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      color: progress >= 100 ? '#10b981' : '#4b5563',
-                      margin: 0,
-                    }}
-                  >
-                    {progress >= 100 ? 'Goal achieved 🎉' : `${Math.round(progress)}% complete`}
-                  </p>
-                </div>
-              );
-            })}
-            {goals.length === 0 && (
-              <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>No goals yet. Create one to track your progress.</p>
-            )}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.25 }}
-          style={{
-            background: '#ffffff',
-            borderRadius: '18px',
-            padding: '24px',
-            boxShadow: '0 6px 18px rgba(15, 23, 42, 0.08)',
-            border: '1px solid rgba(15, 23, 42, 0.06)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <Award size={20} color="#162a41" />
-            <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#111827' }}>Recent achievements</h3>
-          </div>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '18px',
-            }}
-          >
-            {achievements.map((a) => (
-              <div
-                key={a.id}
-                style={{
-                  padding: '16px',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(15, 23, 42, 0.08)',
-                  background: 'rgba(15, 23, 42, 0.01)',
-                }}
-              >
-                <p style={{ fontSize: '15px', fontWeight: 700, color: '#111827', margin: '0 0 4px' }}>{a.title}</p>
-                <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 6px' }}>{a.description}</p>
-                <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>
-                  {new Date(a.achieved_at).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-            {achievements.length === 0 && (
-              <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>No achievements recorded yet. Keep going!</p>
-            )}
-          </div>
-        </motion.div>
       </div>
 
-      {/* Progress Input Modal */}
       <ProgressInput
         isOpen={isInputOpen}
         onClose={() => setIsInputOpen(false)}
-        onSubmit={handleInputSubmit}
+        onSubmit={() => { loadUserData(); setIsInputOpen(false); }}
         inputType={inputType}
       />
-      <UnifiedFooter/>
+      <div className="mt-20">
+        <UnifiedFooter />
+      </div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ import {
   Play
 } from "lucide-react";
 
-import { WorkoutPlanData, DailyWorkout, Exercise } from "@/lib/ai-service";
+import { WorkoutPlanData } from "@/lib/service/dietWorkoutplan";
 
 interface WorkoutPlanDisplayProps {
   workoutPlan: WorkoutPlanData;
