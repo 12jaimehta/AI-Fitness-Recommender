@@ -22,8 +22,8 @@ import {
 } from "lucide-react";
 
 // Define interfaces
-import { DietPlanData } from "@/lib/ai-service";
 import { sendDietPlanEmail } from "@/lib/email-service";
+import { DietPlanData } from "@/lib/service/dietWorkoutplan";
 
 interface RefactoredDietPlanDisplayProps {
   dietPlan: DietPlanData;

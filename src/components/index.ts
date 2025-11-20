@@ -9,4 +9,3 @@ export * from './workout';
 
 // Types - re-export from centralized types file
 export type { DietPlanData, DailyMeals, MealData } from '../lib/types';
-export type { WorkoutPlanData, DailyWorkout, Exercise } from '../lib/ai-service';

@@ -4,9 +4,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { Save, Bookmark, FolderOpen, Edit, Trash2, Check } from "lucide-react";
-import { saveDietPlan, getUserDietPlans, deleteDietPlan, SavedDietPlan } from "../../lib/database-api";
 import { DietPlanFormData } from "../../lib/validation";
 import { DietPlanData } from "../../lib/types";
+import { deleteDietPlan, getUserDietPlans, SavedDietPlan, saveDietPlan } from "@/lib/service/dietWorkoutplan";
 
 interface PlanActionsProps {
   formData: DietPlanFormData;
@@ -33,6 +33,7 @@ export default function PlanActions({ formData, dietPlan, onPlanLoaded }: PlanAc
 
     setIsSaving(true);
     try {
+      //@ts-ignore
       await saveDietPlan(user.id, formData, dietPlan);
       setSaveMessage("Plan saved successfully!");
       setTimeout(() => setSaveMessage(""), 3000);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { databaseService, UserProfile } from "@/lib/service/database";
+import { databaseService, UserProfile } from "@/lib/service/progress-database";
 
 interface UserProfileSetupProps {
   user: any;

@@ -4,9 +4,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useCurrentUser } from "@/lib/use-current-user";
 import { Save, Bookmark, FolderOpen, Edit, Trash2, Check } from "lucide-react";
-import { saveWorkoutPlan, getUserWorkoutPlans, deleteWorkoutPlan, SavedWorkoutPlan } from "../../lib/database-api";
 import { WorkoutPlanFormData } from "../../lib/validation";
-import { WorkoutPlanData } from "../../lib/ai-service";
+import { deleteWorkoutPlan, getUserWorkoutPlans, saveWorkoutPlan, WorkoutPlanData } from "@/lib/service/dietWorkoutplan";
 
 interface WorkoutPlanActionsProps {
   formData: WorkoutPlanFormData;

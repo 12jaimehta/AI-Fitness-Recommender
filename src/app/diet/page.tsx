@@ -5,10 +5,10 @@ import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import dynamic from "next/dynamic";
 import { DietPlanFormData } from "../../lib/validation";
-import { generateAIDietPlan, DietPlanData } from "../../lib/ai-service";
 import UnifiedNavbar from "../../components/shared/UnifiedNavbar";
 import UnifiedFooter from "../../components/shared/UnifiedFooter";
 import PlanActions from "../../components/diet/PlanActions";
+import { DietPlanData, generateAIDietPlan } from "@/lib/service/dietWorkoutplan";
 
 // Dynamic imports to prevent hydration mismatch
 const RefactoredMultiStepForm = dynamic(() => import("../../components/diet").then(mod => ({ default: mod.RefactoredMultiStepForm })), {
