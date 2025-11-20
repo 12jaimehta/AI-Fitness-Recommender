@@ -1,4 +1,5 @@
-import { DietPlanFormData, WorkoutPlanFormData } from "../validation";
+import { DietPlanFormData } from "../validation/dietPlanSchema";
+import { WorkoutPlanFormData } from "../validation/workoutPlanSchema";
 
 export interface MealData {
   name: string;

@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 // Define interfaces
-import { sendDietPlanEmail } from "@/lib/email-service";
+import { sendDietPlanEmail } from "@/lib/service/email-service";
 import { DietPlanData } from "@/lib/service/dietWorkoutplan";
 
 interface RefactoredDietPlanDisplayProps {

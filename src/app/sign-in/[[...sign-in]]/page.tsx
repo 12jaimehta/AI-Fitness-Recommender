@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 import Tabs from "@/components/ui/tabs";
 import Input from "@/components/ui/input";
 import MotionButton from "@/components/ui/motionButton";

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, User, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { createClient } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/supabase-client";
 import { signUpSchema, SignUpForm } from "@/lib/validation/signUpSchema";
 
 import Tabs from "@/components/ui/tabs";

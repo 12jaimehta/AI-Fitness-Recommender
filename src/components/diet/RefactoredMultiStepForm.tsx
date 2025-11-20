@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { dietPlanSchema, type DietPlanFormData } from "@/lib/validation";
+import { dietPlanSchema, type DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 
 import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";

@@ -4,11 +4,11 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import dynamic from "next/dynamic";
-import { WorkoutPlanFormData } from "../../lib/validation";
 import UnifiedNavbar from "../../components/shared/UnifiedNavbar";
 import UnifiedFooter from "../../components/shared/UnifiedFooter";
 import WorkoutPlanActions from "../../components/workout/WorkoutPlanActions";
 import { generateAIWorkoutPlan, WorkoutPlanData } from "@/lib/service/dietWorkoutplan";
+import { WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
 
 // Dynamic imports to prevent hydration mismatch
 const WorkoutMultiStepForm = dynamic(() => import("../../components/workout").then(mod => ({ default: mod.WorkoutMultiStepForm })), {

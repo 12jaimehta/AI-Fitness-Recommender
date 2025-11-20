@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { User, Activity, Target, Dumbbell, Clock } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { workoutPlanSchema, type WorkoutPlanFormData } from "@/lib/validation";
 
 // Import smaller components
 import FormInput from "../shared/FormInput";
 import FormSelect from "../shared/FormSelect";
 import ProgressBar from "../shared/ProgressBar";
 import FormNavigation from "../shared/FormNavigation";
+import { WorkoutPlanFormData, workoutPlanSchema } from "@/lib/validation/workoutPlanSchema";
 
 const steps = [
   {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Weight, Activity, Flame, Target, Calendar, Clock } from "lucide-react";
+import { X, Weight, Activity, Target } from "lucide-react";
 
 interface ProgressInputProps {
   isOpen: boolean;
@@ -60,12 +60,16 @@ export default function ProgressInput({ isOpen, onClose, onSubmit, inputType }: 
     'Swimming', 'HIIT', 'Walking', 'Sports', 'Other'
   ];
 
-const goalUnits: { [key: string]: string } = {
-  weight: 'kg',
-  workout: 'days/week',
-  calories: 'cal/week',
-  duration: 'min/day'
-};
+  const goalUnits: { [key: string]: string } = {
+    weight: 'kg',
+    workout: 'days/week',
+    calories: 'cal/week',
+    duration: 'min/day'
+  };
+
+  // Shared class strings for cleaner JSX
+  const inputLabelClass = "block text-sm font-semibold text-[#162a41] mb-2";
+  const inputFieldClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base transition-all duration-300 focus:border-[#162a41] focus:ring-2 focus:ring-[#162a41]/10 outline-none bg-white";
 
   if (!isOpen) return null;
 
@@ -75,19 +79,7 @@ const goalUnits: { [key: string]: string } = {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}
+        className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-5"
         onClick={onClose}
       >
         <motion.div
@@ -95,36 +87,17 @@ const goalUnits: { [key: string]: string } = {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: "spring", damping: 20 }}
-          style={{
-            background: '#ffffff',
-            borderRadius: '20px',
-            padding: '32px',
-            width: '100%',
-            maxWidth: '500px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
-          }}
+          className="w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[20px] bg-white p-8 shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {inputType === 'weight' && <Weight size={24} color="#162a41" />}
-              {inputType === 'workout' && <Activity size={24} color="#162a41" />}
-              {inputType === 'goal' && <Target size={24} color="#162a41" />}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              {inputType === 'weight' && <Weight size={24} className="text-[#162a41]" />}
+              {inputType === 'workout' && <Activity size={24} className="text-[#162a41]" />}
+              {inputType === 'goal' && <Target size={24} className="text-[#162a41]" />}
 
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: '700',
-                color: '#162a41',
-                margin: 0
-              }}>
+              <h2 className="text-2xl font-bold text-[#162a41] m-0">
                 {inputType === 'weight' && 'Log Weight'}
                 {inputType === 'workout' && 'Add Workout'}
                 {inputType === 'goal' && 'Set New Goal'}
@@ -133,134 +106,50 @@ const goalUnits: { [key: string]: string } = {
 
             <button
               onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '8px',
-                borderRadius: '8px',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(22, 42, 65, 0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'none';
-              }}
+              className="bg-transparent border-none cursor-pointer p-2 rounded-lg transition-all duration-300 hover:bg-[#162a41]/10"
             >
-              <X size={20} color="#6b7280" />
+              <X size={20} className="text-gray-500" />
             </button>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit}>
             {inputType === 'weight' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="flex flex-col gap-5">
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Weight (kg)
-                  </label>
+                  <label className={inputLabelClass}>Weight (kg)</label>
                   <input
                     type="number"
                     step="0.1"
                     required
                     value={formData.weight}
                     onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={inputFieldClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Date
-                  </label>
+                  <label className={inputLabelClass}>Date</label>
                   <input
                     type="date"
                     required
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={inputFieldClass}
                   />
                 </div>
               </div>
             )}
 
             {inputType === 'workout' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="flex flex-col gap-5">
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Workout Type
-                  </label>
+                  <label className={inputLabelClass}>Workout Type</label>
                   <select
                     required
                     value={formData.workoutType}
                     onChange={(e) => setFormData({ ...formData, workoutType: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      background: '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={`${inputFieldClass} cursor-pointer`}
                   >
                     <option value="">Select workout type</option>
                     {workoutTypes.map(type => (
@@ -270,144 +159,49 @@ const goalUnits: { [key: string]: string } = {
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Duration (minutes)
-                  </label>
+                  <label className={inputLabelClass}>Duration (minutes)</label>
                   <input
                     type="number"
                     required
                     value={formData.duration}
                     onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={inputFieldClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Calories Burned
-                  </label>
+                  <label className={inputLabelClass}>Calories Burned</label>
                   <input
                     type="number"
                     required
                     value={formData.calories}
                     onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={inputFieldClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Notes (optional)
-                  </label>
+                  <label className={inputLabelClass}>Notes (optional)</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     placeholder="How did you feel? Any achievements?"
                     rows={3}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      resize: 'vertical',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={`${inputFieldClass} resize-y`}
                   />
                 </div>
               </div>
             )}
 
             {inputType === 'goal' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="flex flex-col gap-5">
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Goal Category
-                  </label>
+                  <label className={inputLabelClass}>Goal Category</label>
                   <select
                     required
                     value={formData.goalCategory}
                     onChange={(e) => setFormData({ ...formData, goalCategory: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      background: '#ffffff',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={`${inputFieldClass} cursor-pointer`}
                   >
                     <option value="weight">Weight Loss</option>
                     <option value="workout">Workout Frequency</option>
@@ -417,128 +211,49 @@ const goalUnits: { [key: string]: string } = {
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Goal Title
-                  </label>
+                  <label className={inputLabelClass}>Goal Title</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g., Lose 10 kg, Workout 5 times a week"
                     value={formData.goalTitle}
                     onChange={(e) => setFormData({ ...formData, goalTitle: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={inputFieldClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Target Value
-                  </label>
+                  <label className={inputLabelClass}>Target Value</label>
                   <input
                     type="number"
                     required
                     placeholder="e.g., 10, 5, 2000"
                     value={formData.goalTarget}
                     onChange={(e) => setFormData({ ...formData, goalTarget: e.target.value })}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.currentTarget.style.borderColor = '#162a41';
-                      e.currentTarget.style.boxShadow = '0 0 0 3px rgba(22, 42, 65, 0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.currentTarget.style.borderColor = 'rgba(22, 42, 65, 0.2)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
+                    className={inputFieldClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Unit
-                  </label>
+                  <label className={inputLabelClass}>Unit</label>
                   <input
                     type="text"
                     required
                     value={goalUnits[formData.goalCategory as keyof typeof goalUnits]}
                     readOnly
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      background: 'rgba(22, 42, 65, 0.05)',
-                      color: '#6b7280'
-                    }}
+                    className="w-full p-3 rounded-xl border border-[#162a41]/20 text-base bg-[#162a41]/5 text-gray-500 outline-none"
                   />
                 </div>
               </div>
             )}
 
             {/* Submit Button */}
-            <div style={{ marginTop: '32px' }}>
+            <div className="mt-8">
               <motion.button
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#162a41',
-                  color: '#ffffff',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#1e3a5f';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = '#162a41';
-                }}
+                className="w-full p-4 rounded-xl border-none bg-[#162a41] text-white text-base font-semibold cursor-pointer transition-colors duration-300 hover:bg-[#1e3a5f]"
               >
                 {inputType === 'weight' && 'Log Weight'}
                 {inputType === 'workout' && 'Add Workout'}

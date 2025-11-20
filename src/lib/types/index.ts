@@ -1,4 +1,4 @@
-import { type DietPlanFormData } from "@/lib/validation";
+import { type DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 
 export interface FormInputProps {
   name?: string;
