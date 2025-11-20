@@ -1,27 +1,47 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowRight,
     ChevronLeft,
     ChevronRight,
+    User,
+    LogOut,
+    Settings,
+    ChevronDown
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { menuItems, slides } from "@/lib/constant";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 export default function HomePage() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    
     const router = useRouter();
     const { isSignedIn, user } = useCurrentUser();
+    const userMenuRef = useRef<HTMLDivElement>(null);
 
+    // Carousel Timer
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
         }, 8000);
         return () => clearInterval(timer);
     }, [slides.length]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setIsUserMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -35,10 +55,25 @@ export default function HomePage() {
         setCurrentSlide(index);
     };
 
+    const handleSignOut = async () => {
+        try {
+            const supabase = createClient();
+            await supabase.auth.signOut();
+            router.refresh();
+            setIsUserMenuOpen(false);
+            setIsMobileMenuOpen(false);
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
+    };
+
+    // Extract display name from email if name isn't available
+    const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
+
     return (
         <div className="min-h-screen relative overflow-hidden">
             {/* Header */}
-            <header className="fixed top-0 left-0 right-0 z-1000 bg-transparent border-b border-white/20">
+            <header className="fixed top-0 left-0 right-0 z-[1000] bg-transparent border-b border-white/20">
                 <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
                     {/* Logo */}
                     <div
@@ -50,84 +85,84 @@ export default function HomePage() {
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-8">
-                        <button
-                            onClick={() => router.push("/")}
-                            className="text-white text-[16px] font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 hover:-translate-y-[0.5px] hover:shadow-xl"
-                        >
-                            Home
-                        </button>
+                        <button onClick={() => router.push("/")} className="nav-link text-white font-semibold hover:text-white/80 transition">Home</button>
+                        <button onClick={() => router.push("/diet")} className="nav-link text-white font-semibold hover:text-white/80 transition">Diet Plan</button>
+                        <button onClick={() => router.push("/workout")} className="nav-link text-white font-semibold hover:text-white/80 transition">Workout Plan</button>
+                        <button onClick={() => router.push("/progress")} className="nav-link text-white font-semibold hover:text-white/80 transition">Track Progress</button>
 
-                        <button
-                            onClick={() => router.push("/diet")}
-                            className="text-white text-[16px] font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 hover:-translate-y-[0.5px] hover:shadow-xl"
-                        >
-                            Diet Plan
-                        </button>
+                        {/* Modern Auth Section */}
+                        {isSignedIn ? (
+                            <div className="relative" ref={userMenuRef}>
+                                <button
+                                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                                    className="flex items-center gap-3 px-4 py-2 rounded-full border border-white/30 bg-white/10 backdrop-blur-md text-white transition-all hover:bg-white/20"
+                                >
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-white to-white/80 flex items-center justify-center text-xs font-bold text-gray-800">
+                                        {displayName.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="text-sm font-semibold">{displayName}</span>
+                                    <ChevronDown size={16} className={`transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                                </button>
 
-                        <button
-                            onClick={() => router.push("/workout")}
-                            className="text-white text-[16px] font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 hover:-translate-y-[0.5px] hover:shadow-xl"
-                        >
-                            Workout Plan
-                        </button>
-
-                        <button
-                            onClick={() => router.push("/progress")}
-                            className="text-white text-[16px] font-semibold px-4 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 hover:-translate-y-[0.5px] hover:shadow-xl"
-                        >
-                            Track Progress
-                        </button>
-
-                        <button onClick={() => router.push("/sign-in")} className="px-6 py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur text-white text-sm font-semibold hover:bg-white/20 transition-all hover:scale-105 cursor-pointer">
-
-                            {isSignedIn ? "Logout" : "Login"}
-
-                        </button>
+                                <AnimatePresence>
+                                    {isUserMenuOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 mt-2 w-56 rounded-xl border border-white/20 bg-[#162a41]/90 backdrop-blur-xl shadow-2xl overflow-hidden py-2"
+                                        >
+                                            <div className="px-4 py-3 border-b border-white/10 mb-2">
+                                                <p className="text-sm text-white font-medium">Signed in as</p>
+                                                <p className="text-xs text-white/70 truncate">{user?.email}</p>
+                                            </div>
+                                            
+                                            <button 
+                                                onClick={() => router.push('/my-profile')}
+                                                className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/10 flex items-center gap-2 transition-colors"
+                                            >
+                                                <User size={16} /> My Profile
+                                            </button>
+                                            
+                                            <button 
+                                                onClick={handleSignOut}
+                                                className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
+                                            >
+                                                <LogOut size={16} /> Sign Out
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={() => router.push("/sign-in")} 
+                                className="px-6 py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur text-white text-sm font-semibold hover:bg-white/20 transition-all hover:scale-105 cursor-pointer"
+                            >
+                                Login
+                            </button>
+                        )}
                     </nav>
 
-                    {/* Mobile Hamburger Button (visible only on mobile) */}
+                    {/* Mobile Hamburger Button */}
                     <motion.button
-                        className="
-              md:hidden
-              p-3 rounded-xl border-2 border-white/40 
-              bg-white/10 backdrop-blur-xl shadow-xl 
-              relative overflow-hidden 
-              hover:bg-white/20 hover:border-white/60
-            "
+                        className="md:hidden p-3 rounded-xl border-2 border-white/40 bg-white/10 backdrop-blur-xl relative overflow-hidden"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        whileHover={{ scale: 1.08 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <div
-                            className={`absolute inset-0 rounded-xl transition-opacity duration-300 
-              bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,transparent_70%)]
-              ${isMobileMenuOpen ? "opacity-100" : "opacity-0"}`}
-                        />
-
                         <div className="relative flex flex-col items-center justify-center gap-[5px] w-[26px] h-[26px]">
                             <motion.div
-                                className="w-[22px] h-[3px] rounded bg-white shadow-sm"
-                                animate={{
-                                    rotate: isMobileMenuOpen ? 45 : 0,
-                                    y: isMobileMenuOpen ? 8 : 0,
-                                }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="w-[22px] h-[3px] rounded bg-white"
+                                animate={{ rotate: isMobileMenuOpen ? 45 : 0, y: isMobileMenuOpen ? 8 : 0 }}
                             />
                             <motion.div
-                                className="w-[22px] h-[3px] rounded bg-white shadow-sm"
-                                animate={{
-                                    opacity: isMobileMenuOpen ? 0 : 1,
-                                    scaleX: isMobileMenuOpen ? 0 : 1,
-                                }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="w-[22px] h-[3px] rounded bg-white"
+                                animate={{ opacity: isMobileMenuOpen ? 0 : 1 }}
                             />
                             <motion.div
-                                className="w-[22px] h-[3px] rounded bg-white shadow-sm"
-                                animate={{
-                                    rotate: isMobileMenuOpen ? -45 : 0,
-                                    y: isMobileMenuOpen ? -8 : 0,
-                                }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                className="w-[22px] h-[3px] rounded bg-white"
+                                animate={{ rotate: isMobileMenuOpen ? -45 : 0, y: isMobileMenuOpen ? -8 : 0 }}
                             />
                         </div>
                     </motion.button>
@@ -141,97 +176,79 @@ export default function HomePage() {
                         initial={{ opacity: 0, y: 100 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 100 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="fixed top-[80px] left-0 right-0 bottom-0 z-999 bg-white border-t border-[#162a41]/10 shadow-xl"
+                        transition={{ duration: 0.4 }}
+                        className="fixed top-[80px] left-0 right-0 bottom-0 z-[999] bg-white border-t border-[#162a41]/10 shadow-xl flex flex-col"
                     >
-                        <div className="flex flex-col gap-2 p-6 h-full overflow-y-auto md:hidden">
-
-                            {/* Mobile Items */}
-                            {["Home", "Diet Plan", "Workout Plan", "Track Progress"].map(
-                                (item, index) => (
-                                    <button
-                                        key={index}
-                                        onClick={() => {
-                                            router.push(
-                                                item === "Home"
-                                                    ? "/"
-                                                    : "/" + item.toLowerCase().replace(" ", "")
-                                            );
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className="text-left text-[18px] font-semibold text-[#162a41] px-5 py-4 rounded-xl transition-all duration-300 hover:bg-[#162a41]/5 hover:translate-x-1"
-                                    >
-                                        {item}
-                                    </button>
-                                )
-                            )}
-
-                            {menuItems.map((item, index) => (
+                        <div className="flex-1 p-6 overflow-y-auto">
+                            {["Home", "Diet Plan", "Workout Plan", "Track Progress"].map((item, index) => (
                                 <button
                                     key={index}
                                     onClick={() => {
-                                        router.push(item.path);
+                                        router.push(item === "Home" ? "/" : "/" + item.toLowerCase().replace(" ", ""));
                                         setIsMobileMenuOpen(false);
                                     }}
-                                    className="flex items-center gap-4 text-left text-[18px] font-semibold text-[#162a41] 
-               px-5 py-4 rounded-xl hover:bg-[#162a41]/5 hover:translate-x-1 transition-all"
+                                    className="w-full text-left text-[18px] font-semibold text-[#162a41] px-5 py-4 rounded-xl mb-2 transition-all duration-300 hover:bg-[#162a41]/5"
                                 >
-                                    {item.label}
+                                    {item}
                                 </button>
                             ))}
+                        </div>
 
-
-                            {/* Login */}
-                            <div className="mt-5 border-t border-[#162a41]/10 pt-5">
+                        {/* Mobile Auth Footer */}
+                        <div className="p-6 border-t border-gray-100 bg-gray-50">
+                            {isSignedIn ? (
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-4 px-2">
+                                        <div className="w-12 h-12 rounded-full bg-[#162a41] text-white flex items-center justify-center text-lg font-bold shadow-md">
+                                            {displayName.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-[#162a41] text-lg">{displayName}</p>
+                                            <p className="text-sm text-gray-500">{user?.email}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleSignOut}
+                                        className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-bold px-6 py-4 rounded-xl transition-all active:scale-95 border border-red-100"
+                                    >
+                                        <LogOut size={20} />
+                                        Logout
+                                    </button>
+                                </div>
+                            ) : (
                                 <button
                                     onClick={() => {
                                         router.push("/sign-in");
                                         setIsMobileMenuOpen(false);
                                     }}
-                                    className="w-full bg-[#162a41] text-white text-[18px] font-semibold px-6 py-4 rounded-xl transition-all duration-300 hover:bg-[#1a3452] hover:-translate-y-1 hover:shadow-lg"
+                                    className="w-full bg-[#162a41] text-white text-[18px] font-semibold px-6 py-4 rounded-xl shadow-lg active:scale-95 transition-all"
                                 >
-                                    {isSignedIn ? "Logout" : "Login"}
+                                    Login
                                 </button>
-                            </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Carousel */}
+            {/* Carousel (Existing Code) */}
             <div className="relative w-full h-screen overflow-hidden bg-black">
                 {slides.map((slide, index) => (
                     <motion.div
                         key={index}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: currentSlide === index ? 1 : 0 }}
-                        transition={{ duration: 0.8, ease: "easeInOut" }}
-                        className={`absolute inset-0 w-full h-full ${currentSlide === index ? "z-10" : "z-0"
-                            }`}
+                        transition={{ duration: 0.8 }}
+                        className={`absolute inset-0 w-full h-full ${currentSlide === index ? "z-10" : "z-0"}`}
                     >
-                        {/* Background */}
                         {slide.type === "video" ? (
-                            <video
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                className="w-full h-full object-cover"
-                            >
+                            <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                                 <source src={slide.src} type="video/mp4" />
                             </video>
                         ) : (
-                            <img
-                                src={slide.src}
-                                alt={slide.title}
-                                className="w-full h-full object-cover"
-                            />
+                            <img src={slide.src} alt={slide.title} className="w-full h-full object-cover" />
                         )}
-
-                        {/* Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50" />
-
-                        {/* Text */}
                         {currentSlide === index && (
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white max-w-[900px] px-5">
                                 <motion.h1
@@ -242,7 +259,6 @@ export default function HomePage() {
                                 >
                                     {slide.title}
                                 </motion.h1>
-
                                 <motion.p
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -251,7 +267,6 @@ export default function HomePage() {
                                 >
                                     {slide.subtitle}
                                 </motion.p>
-
                                 <motion.button
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -271,30 +286,18 @@ export default function HomePage() {
                     </motion.div>
                 ))}
 
-                {/* Prev */}
-                <button
-                    onClick={prevSlide}
-                    className="absolute left-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-110 transition-all"
-                >
+                <button onClick={prevSlide} className="absolute left-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-110 transition-all">
                     <ChevronLeft size={24} className="text-white" />
                 </button>
-
-                {/* Next */}
-                <button
-                    onClick={nextSlide}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-110 transition-all"
-                >
+                <button onClick={nextSlide} className="absolute right-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-110 transition-all">
                     <ChevronRight size={24} className="text-white" />
                 </button>
-
-                {/* Indicators */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] flex gap-3">
                     {slides.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => goToSlide(index)}
-                            className={`h-3 rounded-full transition-all ${currentSlide === index ? "w-10 bg-white/80" : "w-3 bg-white/40"
-                                }`}
+                            className={`h-3 rounded-full transition-all ${currentSlide === index ? "w-10 bg-white/80" : "w-3 bg-white/40"}`}
                         />
                     ))}
                 </div>
