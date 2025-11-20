@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Diet Plan Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div id="app" class="py-8 px-4">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Personalized Diet Plan Generator</h1>
+                <p class="text-gray-600">Get a customized diet plan based on your lifestyle and goals</p>
+            </div>
+
+            <!-- Form Section -->
+            <div id="formSection" class="bg-white rounded-2xl shadow-xl p-8">
+                <form id="dietForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Basic Information -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Weight (kg) *
+                        </label>
+                        <input type="number" id="weight" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter your weight">
+                        <span class="text-red-500 text-sm mt-1 hidden" id="weightError">Please enter a valid weight</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Height (cm) *
+                        </label>
+                        <input type="number" id="height" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter your height">
+                        <span class="text-red-500 text-sm mt-1 hidden" id="heightError">Please enter a valid height</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Age *
+                        </label>
+                        <input type="number" id="age" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Enter your age">
+                        <span class="text-red-500 text-sm mt-1 hidden" id="ageError">Please enter a valid age</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Gender *
+                        </label>
+                        <select id="gender" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <span class="text-red-500 text-sm mt-1 hidden" id="genderError">Please select your gender</span>
+                    </div>
+
+                    <!-- Lifestyle Information -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Workout Frequency (per week) *
+                        </label>
+                        <select id="workoutFrequency" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select frequency</option>
+                            <option value="0">No exercise</option>
+                            <option value="1-2">1-2 times</option>
+                            <option value="3-4">3-4 times</option>
+                            <option value="5-6">5-6 times</option>
+                            <option value="7">Daily</option>
+                        </select>
+                        <span class="text-red-500 text-sm mt-1 hidden" id="workoutFrequencyError">Please select workout frequency</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Daily Activity Level *
+                        </label>
+                        <select id="activityLevel" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select activity level</option>
+                            <option value="sedentary">Sedentary (desk job)</option>
+                            <option value="lightly_active">Lightly Active (light movement)</option>
+                            <option value="moderately_active">Moderately Active (regular movement)</option>
+                            <option value="very_active">Very Active (physical job)</option>
+                            <option value="extremely_active">Extremely Active (athlete)</option>
+                        </select>
+                        <span class="text-red-500 text-sm mt-1 hidden" id="activityLevelError">Please select your activity level</span>
+                    </div>
+
+                    <!-- Dietary Information -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Dietary Preference *
+                        </label>
+                        <select id="dietaryPreference" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select preference</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="non-vegetarian">Non-Vegetarian</option>
+                            <option value="eggetarian">Eggetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="pescatarian">Pescatarian</option>
+                        </select>
+                        <span class="text-red-500 text-sm mt-1 hidden" id="dietaryPreferenceError">Please select dietary preference</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Fitness Goal *
+                        </label>
+                        <select id="goal" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select goal</option>
+                            <option value="weight_loss">Weight Loss</option>
+                            <option value="muscle_gain">Muscle Gain</option>
+                            <option value="weight_maintenance">Weight Maintenance</option>
+                            <option value="endurance">Improve Endurance</option>
+                            <option value="general_health">General Health</option>
+                        </select>
+                        <span class="text-red-500 text-sm mt-1 hidden" id="goalError">Please select your fitness goal</span>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Allergies (if any)
+                        </label>
+                        <input type="text" id="allergies"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="e.g., nuts, dairy, gluten">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Medical Conditions (if any)
+                        </label>
+                        <input type="text" id="medicalConditions"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="e.g., diabetes, hypertension">
+                    </div>
+                </form>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" id="generateBtn"
+                            class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        Generate Diet Plan
+                    </button>
+                    <button type="button" id="resetBtn"
+                            class="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Diet Plan Section (Hidden initially) -->
+            <div id="dietPlanSection" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Your Personalized Diet Plan</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Calories</p>
+                            <p class="font-semibold text-blue-600" id="calorieTarget">-</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Protein</p>
+                            <p class="font-semibold text-green-600" id="proteinTarget">-</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Carbs</p>
+                            <p class="font-semibold text-yellow-600" id="carbTarget">-</p>
+                        </div>
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <p class="text-sm text-gray-600">Fats</p>
+                            <p class="font-semibold text-purple-600" id="fatTarget">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">🌅 Breakfast</h3>
+                        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg" id="breakfast">-</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">☀️ Lunch</h3>
+                        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg" id="lunch">-</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">🌙 Dinner</h3>
+                        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg" id="dinner">-</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">🍎 Snacks</h3>
+                        <p class="text-gray-600 bg-gray-50 p-4 rounded-lg" id="snacks">-</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3">💡 Nutrition Tips</h3>
+                        <ul class="space-y-2" id="nutritionTips">
+                            <li class="text-gray-600 bg-blue-50 p-3 rounded-lg flex items-start">
+                                <span class="text-blue-600 mr-2">•</span>
+                                <span>Tip will appear here</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" id="newPlanBtn"
+                            class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        Create New Plan
+                    </button>
+                    <button type="button" onclick="window.print()"
+                            class="px-6 py-3 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 transition-colors">
+                        Print Plan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingSection" class="bg-white rounded-2xl shadow-xl p-8 hidden">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p class="text-gray-600">Generating your personalized diet plan...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            const fields = ['weight', 'height', 'age', 'gender', 'workoutFrequency', 'dietaryPreference', 'goal', 'activityLevel'];
+            
+            fields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(field + 'Error');
+                
+                if (!input.value || (field === 'weight' && parseFloat(input.value) <= 0) || 
+                    (field === 'height' && parseFloat(input.value) <= 0) ||
+                    (field === 'age' && (parseInt(input.value) <= 0 || parseInt(input.value) > 120))) {
+                    error.classList.remove('hidden');
+                    isValid = false;
+                } else {
+                    error.classList.add('hidden');
+                }
+            });
+            
+            return isValid;
+        }
+
+        // Generate diet plan
+        async function generateDietPlan() {
+            if (!validateForm()) return;
+
+            // Show loading, hide form
+            document.getElementById('formSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+
+            // Get form data
+            const userData = {
+                weight: document.getElementById('weight').value,
+                height: document.getElementById('height').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                workoutFrequency: document.getElementById('workoutFrequency').value,
+                dietaryPreference: document.getElementById('dietaryPreference').value,
+                goal: document.getElementById('goal').value,
+                activityLevel: document.getElementById('activityLevel').value,
+                allergies: document.getElementById('allergies').value,
+                medicalConditions: document.getElementById('medicalConditions').value,
+            };
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate diet plan based on user data
+            const dietPlan = generateDietPlanData(userData);
+
+            // Display the diet plan
+            displayDietPlan(dietPlan);
+        }
+
+        // Generate diet plan data based on user input
+        function generateDietPlanData(userData) {
+            const weight = parseFloat(userData.weight);
+            const height = parseFloat(userData.height);
+            const age = parseInt(userData.age);
+            const goal = userData.goal;
+            const preference = userData.dietaryPreference;
+            const activity = userData.activityLevel;
+
+            // Calculate BMR and calorie needs (simplified)
+            let bmr;
+            if (userData.gender === 'male') {
+                bmr = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                bmr = 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+
+            // Activity multiplier
+            const activityMultipliers = {
+                'sedentary': 1.2,
+                'lightly_active': 1.375,
+                'moderately_active': 1.55,
+                'very_active': 1.725,
+                'extremely_active': 1.9
+            };
+
+            let calories = Math.round(bmr * activityMultipliers[activity]);
+
+            // Adjust for goals
+            if (goal === 'weight_loss') calories -= 500;
+            else if (goal === 'muscle_gain') calories += 300;
+
+            // Calculate macros
+            const protein = Math.round(weight * 1.6); // 1.6g per kg
+            const fat = Math.round(calories * 0.25 / 9); // 25% of calories from fat
+            const carbs = Math.round((calories - (protein * 4) - (fat * 9)) / 4);
+
+            // Generate meals based on dietary preference
+            const meals = generateMeals(preference, goal, calories);
+
+            return {
+                meals,
+                nutritionTips: [
+                    "Drink at least 8 glasses of water daily",
+                    "Eat protein with every meal to maintain muscle mass",
+                    "Include healthy fats like avocado, nuts, and olive oil",
+                    "Choose whole grains over refined grains",
+                    "Eat a variety of colorful fruits and vegetables"
+                ],
+                calorieTarget: `${calories} calories per day`,
+                proteinTarget: `${protein}g per day`,
+                carbTarget: `${carbs}g per day`,
+                fatTarget: `${fat}g per day`
+            };
+        }
+
+        // Generate meals based on dietary preference
+        function generateMeals(preference, goal, calories) {
+            const mealPlans = {
+                'vegetarian': {
+                    breakfast: "Oatmeal with berries and nuts (1 bowl) + Greek yogurt (1 cup) + Green tea",
+                    lunch: "Chickpea curry with brown rice (1 cup) + Mixed vegetable salad + Tofu (100g)",
+                    dinner: "Quinoa bowl with roasted vegetables (1.5 cups) + Lentils (1 cup) + Paneer (100g)",
+                    snacks: "Apple slices with almond butter (2 tbsp) + Mixed nuts (handful) + Protein shake"
+                },
+                'non-vegetarian': {
+                    breakfast: "Egg omelette (3 eggs) + Whole wheat toast (2 slices) + Greek yogurt (1 cup)",
+                    lunch: "Grilled chicken salad (150g) + Brown rice (1 cup) + Mixed vegetables",
+                    dinner: "Baked salmon (150g) + Sweet potato (1 medium) + Steamed broccoli",
+                    snacks: "Protein shake + Hard-boiled eggs (2) + Mixed nuts"
+                },
+                'eggetarian': {
+                    breakfast: "Egg omelette (2 eggs) + Whole wheat toast + Milk (1 glass)",
+                    lunch: "Egg curry with brown rice + Mixed vegetable salad",
+                    dinner: "Quinoa bowl with vegetables + Scrambled eggs (2) + Greek yogurt",
+                    snacks: "Boiled eggs + Fruit salad + Protein shake"
+                },
+                'vegan': {
+                    breakfast: "Oatmeal with almond milk + Berries + Chia seeds + Green tea",
+                    lunch: "Lentil curry with brown rice + Large mixed salad",
+                    dinner: "Tofu stir-fry with vegetables + Quinoa (1.5 cups)",
+                    snacks: "Hummus with vegetable sticks + Mixed nuts + Smoothie"
+                },
+                'pescatarian': {
+                    breakfast: "Greek yogurt with berries + Whole wheat toast + Green tea",
+                    lunch: "Grilled fish salad (150g) + Brown rice + Mixed vegetables",
+                    dinner: "Baked salmon (150g) + Sweet potato + Steamed vegetables",
+                    snacks: "Protein shake + Mixed nuts + Fruit"
+                }
+            };
+
+            return mealPlans[preference] || mealPlans['vegetarian'];
+        }
+
+        // Display diet plan
+        function displayDietPlan(dietPlan) {
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('dietPlanSection').classList.remove('hidden');
+
+            document.getElementById('calorieTarget').textContent = dietPlan.calorieTarget;
+            document.getElementById('proteinTarget').textContent = dietPlan.proteinTarget;
+            document.getElementById('carbTarget').textContent = dietPlan.carbTarget;
+            document.getElementById('fatTarget').textContent = dietPlan.fatTarget;
+
+            document.getElementById('breakfast').textContent = dietPlan.meals.breakfast;
+            document.getElementById('lunch').textContent = dietPlan.meals.lunch;
+            document.getElementById('dinner').textContent = dietPlan.meals.dinner;
+            document.getElementById('snacks').textContent = dietPlan.meals.snacks;
+
+            const tipsContainer = document.getElementById('nutritionTips');
+            tipsContainer.innerHTML = dietPlan.nutritionTips.map(tip => `
+                <li class="text-gray-600 bg-blue-50 p-3 rounded-lg flex items-start">
+                    <span class="text-blue-600 mr-2">•</span>
+                    <span>${tip}</span>
+                </li>
+            `).join('');
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('dietForm').reset();
+            document.getElementById('dietPlanSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('formSection').classList.remove('hidden');
+            
+            // Hide all error messages
+            document.querySelectorAll('[id$="Error"]').forEach(error => {
+                error.classList.add('hidden');
+            });
+        }
+
+        // Event listeners
+        document.getElementById('generateBtn').addEventListener('click', generateDietPlan);
+        document.getElementById('resetBtn').addEventListener('click', resetForm);
+        document.getElementById('newPlanBtn').addEventListener('click', resetForm);
+
+        // Clear errors on input
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', function() {
+                const errorId = this.id + 'Error';
+                const errorElement = document.getElementById(errorId);
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
