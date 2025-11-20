@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { menuItems, slides } from "@/lib/constant";
-import { useCurrentUser } from "@/lib/use-current-user";
+import { useCurrentUser } from "@/lib/hooks/use-current-user";
 
 export default function HomePage() {
     const [currentSlide, setCurrentSlide] = useState(0);

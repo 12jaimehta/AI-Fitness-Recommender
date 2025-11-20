@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
 import dynamic from "next/dynamic";
-import { DietPlanFormData } from "../../lib/validation";
+import { DietPlanFormData } from "../../lib/validation/dietPlanSchema";
 import UnifiedNavbar from "../../components/shared/UnifiedNavbar";
 import UnifiedFooter from "../../components/shared/UnifiedFooter";
 import PlanActions from "../../components/diet/PlanActions";

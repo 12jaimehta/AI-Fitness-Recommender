@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { databaseService, UserProfile } from "@/lib/service/progress-database";
+import { Loader2, Check } from "lucide-react";
 
 interface UserProfileSetupProps {
   user: any;
@@ -40,6 +41,11 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
     'Sports Performance'
   ];
 
+  // Shared styling classes
+  const labelClass = "block text-sm font-semibold text-[#162a41] mb-2";
+  const inputClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base bg-white transition-all duration-200 focus:border-[#162a41] focus:ring-2 focus:ring-[#162a41]/10 outline-none";
+  const selectClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base bg-white transition-all duration-200 focus:border-[#162a41] outline-none cursor-pointer appearance-none";
+
   const handleSubmit = async () => {
     setLoading(true);
     
@@ -59,13 +65,13 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
       const result = await databaseService.createUserProfile(profileData);
       
       if (result) {
-        // Also create initial weight entry
+        // Also create initial weight entry automatically
         if (profile.initial_weight) {
           await databaseService.addWeightEntry({
             user_id: user.id,
             weight: parseFloat(profile.initial_weight),
             date: new Date().toISOString().split('T')[0],
-            notes: 'Initial weight'
+            notes: 'Initial starting weight'
           });
         }
 
@@ -93,359 +99,212 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.8)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: '20px'
-    }}>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-5 backdrop-blur-sm">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        style={{
-          background: '#ffffff',
-          borderRadius: '20px',
-          padding: '40px',
-          width: '100%',
-          maxWidth: '500px',
-          maxHeight: '90vh',
-          overflowY: 'auto'
-        }}
+        className="w-full max-w-[500px] max-h-[90vh] overflow-y-auto bg-white rounded-[20px] p-8 md:p-10 shadow-2xl"
       >
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h2 style={{
-            fontSize: '28px',
-            fontWeight: '800',
-            color: '#162a41',
-            margin: '0 0 8px'
-          }}>
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-extrabold text-[#162a41] mb-2 tracking-tight">
             Welcome to fyteAI!
           </h2>
-          <p style={{
-            fontSize: '16px',
-            color: '#6b7280',
-            margin: 0
-          }}>
-            Let's set up your profile to get started
+          <p className="text-gray-500 text-base">
+            Let's set up your profile to personalize your experience.
           </p>
         </div>
 
-        {/* Step 1: Basic Info */}
-        {step === 1 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              color: '#162a41',
-              marginBottom: '24px'
-            }}>
-              Basic Information
-            </h3>
+        <AnimatePresence mode="wait">
+          {/* Step 1: Basic Info */}
+          {step === 1 && (
+            <motion.div
+              key="step1"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col gap-5"
+            >
+              <h3 className="text-xl font-bold text-[#162a41] border-b border-gray-100 pb-2">
+                Basic Information
+              </h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#162a41',
-                  marginBottom: '8px'
-                }}>
-                  Full Name
-                </label>
+                <label className={labelClass}>Full Name</label>
                 <input
                   type="text"
                   value={profile.full_name}
                   onChange={(e) => updateProfile('full_name', e.target.value)}
                   placeholder="Enter your full name"
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(22, 42, 65, 0.2)',
-                    fontSize: '16px'
-                  }}
+                  className={inputClass}
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Age
-                  </label>
+                  <label className={labelClass}>Age</label>
                   <input
                     type="number"
                     value={profile.age}
                     onChange={(e) => updateProfile('age', e.target.value)}
                     placeholder="Age"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px'
-                    }}
+                    className={inputClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Gender
-                  </label>
-                  <select
-                    value={profile.gender}
-                    onChange={(e) => updateProfile('gender', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px',
-                      background: '#ffffff'
-                    }}
-                  >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
+                  <label className={labelClass}>Gender</label>
+                  <div className="relative">
+                    <select
+                      value={profile.gender}
+                      onChange={(e) => updateProfile('gender', e.target.value)}
+                      className={selectClass}
+                    >
+                      <option value="">Select</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Height (cm)
-                  </label>
+                  <label className={labelClass}>Height (cm)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={profile.height}
                     onChange={(e) => updateProfile('height', e.target.value)}
-                    placeholder="Height"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px'
-                    }}
+                    placeholder="e.g. 175"
+                    className={inputClass}
                   />
                 </div>
 
                 <div>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    color: '#162a41',
-                    marginBottom: '8px'
-                  }}>
-                    Weight (kg)
-                  </label>
+                  <label className={labelClass}>Weight (kg)</label>
                   <input
                     type="number"
                     step="0.1"
                     value={profile.initial_weight}
                     onChange={(e) => updateProfile('initial_weight', e.target.value)}
-                    placeholder="Current weight"
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(22, 42, 65, 0.2)',
-                      fontSize: '16px'
-                    }}
+                    placeholder="e.g. 70"
+                    className={inputClass}
                   />
                 </div>
               </div>
-            </div>
 
-            <button
-              onClick={() => setStep(2)}
-              disabled={!profile.full_name || !profile.initial_weight}
-              style={{
-                width: '100%',
-                padding: '16px',
-                borderRadius: '12px',
-                border: 'none',
-                background: '#162a41',
-                color: '#ffffff',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                marginTop: '32px',
-                opacity: (!profile.full_name || !profile.initial_weight) ? 0.6 : 1
-              }}
+              <button
+                onClick={() => setStep(2)}
+                disabled={!profile.full_name || !profile.initial_weight}
+                className="mt-6 w-full p-4 rounded-xl bg-[#162a41] text-white font-bold text-base transition-all hover:bg-[#1e3a5f] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+              >
+                Continue
+              </button>
+            </motion.div>
+          )}
+
+          {/* Step 2: Fitness Level & Goals */}
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="flex flex-col gap-6"
             >
-              Continue
-            </button>
-          </motion.div>
-        )}
+              <h3 className="text-xl font-bold text-[#162a41] border-b border-gray-100 pb-2">
+                Fitness & Goals
+              </h3>
 
-        {/* Step 2: Fitness Level & Goals */}
-        {step === 2 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-          >
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '700',
-              color: '#162a41',
-              marginBottom: '24px'
-            }}>
-              Fitness & Goals
-            </h3>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              {/* Fitness Level Selection */}
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#162a41',
-                  marginBottom: '12px'
-                }}>
-                  Fitness Level
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <label className={labelClass}>Fitness Level</label>
+                <div className="flex flex-col gap-3">
                   {fitnessLevels.map(level => (
                     <button
                       key={level.value}
                       type="button"
                       onClick={() => updateProfile('fitness_level', level.value)}
-                      style={{
-                        padding: '16px',
-                        borderRadius: '12px',
-                        border: `2px solid ${
-                          profile.fitness_level === level.value ? '#162a41' : 'rgba(22, 42, 65, 0.2)'
-                        }`,
-                        background: profile.fitness_level === level.value ? 'rgba(22, 42, 65, 0.1)' : 'transparent',
-                        color: '#162a41',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        textAlign: 'left'
-                      }}
+                      className={`
+                        w-full p-4 rounded-xl border-2 text-left transition-all duration-200 flex items-center justify-between
+                        ${profile.fitness_level === level.value 
+                          ? 'border-[#162a41] bg-[#162a41]/5 text-[#162a41]' 
+                          : 'border-gray-100 bg-white text-gray-600 hover:border-gray-300'}
+                      `}
                     >
-                      {level.label}
+                      <span className="font-semibold">{level.label}</span>
+                      {profile.fitness_level === level.value && (
+                        <Check size={18} className="text-[#162a41]" />
+                      )}
                     </button>
                   ))}
                 </div>
               </div>
 
+              {/* Goals Selection */}
               <div>
-                <label style={{
-                  display: 'block',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#162a41',
-                  marginBottom: '12px'
-                }}>
-                  Your Goals (Select all that apply)
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {goalOptions.map(goal => (
-                    <label
-                      key={goal}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: `1px solid ${
-                          profile.goals.includes(goal) ? '#162a41' : 'rgba(22, 42, 65, 0.2)'
-                        }`,
-                        background: profile.goals.includes(goal) ? 'rgba(22, 42, 65, 0.1)' : 'transparent',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={profile.goals.includes(goal)}
-                        onChange={() => toggleGoal(goal)}
-                        style={{ display: 'none' }}
-                      />
-                      <span style={{
-                        color: '#162a41',
-                        fontWeight: '500'
-                      }}>
-                        {goal}
-                      </span>
-                    </label>
-                  ))}
+                <label className={labelClass}>Your Goals (Select all that apply)</label>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {goalOptions.map(goal => {
+                    const isSelected = profile.goals.includes(goal);
+                    return (
+                      <label
+                        key={goal}
+                        className={`
+                          flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all duration-200
+                          ${isSelected 
+                            ? 'border-[#162a41] bg-[#162a41]/5 shadow-sm' 
+                            : 'border-gray-200 bg-white hover:bg-gray-50'}
+                        `}
+                      >
+                        <div className={`
+                          w-5 h-5 rounded border flex items-center justify-center transition-colors
+                          ${isSelected ? 'bg-[#162a41] border-[#162a41]' : 'border-gray-300 bg-white'}
+                        `}>
+                          {isSelected && <Check size={12} className="text-white" />}
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleGoal(goal)}
+                          className="hidden"
+                        />
+                        <span className={`font-medium ${isSelected ? 'text-[#162a41]' : 'text-gray-600'}`}>
+                          {goal}
+                        </span>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-              <button
-                onClick={() => setStep(1)}
-                style={{
-                  flex: 1,
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(22, 42, 65, 0.2)',
-                  background: 'transparent',
-                  color: '#162a41',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                Back
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={loading || !profile.fitness_level || profile.goals.length === 0}
-                style={{
-                  flex: 1,
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#162a41',
-                  color: '#ffffff',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  opacity: (loading || !profile.fitness_level || profile.goals.length === 0) ? 0.6 : 1
-                }}
-              >
-                {loading ? 'Setting up...' : 'Complete Setup'}
-              </button>
-            </div>
-          </motion.div>
-        )}
+              {/* Action Buttons */}
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => setStep(1)}
+                  className="flex-1 p-4 rounded-xl border border-[#162a41]/20 text-[#162a41] font-bold hover:bg-[#162a41]/5 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading || !profile.fitness_level || profile.goals.length === 0}
+                  className="flex-1 p-4 rounded-xl bg-[#162a41] text-white font-bold transition-all hover:bg-[#1e3a5f] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={20} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    'Complete Setup'
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );

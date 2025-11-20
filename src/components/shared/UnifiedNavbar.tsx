@@ -41,7 +41,7 @@ export default function Navbar() {
   }
 
   const handleSignOut = async () => {
-    const supabase = (await import("@/lib/supabase-client")).createClient();
+    const supabase = (await import("@/lib/supabase/supabase-client")).createClient();
     await supabase.auth.signOut();
     router.refresh();
   };

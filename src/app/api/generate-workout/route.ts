@@ -1,6 +1,6 @@
+import { WorkoutPlanFormData, workoutPlanSchema } from "@/lib/validation/workoutPlanSchema";
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { workoutPlanSchema, type WorkoutPlanFormData } from "@/lib/validation";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,

@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
-import { useCurrentUser } from "@/lib/use-current-user";
-import { createClient } from "@/lib/supabase-client";
+import { useCurrentUser } from "@/lib/hooks/use-current-user";
+import { createClient } from "@/lib/supabase/supabase-client";
 
 export default function AuthHeader() {
   const { isSignedIn, user } = useCurrentUser();

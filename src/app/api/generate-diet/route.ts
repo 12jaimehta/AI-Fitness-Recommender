@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { dietPlanSchema, type DietPlanFormData } from "@/lib/validation";
+import { dietPlanSchema, type DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,

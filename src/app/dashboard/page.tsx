@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Activity } from "lucide-react";
-import { useCurrentUser } from "@/lib/use-current-user";
+import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import UnifiedNavbar from "@/components/shared/UnifiedNavbar";
 import UnifiedFooter from "@/components/shared/UnifiedFooter";
 
