@@ -54,8 +54,8 @@ export default function ContactUs() {
       icon: Mail,
       title: "Email Support",
       description: "Send us an email and we'll respond within 24 hours",
-      contact: "support@dietplan.com",
-      action: "mailto:support@dietplan.com"
+      contact: "jai.fyteAI@gmail.com",
+      action: "mailto:jai.fyteAI@gmail.com"
     },
     {
       icon: Phone,

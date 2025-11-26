@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User, Activity, Target, Save, X, Mail } from "lucide-react";
-import { cn } from "@/lib/utils"; // Assuming this utility exists
+
 
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
@@ -96,7 +96,7 @@ export default function ProfilePage() {
         const goalsString = Array.isArray(profileData.goals) ? profileData.goals.join(', ') : '';
         setFormState({
             ...profileData,
-            goals: goalsString,
+            goals: goalsString as any,
         });
     }
     setIsEditing(false);
@@ -170,7 +170,7 @@ export default function ProfilePage() {
 
   // --- Component Rendering ---
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50">
       {/* Assuming Navbar exists */}
       <UnifiedNavbar /> 
       <div className="pt-32 p-4 md:p-8">
@@ -234,7 +234,7 @@ export default function ProfilePage() {
                   label="Email (Read-Only)"
                   name="email"
                   type="email"
-                  value={profileData.email || ''}
+                  value={profileData?.email || ''}
                   disabled={true} // Email is generally non-editable
                   icon={<Mail size={18} />}
                   className="bg-gray-100 cursor-not-allowed"

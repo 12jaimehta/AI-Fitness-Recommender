@@ -24,9 +24,6 @@ export default function UnifiedFooter() {
             className="min-w-[250px]"
           >
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur">
-                <Heart size={28} />
-              </div>
               <h3 className="text-2xl font-extrabold">fyteAI</h3>
             </div>
 
@@ -38,7 +35,7 @@ export default function UnifiedFooter() {
             {/* Contact Info */}
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 text-sm opacity-80">
-                <Mail size={16} /> support@fyteAI.com
+                <Mail size={16} /> jai.fyteAI@gmail.com
               </div>
               <div className="flex items-center gap-2 text-sm opacity-80">
                 <Phone size={16} /> 1-800-fyteAI

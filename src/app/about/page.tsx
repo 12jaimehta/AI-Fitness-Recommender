@@ -504,7 +504,7 @@ export default function AboutUs() {
               color: '#6b7280'
             }}>
               <Mail size={18} />
-              <span>support@dietplan.com</span>
+              <span>jai.fyteAI@gmail.com</span>
             </div>
             <div style={{
               display: 'flex',

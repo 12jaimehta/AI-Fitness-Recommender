@@ -177,7 +177,7 @@ export default function ProgressPage() {
   
   // 3. Main Dashboard Render
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50">
       <UnifiedNavbar />
 
       {/* Hero Header - Sleek Dark Theme using PRIMARY_ACCENT */}
