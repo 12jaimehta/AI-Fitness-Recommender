@@ -3,7 +3,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, ArrowRight, Sparkles } from "lucide-react";
-import MotionButton from "@/components/ui/motionButton";
+import MotionButton from "@/components/ui/MotionButton";
 
 interface FormNavigationProps {
   currentStep: number;

@@ -60,6 +60,7 @@ export const navItems = [
   { name: "Diet Plan", href: "/diet" },
   { name: "Workout Plan", href: "/workout" },
   { name: "Progress", href: "/progress" },
+  { name: "Fyte Connect", href: "/fyte-connect" },
 ];
 export const menuItems = [
   { label: "Help", path: "/help" },

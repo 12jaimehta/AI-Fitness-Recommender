@@ -9,14 +9,14 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { signUpSchema, SignUpForm } from "@/lib/validation/signUpSchema";
 
-import Tabs from "@/components/ui/tabs";
+import Tabs from "@/components/ui/Tabs";
 import Input from "@/components/ui/input";
 import PasswordInput from "@/components/ui/passwordInput";
 
 import AuthLeftSection from "@/components/auth/AuthLeftSection";
 import PasswordStrength from "@/components/auth/PasswordStrength";
 import UnifiedFooter from "@/components/shared/UnifiedFooter";
-import MotionButton from "@/components/ui/motionButton";
+import MotionButton from "@/components/ui/MotionButton";
 
 export default function SignUpPage() {
   const router = useRouter();
