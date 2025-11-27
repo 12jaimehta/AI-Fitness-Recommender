@@ -88,7 +88,7 @@ export default function CreatorPlansPage() {
                 className="w-16 h-16 rounded-full object-cover border border-white/20"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-[#162a41] flex items-center justify-center text-2xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-[#282828] flex items-center justify-center text-2xl font-bold">
                 {creator.full_name.charAt(0)}
               </div>
             )}
@@ -153,7 +153,7 @@ export default function CreatorPlansPage() {
                     onClick={() =>
                       router.push(`/fyte-connect/checkout/${plan.id}`)
                     }
-                    className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-[#162a41] hover:bg-[#1d3b61]"
+                    className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl bg-[#282828] hover:bg-[#1d3b61]"
                   >
                     View & Buy <ArrowRight className="w-3 h-3" />
                   </button>

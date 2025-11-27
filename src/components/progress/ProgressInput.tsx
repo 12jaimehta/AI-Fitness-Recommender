@@ -68,8 +68,8 @@ export default function ProgressInput({ isOpen, onClose, onSubmit, inputType }: 
   };
 
   // Shared class strings for cleaner JSX
-  const inputLabelClass = "block text-sm font-semibold text-[#162a41] mb-2";
-  const inputFieldClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base transition-all duration-300 focus:border-[#162a41] focus:ring-2 focus:ring-[#162a41]/10 outline-none bg-white";
+  const inputLabelClass = "block text-sm font-semibold text-[#282828] mb-2";
+  const inputFieldClass = "w-full p-3 rounded-xl border border-[#282828]/20 text-base transition-all duration-300 focus:border-[#282828] focus:ring-2 focus:ring-[#282828]/10 outline-none bg-white";
 
   if (!isOpen) return null;
 
@@ -93,11 +93,11 @@ export default function ProgressInput({ isOpen, onClose, onSubmit, inputType }: 
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
-              {inputType === 'weight' && <Weight size={24} className="text-[#162a41]" />}
-              {inputType === 'workout' && <Activity size={24} className="text-[#162a41]" />}
-              {inputType === 'goal' && <Target size={24} className="text-[#162a41]" />}
+              {inputType === 'weight' && <Weight size={24} className="text-[#282828]" />}
+              {inputType === 'workout' && <Activity size={24} className="text-[#282828]" />}
+              {inputType === 'goal' && <Target size={24} className="text-[#282828]" />}
 
-              <h2 className="text-2xl font-bold text-[#162a41] m-0">
+              <h2 className="text-2xl font-bold text-[#282828] m-0">
                 {inputType === 'weight' && 'Log Weight'}
                 {inputType === 'workout' && 'Add Workout'}
                 {inputType === 'goal' && 'Set New Goal'}
@@ -106,7 +106,7 @@ export default function ProgressInput({ isOpen, onClose, onSubmit, inputType }: 
 
             <button
               onClick={onClose}
-              className="bg-transparent border-none cursor-pointer p-2 rounded-lg transition-all duration-300 hover:bg-[#162a41]/10"
+              className="bg-transparent border-none cursor-pointer p-2 rounded-lg transition-all duration-300 hover:bg-[#282828]/10"
             >
               <X size={20} className="text-gray-500" />
             </button>
@@ -241,7 +241,7 @@ export default function ProgressInput({ isOpen, onClose, onSubmit, inputType }: 
                     required
                     value={goalUnits[formData.goalCategory as keyof typeof goalUnits]}
                     readOnly
-                    className="w-full p-3 rounded-xl border border-[#162a41]/20 text-base bg-[#162a41]/5 text-gray-500 outline-none"
+                    className="w-full p-3 rounded-xl border border-[#282828]/20 text-base bg-[#282828]/5 text-gray-500 outline-none"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function ProgressInput({ isOpen, onClose, onSubmit, inputType }: 
                 type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full p-4 rounded-xl border-none bg-[#162a41] text-white text-base font-semibold cursor-pointer transition-colors duration-300 hover:bg-[#1e3a5f]"
+                className="w-full p-4 rounded-xl border-none bg-[#282828] text-white text-base font-semibold cursor-pointer transition-colors duration-300 hover:bg-[#1e3a5f]"
               >
                 {inputType === 'weight' && 'Log Weight'}
                 {inputType === 'workout' && 'Add Workout'}

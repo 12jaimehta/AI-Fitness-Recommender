@@ -63,7 +63,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#162a41_0%,#1e3a5f_100%)] relative overflow-hidden">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#282828_0%,#1e3a5f_100%)] relative overflow-hidden">
       <div className="relative z-10 flex flex-col min-h-screen">
         <header className="py-8">
           <div className="max-w-[1200px] mx-auto px-8 flex justify-between items-center">
@@ -83,7 +83,7 @@ export default function SignUpPage() {
 
             <div className="bg-white p-10 rounded-3xl shadow-xl border border-white/30">
               <div className="text-center mb-8">
-                <h2 className="text-3xl font-extrabold text-[#162a41]">Create Your Account</h2>
+                <h2 className="text-3xl font-extrabold text-[#282828]">Create Your Account</h2>
                 <p className="text-gray-600">Join fyteAI and transform your fitness journey</p>
               </div>
 
@@ -122,7 +122,7 @@ export default function SignUpPage() {
 
               <div className="mt-10 pt-4 border-t border-gray-200 text-center">
                 <p className="text-xs text-gray-400">By creating an account, you agree to our Terms and Privacy Policy.</p>
-                <p className="text-sm text-gray-600 mt-4 ">Already have an account? <button onClick={() => router.push("/sign-in")} className="font-semibold text-[#162a41] underline underline-offset-2 hover:text-[#1e3a5f] cursor-pointer">Sign in here</button></p>
+                <p className="text-sm text-gray-600 mt-4 ">Already have an account? <button onClick={() => router.push("/sign-in")} className="font-semibold text-[#282828] underline underline-offset-2 hover:text-[#1e3a5f] cursor-pointer">Sign in here</button></p>
               </div>
             </div>
           </div>

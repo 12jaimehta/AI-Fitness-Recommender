@@ -24,13 +24,13 @@ const faqCategories = [
     id: 'general',
     name: 'General',
     icon: HelpCircle,
-    color: '#162a41'
+    color: '#282828'
   },
   {
     id: 'account',
     name: 'Account',
     icon: User,
-    color: '#162a41'
+    color: '#282828'
   },
   {
     id: 'diet',
@@ -54,7 +54,7 @@ const faqCategories = [
     id: 'technical',
     name: 'Technical',
     icon: Settings,
-    color: '#162a41'
+    color: '#282828'
   }
 ];
 
@@ -227,7 +227,7 @@ export default function FAQs() {
               Help
             </Link>
             <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#162a41' }}>FAQs</span>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>FAQs</span>
           </div>
         </motion.div>
 
@@ -247,7 +247,7 @@ export default function FAQs() {
             justifyContent: 'center',
             width: '80px',
             height: '80px',
-            background: '#162a41',
+            background: '#282828',
             borderRadius: '20px',
             marginBottom: '20px'
           }}>
@@ -256,7 +256,7 @@ export default function FAQs() {
           <h1 style={{
             fontSize: '48px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px',
             margin: 0
           }}>
@@ -307,7 +307,7 @@ export default function FAQs() {
                 background: 'rgba(22, 42, 65, 0.05)',
                 border: '2px solid rgba(22, 42, 65, 0.1)',
                 borderRadius: '12px',
-                color: '#162a41',
+                color: '#282828',
                 fontSize: '16px',
                 outline: 'none',
                 transition: 'all 0.3s ease'
@@ -354,13 +354,13 @@ export default function FAQs() {
                     gap: '8px',
                     padding: '12px 20px',
                     background: selectedCategory === category.id 
-                      ? '#162a41' 
+                      ? '#282828' 
                       : 'rgba(22, 42, 65, 0.05)',
                     border: selectedCategory === category.id 
-                      ? '2px solid #162a41' 
+                      ? '2px solid #282828' 
                       : '2px solid rgba(22, 42, 65, 0.1)',
                     borderRadius: '25px',
-                    color: selectedCategory === category.id ? '#ffffff' : '#162a41',
+                    color: selectedCategory === category.id ? '#ffffff' : '#282828',
                     fontSize: '14px',
                     fontWeight: '600',
                     cursor: 'pointer',
@@ -404,7 +404,7 @@ export default function FAQs() {
                 <h3 style={{
                   fontSize: '20px',
                   fontWeight: '600',
-                  color: '#162a41',
+                  color: '#282828',
                   marginTop: '16px'
                 }}>
                   No results found
@@ -452,7 +452,7 @@ export default function FAQs() {
                       <h3 style={{
                         fontSize: '16px',
                         fontWeight: '600',
-                        color: '#162a41',
+                        color: '#282828',
                         margin: 0,
                         flex: 1,
                         paddingRight: '16px'
@@ -463,7 +463,7 @@ export default function FAQs() {
                         animate={{ rotate: expandedItems[`${selectedCategory}-${index}`] ? 180 : 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <ChevronDown size={20} color="#162a41" />
+                        <ChevronDown size={20} color="#282828" />
                       </motion.div>
                     </motion.button>
                     
@@ -518,7 +518,7 @@ export default function FAQs() {
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px'
           }}>
             Still have questions?
@@ -534,7 +534,7 @@ export default function FAQs() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: '#162a41',
+            background: '#282828',
             color: '#ffffff',
             padding: '12px 24px',
             borderRadius: '8px',

@@ -11,7 +11,7 @@ const config: Config = {
     extend: {
       colors: {
         fyte: {
-          900: "#162a41",
+          900: "#282828",
           800: "#1e3a5f",
         }
       },
@@ -22,7 +22,7 @@ const config: Config = {
         "card": "0 20px 60px rgba(0,0,0,0.2)",
       },
       backgroundImage: {
-        "fyte-gradient": "linear-gradient(135deg,#162a41_0%,#1e3a5f_100%)",
+        "fyte-gradient": "linear-gradient(135deg,#282828_0%,#1e3a5f_100%)",
       }
     }
   },

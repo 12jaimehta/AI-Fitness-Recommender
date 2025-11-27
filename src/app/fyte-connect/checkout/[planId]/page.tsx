@@ -197,7 +197,7 @@ export default function PlanCheckoutPage() {
                   ${
                     purchasing
                       ? "bg-white/10 text-white/40 cursor-not-allowed"
-                      : "bg-[#162a41] hover:bg-[#1d3b61]"
+                      : "bg-[#282828] hover:bg-[#1d3b61]"
                   }`}
               >
                 {purchasing ? "Processing..." : "Buy Plan Securely"}
@@ -206,7 +206,7 @@ export default function PlanCheckoutPage() {
             ) : (
               <button
                 onClick={() => router.push("/sign-in")}
-                className="w-full rounded-xl py-3 text-sm font-semibold bg-[#162a41] hover:bg-[#1d3b61]"
+                className="w-full rounded-xl py-3 text-sm font-semibold bg-[#282828] hover:bg-[#1d3b61]"
               >
                 Login to purchase
               </button>

@@ -61,8 +61,8 @@ export default function MealLoggerModal({ isOpen, onClose, onLog, initialNutriti
     }
   };
 
-  const inputClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base transition-all duration-200 focus:border-[#162a41] focus:ring-2 focus:ring-[#162a41]/10 outline-none";
-  const labelClass = "block text-sm font-semibold text-[#162a41] mb-2";
+  const inputClass = "w-full p-3 rounded-xl border border-[#282828]/20 text-base transition-all duration-200 focus:border-[#282828] focus:ring-2 focus:ring-[#282828]/10 outline-none";
+  const labelClass = "block text-sm font-semibold text-[#282828] mb-2";
 
   return (
     <AnimatePresence>
@@ -87,7 +87,7 @@ export default function MealLoggerModal({ isOpen, onClose, onLog, initialNutriti
               <div className="mx-auto w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3">
                 <Utensils size={24} />
               </div>
-              <h2 className="text-2xl font-black text-[#162a41]">Log Daily Nutrition</h2>
+              <h2 className="text-2xl font-black text-[#282828]">Log Daily Nutrition</h2>
               <p className="text-sm text-slate-500 mt-1">Enter your total consumption for today.</p>
             </div>
 
@@ -146,11 +146,11 @@ export default function MealLoggerModal({ isOpen, onClose, onLog, initialNutriti
             <button
               onClick={handleSubmit}
               disabled={loading || formData.calories <= 0}
-              className="mt-8 w-full flex items-center justify-center gap-2 bg-[#162a41] text-white font-bold p-4 rounded-xl transition-all hover:bg-[#1e3a5f] disabled:opacity-50"
+              className="mt-8 w-full flex items-center justify-center gap-2 bg-[#282828] text-white font-bold p-4 rounded-xl transition-all hover:bg-[#1e3a5f] disabled:opacity-50"
             >
               {loading ? (
                 <>
-                  <Utensils size={20} className="animate-pulse" />
+                  <Utensils size={20}  />
                   <span>Logging...</span>
                 </>
               ) : (

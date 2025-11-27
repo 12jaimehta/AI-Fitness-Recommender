@@ -219,7 +219,7 @@ export default function ProfilePage() {
           <form onSubmit={handleSubmit} className="space-y-10">
             {/* 1. Basic Info Section */}
             <div className="border-b border-gray-200 pb-8">
-              <h3 className="text-xl font-bold text-[#162a41] mb-5 flex items-center gap-2"><User size={20} /> Personal Details</h3>
+              <h3 className="text-xl font-bold text-[#282828] mb-5 flex items-center gap-2"><User size={20} /> Personal Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input 
                   label="Full Name"
@@ -248,13 +248,13 @@ export default function ProfilePage() {
                   disabled={!isEditing || isSaving}
                 />
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm font-semibold text-[#162a41]">Gender</label>
+                    <label className="text-sm font-semibold text-[#282828]">Gender</label>
                     <select
                         name="gender"
                         value={formState.gender || ''}
                         onChange={handleChange}
                         disabled={!isEditing || isSaving}
-                        className="w-full rounded-xl py-3 px-4 border text-base border-gray-300 focus:ring-2 focus:ring-[#162a411A] focus:outline-none transition"
+                        className="w-full rounded-xl py-3 px-4 border text-base border-gray-300 focus:ring-2 focus:ring-[#2828281A] focus:outline-none transition"
                     >
                         <option value="">Select Gender</option>
                         <option value="male">Male</option>
@@ -267,7 +267,7 @@ export default function ProfilePage() {
 
             {/* 2. Fitness & Health Section */}
             <div className="border-b border-gray-200 pb-8">
-              <h3 className="text-xl font-bold text-[#162a41] mb-5 flex items-center gap-2"><Activity size={20} /> Health Metrics</h3>
+              <h3 className="text-xl font-bold text-[#282828] mb-5 flex items-center gap-2"><Activity size={20} /> Health Metrics</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Input 
                   label="Height (cm)"
@@ -288,13 +288,13 @@ export default function ProfilePage() {
                   disabled={!isEditing || isSaving}
                 />
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm font-semibold text-[#162a41]">Fitness Level</label>
+                    <label className="text-sm font-semibold text-[#282828]">Fitness Level</label>
                     <select
                         name="fitness_level"
                         value={formState.fitness_level || ''}
                         onChange={handleChange}
                         disabled={!isEditing || isSaving}
-                        className="w-full rounded-xl py-3 px-4 border text-base border-gray-300 focus:ring-2 focus:ring-[#162a411A] focus:outline-none transition"
+                        className="w-full rounded-xl py-3 px-4 border text-base border-gray-300 focus:ring-2 focus:ring-[#2828281A] focus:outline-none transition"
                     >
                         <option value="">Select Level</option>
                         <option value="beginner">Beginner</option>
@@ -307,7 +307,7 @@ export default function ProfilePage() {
 
             {/* 3. Goals Section */}
             <div className="pb-8">
-              <h3 className="text-xl font-bold text-[#162a41] mb-5 flex items-center gap-2"><Target size={20} /> Goals</h3>
+              <h3 className="text-xl font-bold text-[#282828] mb-5 flex items-center gap-2"><Target size={20} /> Goals</h3>
                 <Input 
                     label="Goals (e.g., Lose 5kg, Run a 5k, Build Muscle)"
                     name="goals"

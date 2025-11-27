@@ -56,7 +56,7 @@ export default function AuthHeader() {
               fontSize: '12px',
               fontWeight: 600,
               cursor: 'pointer',
-              background: '#162a41',
+              background: '#282828',
               color: '#ffffff',
             }}
           >

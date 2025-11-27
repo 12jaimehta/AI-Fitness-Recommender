@@ -191,7 +191,7 @@ function Header({
         width: '80px',
         height: '80px',
         borderRadius: '20px',
-        background: '#162a41',
+        background: '#282828',
         marginBottom: '20px'
       }}>
         <Utensils size={40} color="#ffffff" />
@@ -200,7 +200,7 @@ function Header({
       <h1 style={{
         fontSize: clampSize(32, 48),
         fontWeight: '800',
-        color: '#162a41',
+        color: '#282828',
         marginBottom: '15px'
       }}>
         Your Personalized Diet Plan
@@ -256,7 +256,7 @@ function ActionButtons({
         onClick={onRegenerate}
         disabled={loading}
         style={{
-          background: loading ? '#9ca3af' : '#162a41',
+          background: loading ? '#9ca3af' : '#282828',
           color: '#ffffff',
           border: 'none',
           padding: '14px 28px',
@@ -289,8 +289,8 @@ function ActionButtons({
         onClick={onNewPlan}
         style={{
           background: '#ffffff',
-          color: '#162a41',
-          border: '2px solid #162a41',
+          color: '#282828',
+          border: '2px solid #282828',
           padding: '14px 28px',
           borderRadius: '12px',
           fontSize: '15px',
@@ -321,8 +321,8 @@ function ActionButtons({
         disabled={emailLoading}
         style={{
           background: emailLoading ? '#9ca3af' : '#ffffff',
-          color: emailLoading ? '#666666' : '#162a41',
-          border: '2px solid #162a41',
+          color: emailLoading ? '#666666' : '#282828',
+          border: '2px solid #282828',
           padding: '14px 28px',
           borderRadius: '12px',
           fontSize: '15px',
@@ -358,7 +358,7 @@ function NutritionSection({ nutritionTargets }: { nutritionTargets: any[] }) {
       <h2 style={{
         fontSize: clampSize(24, 28),
         fontWeight: '700',
-        color: '#162a41',
+        color: '#282828',
         marginBottom: '25px',
         textAlign: 'center'
       }}>
@@ -386,7 +386,7 @@ function NutritionSection({ nutritionTargets }: { nutritionTargets: any[] }) {
             }}
             whileHover={{ 
               scale: 1.05,
-              borderColor: '#162a41',
+              borderColor: '#282828',
               boxShadow: '0 8px 25px rgba(22, 42, 65, 0.15)'
             }}
           >
@@ -397,7 +397,7 @@ function NutritionSection({ nutritionTargets }: { nutritionTargets: any[] }) {
               width: '50px',
               height: '50px',
               borderRadius: '12px',
-              background: '#162a41',
+              background: '#282828',
               margin: '0 auto 15px'
             }}>
               <target.icon size={24} color="#ffffff" />
@@ -405,7 +405,7 @@ function NutritionSection({ nutritionTargets }: { nutritionTargets: any[] }) {
             <div style={{
               fontSize: clampSize(20, 24),
               fontWeight: '700',
-              color: '#162a41',
+              color: '#282828',
               marginBottom: '5px'
             }}>
               {target.value}
@@ -454,8 +454,8 @@ function ViewToggle({ activeView, onViewChange }: { activeView: 'single' | 'week
               padding: '12px 16px',
               borderRadius: '8px',
               border: 'none',
-              background: activeView === tab.id ? '#162a41' : 'transparent',
-              color: activeView === tab.id ? '#ffffff' : '#162a41',
+              background: activeView === tab.id ? '#282828' : 'transparent',
+              color: activeView === tab.id ? '#ffffff' : '#282828',
               fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -504,7 +504,7 @@ function MealPlansSection({
       <h2 style={{
         fontSize: clampSize(24, 28),
         fontWeight: '700',
-        color: '#162a41',
+        color: '#282828',
         marginBottom: '25px',
         textAlign: 'center'
       }}>
@@ -557,9 +557,9 @@ function DaySelector({ days, selectedDay, onDaySelect }: any) {
             padding: '10px 16px',
             borderRadius: '8px',
             border: '2px solid',
-            borderColor: selectedDay === day ? '#162a41' : 'rgba(22, 42, 65, 0.2)',
-            background: selectedDay === day ? '#162a41' : 'transparent',
-            color: selectedDay === day ? '#ffffff' : '#162a41',
+            borderColor: selectedDay === day ? '#282828' : 'rgba(22, 42, 65, 0.2)',
+            background: selectedDay === day ? '#282828' : 'transparent',
+            color: selectedDay === day ? '#ffffff' : '#282828',
             fontSize: '14px',
             fontWeight: '600',
             cursor: 'pointer',
@@ -591,7 +591,7 @@ function MealCard({ mealType, mealData, isExpanded, onToggle, index, getMealIcon
         transition: 'all 0.3s ease'
       }}
       whileHover={{ 
-        borderColor: '#162a41',
+        borderColor: '#282828',
         boxShadow: '0 8px 25px rgba(22, 42, 65, 0.1)'
       }}
     >
@@ -623,13 +623,13 @@ function MealCard({ mealType, mealData, isExpanded, onToggle, index, getMealIcon
               width: '50px',
               height: '50px',
               borderRadius: '12px',
-              background: '#162a41'
+              background: '#282828'
             }}>
               {getMealIcon(mealType)}
             </div>
             <div>
               <h3 style={{
-                color: '#162a41',
+                color: '#282828',
                 fontSize: clampSize(18, 20),
                 fontWeight: '700',
                 marginBottom: '5px',
@@ -657,15 +657,15 @@ function MealCard({ mealType, mealData, isExpanded, onToggle, index, getMealIcon
               background: 'rgba(22, 42, 65, 0.1)',
               padding: '6px 12px',
               borderRadius: '20px',
-              color: '#162a41',
+              color: '#282828',
               fontSize: '13px',
               fontWeight: '600'
             }}>
               {mealData.calories} cal
             </div>
             {isExpanded ? 
-              <ChevronUp size={20} color="#162a41" /> : 
-              <ChevronDown size={20} color="#162a41" />
+              <ChevronUp size={20} color="#282828" /> : 
+              <ChevronDown size={20} color="#282828" />
             }
           </div>
         </div>
@@ -699,7 +699,7 @@ function MealContent({ mealData }: { mealData: any }) {
         marginBottom: '15px'
       }}>
         <h4 style={{ 
-          color: '#162a41', 
+          color: '#282828', 
           fontSize: '16px', 
           fontWeight: '600', 
           marginBottom: '10px' 
@@ -722,7 +722,7 @@ function MealContent({ mealData }: { mealData: any }) {
       {mealData.ingredientBreakdown && (
         <div style={{ marginTop: '15px' }}>
           <h4 style={{ 
-            color: '#162a41', 
+            color: '#282828', 
             fontSize: '16px', 
             fontWeight: '600', 
             marginBottom: '10px' 
@@ -758,7 +758,7 @@ function MealContent({ mealData }: { mealData: any }) {
 function MacroNutrients({ mealData }: { mealData: any }) {
   const macros = [
     { label: 'Calories', value: `${mealData.calories} cal`, icon: Flame, color: '#ef4444' },
-    { label: 'Protein', value: `${mealData.protein}g`, icon: Dumbbell, color: '#162a41' },
+    { label: 'Protein', value: `${mealData.protein}g`, icon: Dumbbell, color: '#282828' },
     { label: 'Carbs', value: `${mealData.carbs}g`, icon: Timer, color: '#10b981' },
     { label: 'Fat', value: `${mealData.fat}g`, icon: TrendingUp, color: '#f59e0b' }
   ];
@@ -812,13 +812,13 @@ function NutritionTips({ nutritionTips }: { nutritionTips: string[] }) {
         <h3 style={{
           fontSize: clampSize(20, 24),
           fontWeight: '700',
-          color: '#162a41',
+          color: '#282828',
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           gap: '10px'
         }}>
-          <Heart size={24} color="#162a41" />
+          <Heart size={24} color="#282828" />
           Nutrition Tips & Recommendations
         </h3>
         
@@ -842,7 +842,7 @@ function NutritionTips({ nutritionTips }: { nutritionTips: string[] }) {
                 border: '1px solid rgba(22, 42, 65, 0.1)'
               }}
             >
-              <CheckCircle2 size={18} color="#162a41" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <CheckCircle2 size={18} color="#282828" style={{ flexShrink: 0, marginTop: '2px' }} />
               <span style={{ 
                 color: '#374151', 
                 fontSize: '14px', 

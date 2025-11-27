@@ -28,7 +28,7 @@ export default function AuthTabs({
             key={tab.key}
             onClick={() => onChange(tab.key)}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition ${
-              isActive ? "bg-[#162a41] text-white" : "text-gray-600"
+              isActive ? "bg-[#282828] text-white" : "text-gray-600"
             }`}
             type="button"
           >

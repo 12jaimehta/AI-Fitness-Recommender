@@ -36,7 +36,7 @@ export default function Tabs({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
-                className="absolute inset-0 bg-[#162a41] rounded-lg shadow-sm"
+                className="absolute inset-0 bg-[#282828] rounded-lg shadow-sm"
               />
             )}
 
