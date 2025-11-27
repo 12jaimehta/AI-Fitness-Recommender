@@ -87,7 +87,7 @@ export default function HelpCenter() {
               Home
             </Link>
             <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#162a41' }}>Help Center</span>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>Help Center</span>
           </div>
         </motion.div>
 
@@ -107,7 +107,7 @@ export default function HelpCenter() {
             justifyContent: 'center',
             width: '80px',
             height: '80px',
-            background: '#162a41',
+            background: '#282828',
             borderRadius: '20px',
             marginBottom: '20px'
           }}>
@@ -116,7 +116,7 @@ export default function HelpCenter() {
           <h1 style={{
             fontSize: '48px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px',
             margin: 0
           }}>
@@ -178,7 +178,7 @@ export default function HelpCenter() {
                       justifyContent: 'center',
                       width: '56px',
                       height: '56px',
-                      background: '#162a41',
+                      background: '#282828',
                       borderRadius: '12px',
                       flexShrink: 0
                     }}>
@@ -188,7 +188,7 @@ export default function HelpCenter() {
                       <h3 style={{
                         fontSize: '20px',
                         fontWeight: '600',
-                        color: '#162a41',
+                        color: '#282828',
                         marginBottom: '8px',
                         margin: 0
                       }}>
@@ -227,7 +227,7 @@ export default function HelpCenter() {
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px'
           }}>
             Still need help?
@@ -243,7 +243,7 @@ export default function HelpCenter() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '8px',
-            background: '#162a41',
+            background: '#282828',
             color: '#ffffff',
             padding: '12px 24px',
             borderRadius: '8px',

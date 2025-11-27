@@ -64,7 +64,7 @@ export default function UploadImage({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <label className="text-sm font-semibold text-[#162a41]">{label}</label>
+      <label className="text-sm font-semibold text-[#282828]">{label}</label>
 
       <div className="flex items-center gap-4">
         <label
@@ -74,8 +74,8 @@ export default function UploadImage({
             uploading ? "opacity-70 cursor-not-allowed" : ""
           )}
         >
-          <UploadCloud className="w-4 h-4 text-[#162a41]" />
-          <span className="text-[#162a41]">
+          <UploadCloud className="w-4 h-4 text-[#282828]" />
+          <span className="text-[#282828]">
             {uploading ? "Uploading..." : "Click to upload image"}
           </span>
           <input

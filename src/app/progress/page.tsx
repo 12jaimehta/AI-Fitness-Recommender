@@ -28,7 +28,7 @@ const sleekShadow = 'shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] hover:shadow-[0
 const darkSleekShadow = 'shadow-2xl shadow-slate-950/20';
 
 // Unified Accent Colors
-const PRIMARY_ACCENT = '#162a41'; // The new dark slate blue
+const PRIMARY_ACCENT = '#282828'; // The new dark slate blue
 const WARNING_ACCENT = '#f59e0b'; // Amber 500 (only for necessary warnings/energy)
 
 
@@ -241,7 +241,7 @@ export default function ProgressPage() {
             <div key={i} className={`bg-white p-6 rounded-xl ${sleekShadow} border border-slate-100 flex flex-col justify-between h-36 group`}>
               <div 
                 className="w-12 h-12 rounded-lg flex items-center justify-center mb-2 transition-transform group-hover:scale-105" 
-                style={{ background: stat.color === PRIMARY_ACCENT ? '#162a4115' : '#f59e0b15', color: stat.color }}
+                style={{ background: stat.color === PRIMARY_ACCENT ? '#28282815' : '#f59e0b15', color: stat.color }}
               >
                 <stat.icon size={24} />
               </div>
@@ -280,7 +280,7 @@ export default function ProgressPage() {
                   <Brain style={{ color: PRIMARY_ACCENT }} size={24} />
                   AI Coach Insights
                 </h3>
-                <span style={{ backgroundColor: '#162a4110', color: PRIMARY_ACCENT }} className=" border border-slate-200 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">Live Analysis</span>
+                <span style={{ backgroundColor: '#28282810', color: PRIMARY_ACCENT }} className=" border border-slate-200 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">Live Analysis</span>
               </div>
               <div className="grid gap-4">
                 {insights.length > 0 ? (

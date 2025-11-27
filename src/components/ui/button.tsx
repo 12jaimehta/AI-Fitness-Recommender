@@ -13,7 +13,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 export default function Button({ className = "", children, variant = "primary", loading, icon, ...props }: ButtonProps) {
   const base = "inline-flex items-center justify-center rounded-xl font-semibold transition";
   const styles = {
-    primary: "bg-[#162a41] text-white hover:bg-[#1e3a5f]",
+    primary: "bg-[#282828] text-white hover:bg-[#1e3a5f]",
     ghost: "bg-white/10 text-white hover:bg-white/20",
     outline: "border border-white/30 text-white bg-transparent",
     secondary: "bg-gray-100 text-gray-800 hover:bg-gray-200",

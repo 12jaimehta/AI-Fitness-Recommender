@@ -42,9 +42,9 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
   ];
 
   // Shared styling classes
-  const labelClass = "block text-sm font-semibold text-[#162a41] mb-2";
-  const inputClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base bg-white transition-all duration-200 focus:border-[#162a41] focus:ring-2 focus:ring-[#162a41]/10 outline-none";
-  const selectClass = "w-full p-3 rounded-xl border border-[#162a41]/20 text-base bg-white transition-all duration-200 focus:border-[#162a41] outline-none cursor-pointer appearance-none";
+  const labelClass = "block text-sm font-semibold text-[#282828] mb-2";
+  const inputClass = "w-full p-3 rounded-xl border border-[#282828]/20 text-base bg-white transition-all duration-200 focus:border-[#282828] focus:ring-2 focus:ring-[#282828]/10 outline-none";
+  const selectClass = "w-full p-3 rounded-xl border border-[#282828]/20 text-base bg-white transition-all duration-200 focus:border-[#282828] outline-none cursor-pointer appearance-none";
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -106,7 +106,7 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
         className="w-full max-w-[500px] max-h-[90vh] overflow-y-auto bg-white rounded-[20px] p-8 md:p-10 shadow-2xl"
       >
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-[#162a41] mb-2 tracking-tight">
+          <h2 className="text-3xl font-extrabold text-[#282828] mb-2 tracking-tight">
             Welcome to fyteAI!
           </h2>
           <p className="text-gray-500 text-base">
@@ -124,7 +124,7 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
               exit={{ opacity: 0, x: -20 }}
               className="flex flex-col gap-5"
             >
-              <h3 className="text-xl font-bold text-[#162a41] border-b border-gray-100 pb-2">
+              <h3 className="text-xl font-bold text-[#282828] border-b border-gray-100 pb-2">
                 Basic Information
               </h3>
 
@@ -197,7 +197,7 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
               <button
                 onClick={() => setStep(2)}
                 disabled={!profile.full_name || !profile.initial_weight}
-                className="mt-6 w-full p-4 rounded-xl bg-[#162a41] text-white font-bold text-base transition-all hover:bg-[#1e3a5f] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                className="mt-6 w-full p-4 rounded-xl bg-[#282828] text-white font-bold text-base transition-all hover:bg-[#1e3a5f] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 Continue
               </button>
@@ -213,7 +213,7 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
               exit={{ opacity: 0, x: -20 }}
               className="flex flex-col gap-6"
             >
-              <h3 className="text-xl font-bold text-[#162a41] border-b border-gray-100 pb-2">
+              <h3 className="text-xl font-bold text-[#282828] border-b border-gray-100 pb-2">
                 Fitness & Goals
               </h3>
 
@@ -229,13 +229,13 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
                       className={`
                         w-full p-4 rounded-xl border-2 text-left transition-all duration-200 flex items-center justify-between
                         ${profile.fitness_level === level.value 
-                          ? 'border-[#162a41] bg-[#162a41]/5 text-[#162a41]' 
+                          ? 'border-[#282828] bg-[#282828]/5 text-[#282828]' 
                           : 'border-gray-100 bg-white text-gray-600 hover:border-gray-300'}
                       `}
                     >
                       <span className="font-semibold">{level.label}</span>
                       {profile.fitness_level === level.value && (
-                        <Check size={18} className="text-[#162a41]" />
+                        <Check size={18} className="text-[#282828]" />
                       )}
                     </button>
                   ))}
@@ -254,13 +254,13 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
                         className={`
                           flex items-center gap-3 p-3.5 rounded-lg border cursor-pointer transition-all duration-200
                           ${isSelected 
-                            ? 'border-[#162a41] bg-[#162a41]/5 shadow-sm' 
+                            ? 'border-[#282828] bg-[#282828]/5 shadow-sm' 
                             : 'border-gray-200 bg-white hover:bg-gray-50'}
                         `}
                       >
                         <div className={`
                           w-5 h-5 rounded border flex items-center justify-center transition-colors
-                          ${isSelected ? 'bg-[#162a41] border-[#162a41]' : 'border-gray-300 bg-white'}
+                          ${isSelected ? 'bg-[#282828] border-[#282828]' : 'border-gray-300 bg-white'}
                         `}>
                           {isSelected && <Check size={12} className="text-white" />}
                         </div>
@@ -270,7 +270,7 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
                           onChange={() => toggleGoal(goal)}
                           className="hidden"
                         />
-                        <span className={`font-medium ${isSelected ? 'text-[#162a41]' : 'text-gray-600'}`}>
+                        <span className={`font-medium ${isSelected ? 'text-[#282828]' : 'text-gray-600'}`}>
                           {goal}
                         </span>
                       </label>
@@ -283,14 +283,14 @@ export default function UserProfileSetup({ user, onComplete }: UserProfileSetupP
               <div className="flex gap-3 mt-4">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 p-4 rounded-xl border border-[#162a41]/20 text-[#162a41] font-bold hover:bg-[#162a41]/5 transition-colors"
+                  className="flex-1 p-4 rounded-xl border border-[#282828]/20 text-[#282828] font-bold hover:bg-[#282828]/5 transition-colors"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={loading || !profile.fitness_level || profile.goals.length === 0}
-                  className="flex-1 p-4 rounded-xl bg-[#162a41] text-white font-bold transition-all hover:bg-[#1e3a5f] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+                  className="flex-1 p-4 rounded-xl bg-[#282828] text-white font-bold transition-all hover:bg-[#1e3a5f] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <>

@@ -132,7 +132,7 @@ export default function RatingReview({ targetType, targetId }: RatingReviewProps
           </div>
 
           <textarea
-            className="w-full bg-[#0f1c2f] border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#162a41]/60"
+            className="w-full bg-[#0f1c2f] border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#282828]/60"
             rows={3}
             placeholder="Share your experience (optional)..."
             value={review}
@@ -148,7 +148,7 @@ export default function RatingReview({ targetType, targetId }: RatingReviewProps
                 ${
                   rating === 0 || loading
                     ? "bg-white/10 text-white/40 cursor-not-allowed"
-                    : "bg-[#162a41] hover:bg-[#1d3b61] text-white"
+                    : "bg-[#282828] hover:bg-[#1d3b61] text-white"
                 }`}
             >
               {loading ? "Submitting..." : "Submit Review"}

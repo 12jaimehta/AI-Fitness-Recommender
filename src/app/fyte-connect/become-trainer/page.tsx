@@ -107,7 +107,7 @@ export default function BecomeTrainerPage() {
   // ----------------- AUTH GUARD -----------------
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-[linear-gradient(135deg,#162a41,#1e3a5f)] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[linear-gradient(135deg,#282828,#1e3a5f)] text-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-lg mb-3 font-semibold">
             You need to be logged in to become a trainer.
@@ -125,7 +125,7 @@ export default function BecomeTrainerPage() {
 
   // ----------------- UI -----------------
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#162a41,#1e3a5f)]">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#282828,#1e3a5f)]">
       <UnifiedNavbar />
 
       <main className="mt-20 p-8 flex justify-center">
@@ -165,7 +165,7 @@ export default function BecomeTrainerPage() {
                 />
 
                 <div className="col-span-2">
-                  <label className="text-sm font-semibold text-[#162a41]">Bio</label>
+                  <label className="text-sm font-semibold text-[#282828]">Bio</label>
                   <textarea
                     {...register("bio")}
                     rows={4}
@@ -186,7 +186,7 @@ export default function BecomeTrainerPage() {
 
               {/* Expertise Section */}
               <div>
-                <label className="text-sm font-semibold text-[#162a41]">Expertise</label>
+                <label className="text-sm font-semibold text-[#282828]">Expertise</label>
 
                 <div className="flex gap-2 mt-2">
                   <Input

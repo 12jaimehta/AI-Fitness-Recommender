@@ -51,7 +51,7 @@ function generateEmailContent(dietPlan: any, userData: any) {
           background-color: #f8f9fa;
         }
         .header {
-          background: linear-gradient(135deg, #162a41 0%, #2c3e50 100%);
+          background: linear-gradient(135deg, #282828 0%, #2c3e50 100%);
           color: white;
           padding: 30px;
           border-radius: 10px;
@@ -75,11 +75,11 @@ function generateEmailContent(dietPlan: any, userData: any) {
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .section h2 {
-          color: #162a41;
+          color: #282828;
           margin-top: 0;
           font-size: 22px;
           font-weight: 600;
-          border-bottom: 2px solid #162a41;
+          border-bottom: 2px solid #282828;
           padding-bottom: 10px;
         }
         .nutrition-grid {
@@ -93,7 +93,7 @@ function generateEmailContent(dietPlan: any, userData: any) {
           padding: 15px;
           border-radius: 8px;
           text-align: center;
-          border-left: 4px solid #162a41;
+          border-left: 4px solid #282828;
         }
         .nutrition-item .label {
           font-size: 12px;
@@ -104,7 +104,7 @@ function generateEmailContent(dietPlan: any, userData: any) {
         .nutrition-item .value {
           font-size: 20px;
           font-weight: 700;
-          color: #162a41;
+          color: #282828;
           margin-top: 5px;
         }
         .meal-card {
@@ -112,7 +112,7 @@ function generateEmailContent(dietPlan: any, userData: any) {
           border-radius: 8px;
           padding: 20px;
           margin-bottom: 15px;
-          border-left: 4px solid #162a41;
+          border-left: 4px solid #282828;
         }
         .meal-header {
           display: flex;
@@ -123,11 +123,11 @@ function generateEmailContent(dietPlan: any, userData: any) {
         .meal-title {
           font-size: 18px;
           font-weight: 600;
-          color: #162a41;
+          color: #282828;
           margin: 0;
         }
         .meal-calories {
-          background: #162a41;
+          background: #282828;
           color: white;
           padding: 5px 12px;
           border-radius: 20px;
@@ -180,7 +180,7 @@ function generateEmailContent(dietPlan: any, userData: any) {
           flex-wrap: wrap;
         }
         .day-tab {
-          background: #162a41;
+          background: #282828;
           color: white;
           padding: 8px 16px;
           border-radius: 20px;

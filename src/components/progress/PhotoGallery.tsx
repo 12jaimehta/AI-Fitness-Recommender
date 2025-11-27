@@ -34,7 +34,7 @@ export default function PhotoGallery({ photos, onUpload, onViewGallery }: PhotoG
         </div>
 
         {/* Recent Photo */}
-        <div className="relative aspect-[3/4] rounded-xl bg-[#162a41] overflow-hidden group cursor-pointer shadow-inner">
+        <div className="relative aspect-[3/4] rounded-xl bg-[#282828] overflow-hidden group cursor-pointer shadow-inner">
           {currentPhoto ? (
             <>
               <img src={currentPhoto.photo_url} alt="Current" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -54,7 +54,7 @@ export default function PhotoGallery({ photos, onUpload, onViewGallery }: PhotoG
           <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer backdrop-blur-[2px]">
             <input type="file" className="hidden" accept="image/*" onChange={onUpload} />
             <div className="text-white flex flex-col items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-              <div className="p-3 bg-white rounded-full text-[#162a41] shadow-lg">
+              <div className="p-3 bg-white rounded-full text-[#282828] shadow-lg">
                 <Upload size={20} />
               </div>
               <span className="text-xs font-bold uppercase tracking-wider">Update Photo</span>
@@ -66,7 +66,7 @@ export default function PhotoGallery({ photos, onUpload, onViewGallery }: PhotoG
       <button 
         onClick={onViewGallery} 
         disabled={photos.length === 0}
-        className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:text-[#162a41] bg-slate-50 hover:bg-slate-100 py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-500 hover:text-[#282828] bg-slate-50 hover:bg-slate-100 py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <History size={14} />
         View Transformation Gallery

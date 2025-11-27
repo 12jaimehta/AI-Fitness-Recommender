@@ -16,7 +16,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({ title }) => {
       <div className="min-h-[70vh] flex flex-col items-center justify-center">
         {/* Motion Loader */}
         <motion.div
-          className="w-16 h-16 rounded-full border-4 border-[#162a41]/20 border-t-[#162a41]"
+          className="w-16 h-16 rounded-full border-4 border-[#282828]/20 border-t-[#282828]"
           animate={{
             rotate: 360,
             boxShadow: [

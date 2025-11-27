@@ -129,7 +129,7 @@ export default function ContactUs() {
               Help
             </Link>
             <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#162a41' }}>Contact Us</span>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>Contact Us</span>
           </div>
         </motion.div>
 
@@ -149,7 +149,7 @@ export default function ContactUs() {
             justifyContent: 'center',
             width: '80px',
             height: '80px',
-            background: '#162a41',
+            background: '#282828',
             borderRadius: '20px',
             marginBottom: '20px'
           }}>
@@ -158,7 +158,7 @@ export default function ContactUs() {
           <h1 style={{
             fontSize: '48px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px',
             margin: 0
           }}>
@@ -190,7 +190,7 @@ export default function ContactUs() {
             <h2 style={{
               fontSize: '24px',
               fontWeight: '600',
-              color: '#162a41',
+              color: '#282828',
               marginBottom: '24px'
             }}>
               Get in Touch
@@ -230,7 +230,7 @@ export default function ContactUs() {
                       justifyContent: 'center',
                       width: '48px',
                       height: '48px',
-                      background: '#162a41',
+                      background: '#282828',
                       borderRadius: '10px',
                       flexShrink: 0
                     }}>
@@ -240,7 +240,7 @@ export default function ContactUs() {
                       <h3 style={{
                         fontSize: '18px',
                         fontWeight: '600',
-                        color: '#162a41',
+                        color: '#282828',
                         marginBottom: '4px',
                         margin: 0
                       }}>
@@ -257,7 +257,7 @@ export default function ContactUs() {
                       <p style={{
                         fontSize: '16px',
                         fontWeight: '600',
-                        color: '#162a41',
+                        color: '#282828',
                         margin: 0
                       }}>
                         {method.contact}
@@ -278,7 +278,7 @@ export default function ContactUs() {
             <h2 style={{
               fontSize: '24px',
               fontWeight: '600',
-              color: '#162a41',
+              color: '#282828',
               marginBottom: '24px'
             }}>
               Send us a Message
@@ -314,7 +314,7 @@ export default function ContactUs() {
                   <h3 style={{
                     fontSize: '20px',
                     fontWeight: '600',
-                    color: '#162a41',
+                    color: '#282828',
                     marginBottom: '8px'
                   }}>
                     Message Sent!
@@ -334,7 +334,7 @@ export default function ContactUs() {
                       display: 'block',
                       fontSize: '14px',
                       fontWeight: '600',
-                      color: '#162a41',
+                      color: '#282828',
                       marginBottom: '8px'
                     }}>
                       Your Name
@@ -354,7 +354,7 @@ export default function ContactUs() {
                         transition: 'border-color 0.3s ease',
                         outline: 'none'
                       }}
-                      onFocus={(e) => e.target.style.borderColor = '#162a41'}
+                      onFocus={(e) => e.target.style.borderColor = '#282828'}
                       onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
                     />
                   </div>
@@ -364,7 +364,7 @@ export default function ContactUs() {
                       display: 'block',
                       fontSize: '14px',
                       fontWeight: '600',
-                      color: '#162a41',
+                      color: '#282828',
                       marginBottom: '8px'
                     }}>
                       Email Address
@@ -384,7 +384,7 @@ export default function ContactUs() {
                         transition: 'border-color 0.3s ease',
                         outline: 'none'
                       }}
-                      onFocus={(e) => e.target.style.borderColor = '#162a41'}
+                      onFocus={(e) => e.target.style.borderColor = '#282828'}
                       onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
                     />
                   </div>
@@ -394,7 +394,7 @@ export default function ContactUs() {
                       display: 'block',
                       fontSize: '14px',
                       fontWeight: '600',
-                      color: '#162a41',
+                      color: '#282828',
                       marginBottom: '8px'
                     }}>
                       Subject
@@ -414,7 +414,7 @@ export default function ContactUs() {
                         outline: 'none',
                         background: '#ffffff'
                       }}
-                      onFocus={(e) => e.target.style.borderColor = '#162a41'}
+                      onFocus={(e) => e.target.style.borderColor = '#282828'}
                       onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
                     >
                       <option value="">Select a subject</option>
@@ -431,7 +431,7 @@ export default function ContactUs() {
                       display: 'block',
                       fontSize: '14px',
                       fontWeight: '600',
-                      color: '#162a41',
+                      color: '#282828',
                       marginBottom: '8px'
                     }}>
                       Message
@@ -452,7 +452,7 @@ export default function ContactUs() {
                         outline: 'none',
                         resize: 'vertical'
                       }}
-                      onFocus={(e) => e.target.style.borderColor = '#162a41'}
+                      onFocus={(e) => e.target.style.borderColor = '#282828'}
                       onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
                     />
                   </div>
@@ -462,7 +462,7 @@ export default function ContactUs() {
                     disabled={isSubmitting}
                     style={{
                       width: '100%',
-                      background: isSubmitting ? '#9ca3af' : '#162a41',
+                      background: isSubmitting ? '#9ca3af' : '#282828',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '8px',
@@ -504,7 +504,7 @@ export default function ContactUs() {
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '24px',
             textAlign: 'center'
           }}>
@@ -533,12 +533,12 @@ export default function ContactUs() {
                   alignItems: 'flex-start',
                   gap: '12px'
                 }}>
-                  <HelpCircle size={20} color="#162a41" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <HelpCircle size={20} color="#282828" style={{ flexShrink: 0, marginTop: '2px' }} />
                   <div>
                     <h3 style={{
                       fontSize: '16px',
                       fontWeight: '600',
-                      color: '#162a41',
+                      color: '#282828',
                       marginBottom: '8px'
                     }}>
                       {item.question}

@@ -26,7 +26,7 @@ export default function WeightChart({ data }: { data: WeightEntry[] }) {
                 <div className="relative w-full flex items-end justify-center h-full">
                     {/* Bar */}
                     <div 
-                        className="w-full max-w-[40px] bg-[#162a41] opacity-80 group-hover:opacity-100 rounded-t-md transition-all duration-300 relative" 
+                        className="w-full max-w-[40px] bg-[#282828] opacity-80 group-hover:opacity-100 rounded-t-md transition-all duration-300 relative" 
                         style={{ height: `${heightPercent}%` }}
                     >
                          {/* Tooltip */}

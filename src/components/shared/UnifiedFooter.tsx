@@ -12,7 +12,7 @@ export default function UnifiedFooter() {
 
 
   return (
-    <footer className="bg-[#162a41] text-white pt-20 pb-10 mt-20">
+    <footer className="bg-[#282828] text-white pt-20 pb-10 mt-20">
       <div className="max-w-[1200px] mx-auto px-4">
         {/* Main Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16 mb-16">
@@ -41,7 +41,7 @@ export default function UnifiedFooter() {
                 <Phone size={16} /> 1-800-fyteAI
               </div>
               <div className="flex items-center gap-2 text-sm opacity-80">
-                <MapPin size={16} /> San Francisco, CA
+                <MapPin size={16} /> Gurugram, India
               </div>
             </div>
           </motion.div>

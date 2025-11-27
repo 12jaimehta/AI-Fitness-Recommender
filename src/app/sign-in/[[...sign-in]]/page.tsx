@@ -62,7 +62,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(135deg,#162a41_0%,#1e3a5f_100%)] relative overflow-hidden">
+    <div className="min-h-screen bg-[linear-gradient(135deg,#282828_0%,#1e3a5f_100%)] relative overflow-hidden">
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* HEADER */}
         <header className="py-8">
@@ -86,7 +86,7 @@ export default function SignInPage() {
             <AuthLeftSection />
             <div className="bg-white rounded-[24px] p-12 shadow-[0_20px_60px_rgba(0,0,0,0.2)] border border-white/30">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-extrabold text-[#162a41] mb-1">Welcome Back</h2>
+                <h2 className="text-2xl font-extrabold text-[#282828] mb-1">Welcome Back</h2>
                 <p className="text-base text-gray-500 m-0">
                   Choose your preferred sign in method
                 </p>

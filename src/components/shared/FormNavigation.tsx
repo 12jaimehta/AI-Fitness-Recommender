@@ -31,7 +31,7 @@ export default function FormNavigation({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <MotionButton
+      {currentStep !== 0 && <MotionButton
         type="button"
         variant="secondary"
         onClick={onPrevious}
@@ -39,7 +39,7 @@ export default function FormNavigation({
         className="flex-1 relative"
       >
         Previous
-      </MotionButton>
+      </MotionButton>}
 
       <AnimatePresence mode="wait">
         {isLastStep ? (
@@ -101,7 +101,7 @@ export default function FormNavigation({
               type="button"
               variant="primary"
               onClick={onNext}
-              className="relative overflow-hidden bg-[#162a41] hover:bg-[#1d344f]"
+              className="relative overflow-hidden bg-[#282828] hover:bg-[#454545]"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-xl"

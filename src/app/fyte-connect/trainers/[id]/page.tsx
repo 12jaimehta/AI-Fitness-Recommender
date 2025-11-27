@@ -82,7 +82,7 @@ export default function TrainerProfilePage() {
           {/* Left - Trainer Info */}
           <div>
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-full bg-[#162a41] flex items-center justify-center text-2xl font-bold shadow-lg">
+              <div className="w-16 h-16 rounded-full bg-[#282828] flex items-center justify-center text-2xl font-bold shadow-lg">
                 {(trainer.full_name || "T").charAt(0)}
               </div>
               <div>
@@ -156,7 +156,7 @@ export default function TrainerProfilePage() {
                 type="datetime-local"
                 value={sessionDate}
                 onChange={(e) => setSessionDate(e.target.value)}
-                className="w-full bg-[#0f1c2f] border border-white/15 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#162a41]/60"
+                className="w-full bg-[#0f1c2f] border border-white/15 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#282828]/60"
               />
             </div>
 
@@ -168,7 +168,7 @@ export default function TrainerProfilePage() {
                 rows={3}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-[#0f1c2f] border border-white/15 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#162a41]/60"
+                className="w-full bg-[#0f1c2f] border border-white/15 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#282828]/60"
                 placeholder="e.g. I want a fat-loss + muscle gain focused plan."
               />
             </div>
@@ -188,7 +188,7 @@ export default function TrainerProfilePage() {
                   ${
                     !sessionDate || bookingLoading
                       ? "bg-white/10 text-white/40 cursor-not-allowed"
-                      : "bg-[#162a41] hover:bg-[#1d3b61]"
+                      : "bg-[#282828] hover:bg-[#1d3b61]"
                   }`}
               >
                 {bookingLoading ? "Booking..." : "Book Session"}
@@ -197,7 +197,7 @@ export default function TrainerProfilePage() {
             ) : (
               <button
                 onClick={() => router.push("/sign-in")}
-                className="w-full rounded-xl py-3 text-sm font-semibold bg-[#162a41] hover:bg-[#1d3b61] flex items-center justify-center gap-2"
+                className="w-full rounded-xl py-3 text-sm font-semibold bg-[#282828] hover:bg-[#1d3b61] flex items-center justify-center gap-2"
               >
                 <User className="w-4 h-4" />
                 Login to book

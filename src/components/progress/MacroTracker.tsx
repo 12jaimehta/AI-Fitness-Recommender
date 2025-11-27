@@ -19,7 +19,7 @@ interface MacroTrackerProps {
   onUpdate: () => void;
 }
 
-const PRIMARY_ACCENT = '#162a41'; // The desired primary color
+const PRIMARY_ACCENT = '#282828'; // The desired primary color
 
 export default function MacroTracker({ nutrition, targets, onUpdate }: MacroTrackerProps) {
   // Default targets if not provided via props

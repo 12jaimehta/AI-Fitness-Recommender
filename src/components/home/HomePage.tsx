@@ -111,7 +111,7 @@ export default function HomePage() {
                                             animate={{ opacity: 1, y: 0, scale: 1 }}
                                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
                                             transition={{ duration: 0.2 }}
-                                            className="absolute right-0 mt-2 w-56 rounded-xl border border-white/20 bg-[#162a41]/90 backdrop-blur-xl shadow-2xl overflow-hidden py-2"
+                                            className="absolute right-0 mt-2 w-56 rounded-xl border border-white/20 bg-[#282828]/90 backdrop-blur-xl shadow-2xl overflow-hidden py-2"
                                         >
                                             <div className="px-4 py-3 border-b border-white/10 mb-2">
                                                 <p className="text-sm text-white font-medium">Signed in as</p>
@@ -177,7 +177,7 @@ export default function HomePage() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 100 }}
                         transition={{ duration: 0.4 }}
-                        className="fixed top-[80px] left-0 right-0 bottom-0 z-[999] bg-white border-t border-[#162a41]/10 shadow-xl flex flex-col"
+                        className="fixed top-[80px] left-0 right-0 bottom-0 z-[999] bg-white border-t border-[#282828]/10 shadow-xl flex flex-col"
                     >
                         <div className="flex-1 p-6 overflow-y-auto">
                             {["Home", "Diet Plan", "Workout Plan", "Track Progress"].map((item, index) => (
@@ -187,7 +187,7 @@ export default function HomePage() {
                                         router.push(item === "Home" ? "/" : "/" + item.toLowerCase().replace(" ", ""));
                                         setIsMobileMenuOpen(false);
                                     }}
-                                    className="w-full text-left text-[18px] font-semibold text-[#162a41] px-5 py-4 rounded-xl mb-2 transition-all duration-300 hover:bg-[#162a41]/5"
+                                    className="w-full text-left text-[18px] font-semibold text-[#282828] px-5 py-4 rounded-xl mb-2 transition-all duration-300 hover:bg-[#282828]/5"
                                 >
                                     {item}
                                 </button>
@@ -199,11 +199,11 @@ export default function HomePage() {
                             {isSignedIn ? (
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-4 px-2">
-                                        <div className="w-12 h-12 rounded-full bg-[#162a41] text-white flex items-center justify-center text-lg font-bold shadow-md">
+                                        <div className="w-12 h-12 rounded-full bg-[#282828] text-white flex items-center justify-center text-lg font-bold shadow-md">
                                             {displayName.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-[#162a41] text-lg">{displayName}</p>
+                                            <p className="font-bold text-[#282828] text-lg">{displayName}</p>
                                             <p className="text-sm text-gray-500">{user?.email}</p>
                                         </div>
                                     </div>
@@ -221,7 +221,7 @@ export default function HomePage() {
                                         router.push("/sign-in");
                                         setIsMobileMenuOpen(false);
                                     }}
-                                    className="w-full bg-[#162a41] text-white text-[18px] font-semibold px-6 py-4 rounded-xl shadow-lg active:scale-95 transition-all"
+                                    className="w-full bg-[#282828] text-white text-[18px] font-semibold px-6 py-4 rounded-xl shadow-lg active:scale-95 transition-all"
                                 >
                                     Login
                                 </button>

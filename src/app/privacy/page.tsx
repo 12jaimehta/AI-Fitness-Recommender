@@ -184,7 +184,7 @@ export default function PrivacyPolicy() {
               Home
             </Link>
             <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#162a41' }}>Privacy Policy</span>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>Privacy Policy</span>
           </div>
         </motion.div>
 
@@ -204,7 +204,7 @@ export default function PrivacyPolicy() {
             justifyContent: 'center',
             width: '80px',
             height: '80px',
-            background: '#162a41',
+            background: '#282828',
             borderRadius: '20px',
             marginBottom: '20px'
           }}>
@@ -213,7 +213,7 @@ export default function PrivacyPolicy() {
           <h1 style={{
             fontSize: '48px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px',
             margin: 0
           }}>
@@ -283,7 +283,7 @@ export default function PrivacyPolicy() {
                   justifyContent: 'center',
                   width: '48px',
                   height: '48px',
-                  background: '#162a41',
+                  background: '#282828',
                   borderRadius: '12px',
                   flexShrink: 0
                 }}>
@@ -292,7 +292,7 @@ export default function PrivacyPolicy() {
                 <h2 style={{
                   fontSize: '24px',
                   fontWeight: '700',
-                  color: '#162a41',
+                  color: '#282828',
                   margin: 0
                 }}>
                   {section.title}
@@ -308,7 +308,7 @@ export default function PrivacyPolicy() {
                     <h3 style={{
                       fontSize: '18px',
                       fontWeight: '600',
-                      color: '#162a41',
+                      color: '#282828',
                       marginBottom: '12px'
                     }}>
                       {item.heading}
@@ -342,11 +342,11 @@ export default function PrivacyPolicy() {
             border: '1px solid rgba(22, 42, 65, 0.1)'
           }}
         >
-          <Server size={48} color="#162a41" style={{ marginBottom: '16px' }} />
+          <Server size={48} color="#282828" style={{ marginBottom: '16px' }} />
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px'
           }}>
             Questions About Your Privacy?
@@ -369,7 +369,7 @@ export default function PrivacyPolicy() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
-              background: '#162a41',
+              background: '#282828',
               color: '#ffffff',
               padding: '12px 24px',
               borderRadius: '8px',

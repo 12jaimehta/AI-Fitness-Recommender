@@ -3,27 +3,27 @@
 import React from "react";
 import { FormInputProps } from "../../lib/types";
 
-export default function FormInput({ 
-  label, 
-  type = "text", 
-  placeholder, 
-  value, 
-  onChange, 
-  error, 
+export default function FormInput({
+  label,
+  type = "text",
+  placeholder,
+  value,
+  onChange,
+  error,
   required = false,
   disabled = false
 }: FormInputProps) {
   const inputValue = value === undefined || value === null ? '' : String(value);
   return (
     <div>
-      <label style={{ 
-        color: '#1a1a1a', 
-        fontSize: '16px', 
-        fontWeight: '600', 
-        marginBottom: '10px', 
-        display: 'block' 
+      <label style={{
+        color: '#1a1a1a',
+        fontSize: '16px',
+        fontWeight: '600',
+        marginBottom: '10px',
+        display: 'block'
       }}>
-        {label} {required && <span style={{ color: '#162a41' }}>*</span>}
+        {label} {required && <span style={{ color: '#282828' }}>*</span>}
       </label>
       <input
         type={type}
@@ -46,10 +46,10 @@ export default function FormInput({
           fontWeight: '500',
           boxShadow: '0 4px 12px -2px rgba(22, 42, 65, 0.1)'
         }}
-onWheel={(e) => (e.target as HTMLInputElement).blur()}
+        onWheel={(e) => (e.target as HTMLInputElement).blur()}
         onFocus={(e) => {
           if (!disabled) {
-            e.target.style.borderColor = '#162a41';
+            e.target.style.borderColor = '#282828';
             e.target.style.background = '#ffffff';
             e.target.style.boxShadow = '0 8px 25px -5px rgba(22, 42, 65, 0.25)';
           }
@@ -63,9 +63,9 @@ onWheel={(e) => (e.target as HTMLInputElement).blur()}
         }}
       />
       {error && (
-        <p style={{ 
-          color: '#ef4444', 
-          fontSize: '14px', 
+        <p style={{
+          color: '#ef4444',
+          fontSize: '14px',
           marginTop: '8px',
           fontWeight: '500',
           display: 'flex',

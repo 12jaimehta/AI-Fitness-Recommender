@@ -40,10 +40,10 @@ export default function GenderSelector({ selectedGender, onGenderSelect, error }
             onClick={() => onGenderSelect(option.value)}
             style={{
               background: selectedGender === option.value 
-                ? '#162a41'
+                ? '#282828'
                 : 'rgba(255, 255, 255, 0.05)',
               border: selectedGender === option.value 
-                ? '2px solid #162a41'
+                ? '2px solid #282828'
                 : '2px solid rgba(255, 255, 255, 0.1)',
               borderRadius: '16px',
               padding: '30px',

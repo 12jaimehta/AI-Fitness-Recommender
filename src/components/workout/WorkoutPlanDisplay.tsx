@@ -143,7 +143,7 @@ function Header({ onRegenerate, onNewPlan, loading }: { onRegenerate: () => void
         width: '80px',
         height: '80px',
         borderRadius: '20px',
-        background: '#162a41',
+        background: '#282828',
         marginBottom: '20px'
       }}>
         <Dumbbell size={40} color="#ffffff" />
@@ -152,7 +152,7 @@ function Header({ onRegenerate, onNewPlan, loading }: { onRegenerate: () => void
       <h1 style={{
         fontSize: clampSize(32, 48),
         fontWeight: '800',
-        color: '#162a41',
+        color: '#282828',
         marginBottom: '15px'
       }}>
         Your Personalized Workout Plan
@@ -190,7 +190,7 @@ function ActionButtons({ onRegenerate, onNewPlan, loading }: { onRegenerate: () 
         onClick={onRegenerate}
         disabled={loading}
         style={{
-          background: loading ? '#9ca3af' : '#162a41',
+          background: loading ? '#9ca3af' : '#282828',
           color: '#ffffff',
           border: 'none',
           padding: '14px 28px',
@@ -223,8 +223,8 @@ function ActionButtons({ onRegenerate, onNewPlan, loading }: { onRegenerate: () 
         onClick={onNewPlan}
         style={{
           background: '#ffffff',
-          color: '#162a41',
-          border: '2px solid #162a41',
+          color: '#282828',
+          border: '2px solid #282828',
           padding: '14px 28px',
           borderRadius: '12px',
           fontSize: '15px',
@@ -254,8 +254,8 @@ function ActionButtons({ onRegenerate, onNewPlan, loading }: { onRegenerate: () 
         onClick={() => window.print()}
         style={{
           background: '#ffffff',
-          color: '#162a41',
-          border: '2px solid #162a41',
+          color: '#282828',
+          border: '2px solid #282828',
           padding: '14px 28px',
           borderRadius: '12px',
           fontSize: '15px',
@@ -290,7 +290,7 @@ function WorkoutStats({ workoutStats }: { workoutStats: any[] }) {
       <h2 style={{
         fontSize: clampSize(24, 28),
         fontWeight: '700',
-        color: '#162a41',
+        color: '#282828',
         marginBottom: '25px',
         textAlign: 'center'
       }}>
@@ -318,7 +318,7 @@ function WorkoutStats({ workoutStats }: { workoutStats: any[] }) {
             }}
             whileHover={{ 
               scale: 1.05,
-              borderColor: '#162a41',
+              borderColor: '#282828',
               boxShadow: '0 8px 25px rgba(22, 42, 65, 0.15)'
             }}
           >
@@ -329,7 +329,7 @@ function WorkoutStats({ workoutStats }: { workoutStats: any[] }) {
               width: '50px',
               height: '50px',
               borderRadius: '12px',
-              background: '#162a41',
+              background: '#282828',
               margin: '0 auto 15px'
             }}>
               <stat.icon size={24} color="#ffffff" />
@@ -337,7 +337,7 @@ function WorkoutStats({ workoutStats }: { workoutStats: any[] }) {
             <div style={{
               fontSize: clampSize(20, 24),
               fontWeight: '700',
-              color: '#162a41',
+              color: '#282828',
               marginBottom: '5px'
             }}>
               {stat.value}
@@ -386,8 +386,8 @@ function ViewToggle({ activeView, onViewChange }: { activeView: 'single' | 'week
               padding: '12px 16px',
               borderRadius: '8px',
               border: 'none',
-              background: activeView === tab.id ? '#162a41' : 'transparent',
-              color: activeView === tab.id ? '#ffffff' : '#162a41',
+              background: activeView === tab.id ? '#282828' : 'transparent',
+              color: activeView === tab.id ? '#ffffff' : '#282828',
               fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -432,7 +432,7 @@ function WorkoutPlansSection({
       <h2 style={{
         fontSize: clampSize(24, 28),
         fontWeight: '700',
-        color: '#162a41',
+        color: '#282828',
         marginBottom: '25px',
         textAlign: 'center'
       }}>
@@ -479,9 +479,9 @@ function DaySelector({ days, selectedDay, onDaySelect, workouts }: any) {
               padding: '10px 16px',
               borderRadius: '8px',
               border: '2px solid',
-              borderColor: selectedDay === day ? '#162a41' : hasWorkout ? 'rgba(22, 42, 65, 0.3)' : 'rgba(22, 42, 65, 0.1)',
-              background: selectedDay === day ? '#162a41' : hasWorkout ? 'rgba(22, 42, 65, 0.05)' : 'transparent',
-              color: selectedDay === day ? '#ffffff' : '#162a41',
+              borderColor: selectedDay === day ? '#282828' : hasWorkout ? 'rgba(22, 42, 65, 0.3)' : 'rgba(22, 42, 65, 0.1)',
+              background: selectedDay === day ? '#282828' : hasWorkout ? 'rgba(22, 42, 65, 0.05)' : 'transparent',
+              color: selectedDay === day ? '#ffffff' : '#282828',
               fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -540,7 +540,7 @@ function WorkoutCard({ workout, day, isExpanded, onToggle, showAlternatives, onA
         transition: 'all 0.3s ease'
       }}
       whileHover={{ 
-        borderColor: '#162a41',
+        borderColor: '#282828',
         boxShadow: '0 8px 25px rgba(22, 42, 65, 0.1)'
       }}
     >
@@ -572,13 +572,13 @@ function WorkoutCard({ workout, day, isExpanded, onToggle, showAlternatives, onA
               width: '50px',
               height: '50px',
               borderRadius: '12px',
-              background: '#162a41'
+              background: '#282828'
             }}>
               <Play size={24} color="#ffffff" />
             </div>
             <div>
               <h3 style={{
-                color: '#162a41',
+                color: '#282828',
                 fontSize: clampSize(18, 20),
                 fontWeight: '700',
                 marginBottom: '5px',
@@ -606,15 +606,15 @@ function WorkoutCard({ workout, day, isExpanded, onToggle, showAlternatives, onA
               background: 'rgba(22, 42, 65, 0.1)',
               padding: '6px 12px',
               borderRadius: '20px',
-              color: '#162a41',
+              color: '#282828',
               fontSize: '13px',
               fontWeight: '600'
             }}>
               {workout.exercises?.length || 0} exercises
             </div>
             {isExpanded ? 
-              <ChevronUp size={20} color="#162a41" /> : 
-              <ChevronDown size={20} color="#162a41" />
+              <ChevronUp size={20} color="#282828" /> : 
+              <ChevronDown size={20} color="#282828" />
             }
           </div>
         </div>
@@ -652,7 +652,7 @@ function WorkoutContent({ workout, showAlternatives, onAlternativesToggle }: any
         marginBottom: '20px'
       }}>
         <h4 style={{ 
-          color: '#162a41', 
+          color: '#282828', 
           fontSize: '16px', 
           fontWeight: '600', 
           marginBottom: '15px' 
@@ -668,7 +668,7 @@ function WorkoutContent({ workout, showAlternatives, onAlternativesToggle }: any
             background: 'rgba(22, 42, 65, 0.1)',
             padding: '8px 16px',
             borderRadius: '20px',
-            color: '#162a41',
+            color: '#282828',
             fontSize: '13px',
             fontWeight: '600'
           }}>
@@ -678,7 +678,7 @@ function WorkoutContent({ workout, showAlternatives, onAlternativesToggle }: any
             background: 'rgba(22, 42, 65, 0.1)',
             padding: '8px 16px',
             borderRadius: '20px',
-            color: '#162a41',
+            color: '#282828',
             fontSize: '13px',
             fontWeight: '600'
           }}>
@@ -688,7 +688,7 @@ function WorkoutContent({ workout, showAlternatives, onAlternativesToggle }: any
             background: 'rgba(22, 42, 65, 0.1)',
             padding: '8px 16px',
             borderRadius: '20px',
-            color: '#162a41',
+            color: '#282828',
             fontSize: '13px',
             fontWeight: '600'
           }}>
@@ -729,7 +729,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
         transition: 'all 0.3s ease'
       }}
       whileHover={{ 
-        borderColor: '#162a41',
+        borderColor: '#282828',
         boxShadow: '0 8px 25px rgba(22, 42, 65, 0.1)'
       }}
     >
@@ -743,7 +743,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
           <h4 style={{
             fontSize: '16px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '8px',
             display: 'flex',
             alignItems: 'center',
@@ -758,7 +758,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
             marginBottom: '8px'
           }}>
             <span style={{
-              background: '#162a41',
+              background: '#282828',
               color: '#ffffff',
               padding: '4px 12px',
               borderRadius: '20px',
@@ -768,7 +768,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
               {exercise.sets} sets
             </span>
             <span style={{
-              background: '#162a41',
+              background: '#282828',
               color: '#ffffff',
               padding: '4px 12px',
               borderRadius: '20px',
@@ -778,7 +778,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
               {exercise.reps} reps
             </span>
             <span style={{
-              background: '#162a41',
+              background: '#282828',
               color: '#ffffff',
               padding: '4px 12px',
               borderRadius: '20px',
@@ -812,7 +812,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
             border: '1px solid rgba(22, 42, 65, 0.2)',
             padding: '8px 12px',
             borderRadius: '8px',
-            color: '#162a41',
+            color: '#282828',
             fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
@@ -820,7 +820,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
           }}
           whileHover={{ 
             background: 'rgba(22, 42, 65, 0.1)',
-            borderColor: '#162a41'
+            borderColor: '#282828'
           }}
           whileTap={{ scale: 0.98 }}
         >
@@ -848,7 +848,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
               padding: '15px'
             }}>
               <h5 style={{
-                color: '#162a41',
+                color: '#282828',
                 fontSize: '14px',
                 fontWeight: '600',
                 marginBottom: '10px'
@@ -914,13 +914,13 @@ function WorkoutTips({ workoutTips }: { workoutTips: string[] }) {
         <h3 style={{
           fontSize: clampSize(20, 24),
           fontWeight: '700',
-          color: '#162a41',
+          color: '#282828',
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
           gap: '10px'
         }}>
-          <Zap size={24} color="#162a41" />
+          <Zap size={24} color="#282828" />
           Workout Tips & Recommendations
         </h3>
         
@@ -944,7 +944,7 @@ function WorkoutTips({ workoutTips }: { workoutTips: string[] }) {
                 border: '1px solid rgba(22, 42, 65, 0.1)'
               }}
             >
-              <CheckCircle2 size={18} color="#162a41" style={{ flexShrink: 0, marginTop: '2px' }} />
+              <CheckCircle2 size={18} color="#282828" style={{ flexShrink: 0, marginTop: '2px' }} />
               <span style={{ 
                 color: '#374151', 
                 fontSize: '14px', 

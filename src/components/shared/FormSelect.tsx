@@ -23,7 +23,7 @@ export default function FormSelect({
         marginBottom: '10px', 
         display: 'block' 
       }}>
-        {label} {required && <span style={{ color: '#162a41' }}>*</span>}
+        {label} {required && <span style={{ color: '#282828' }}>*</span>}
       </label>
       <select
         value={selectValue}
@@ -52,7 +52,7 @@ export default function FormSelect({
         }}
         onFocus={(e) => {
           if (!disabled) {
-            e.target.style.borderColor = '#162a41';
+            e.target.style.borderColor = '#282828';
             e.target.style.background = '#ffffff';
             e.target.style.boxShadow = '0 8px 25px -5px rgba(22, 42, 65, 0.25)';
           }

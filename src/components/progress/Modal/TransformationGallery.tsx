@@ -48,7 +48,7 @@ export default function TransformationGalleryModal({ isOpen, onClose, photos }: 
             className="w-full max-w-3xl max-h-[90vh] bg-white rounded-3xl shadow-2xl relative overflow-hidden flex flex-col"
           >
             {/* Header */}
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-[#162a41] text-white">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-[#282828] text-white">
                 <h2 className="text-xl font-bold flex items-center gap-2">
                     <GalleryHorizontal size={22} className="text-emerald-300" />
                     Transformation Gallery

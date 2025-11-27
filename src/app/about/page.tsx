@@ -123,7 +123,7 @@ export default function AboutUs() {
               Home
             </Link>
             <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#162a41' }}>About Us</span>
+            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>About Us</span>
           </div>
         </motion.div>
 
@@ -143,7 +143,7 @@ export default function AboutUs() {
             justifyContent: 'center',
             width: '80px',
             height: '80px',
-            background: '#162a41',
+            background: '#282828',
             borderRadius: '20px',
             marginBottom: '20px'
           }}>
@@ -152,7 +152,7 @@ export default function AboutUs() {
           <h1 style={{
             fontSize: '48px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px',
             margin: 0
           }}>
@@ -190,7 +190,7 @@ export default function AboutUs() {
             justifyContent: 'center',
             width: '64px',
             height: '64px',
-            background: '#162a41',
+            background: '#282828',
             borderRadius: '50%',
             marginBottom: '24px'
           }}>
@@ -199,7 +199,7 @@ export default function AboutUs() {
           <h2 style={{
             fontSize: '32px',
             fontWeight: '700',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '16px'
           }}>
             Our Mission
@@ -248,7 +248,7 @@ export default function AboutUs() {
               <div style={{
                 fontSize: '36px',
                 fontWeight: '700',
-                color: '#162a41',
+                color: '#282828',
                 marginBottom: '8px'
               }}>
                 {stat.number}
@@ -256,7 +256,7 @@ export default function AboutUs() {
               <div style={{
                 fontSize: '18px',
                 fontWeight: '600',
-                color: '#162a41',
+                color: '#282828',
                 marginBottom: '8px'
               }}>
                 {stat.label}
@@ -288,7 +288,7 @@ export default function AboutUs() {
               justifyContent: 'center',
               width: '64px',
               height: '64px',
-              background: '#162a41',
+              background: '#282828',
               borderRadius: '50%',
               marginBottom: '16px'
             }}>
@@ -297,7 +297,7 @@ export default function AboutUs() {
             <h2 style={{
               fontSize: '32px',
               fontWeight: '700',
-              color: '#162a41',
+              color: '#282828',
               marginBottom: '16px'
             }}>
               Meet Our Team
@@ -336,7 +336,7 @@ export default function AboutUs() {
                 <div style={{
                   width: '80px',
                   height: '80px',
-                  background: '#162a41',
+                  background: '#282828',
                   borderRadius: '50%',
                   margin: '0 auto 20px',
                   display: 'flex',
@@ -354,7 +354,7 @@ export default function AboutUs() {
                 <h3 style={{
                   fontSize: '20px',
                   fontWeight: '600',
-                  color: '#162a41',
+                  color: '#282828',
                   marginBottom: '8px'
                 }}>
                   {member.name}
@@ -362,7 +362,7 @@ export default function AboutUs() {
                 <div style={{
                   fontSize: '14px',
                   fontWeight: '600',
-                  color: '#162a41',
+                  color: '#282828',
                   marginBottom: '16px'
                 }}>
                   {member.role}
@@ -397,7 +397,7 @@ export default function AboutUs() {
               justifyContent: 'center',
               width: '64px',
               height: '64px',
-              background: '#162a41',
+              background: '#282828',
               borderRadius: '50%',
               marginBottom: '16px'
             }}>
@@ -406,7 +406,7 @@ export default function AboutUs() {
             <h2 style={{
               fontSize: '32px',
               fontWeight: '700',
-              color: '#162a41',
+              color: '#282828',
               marginBottom: '16px'
             }}>
               Our Journey
@@ -444,7 +444,7 @@ export default function AboutUs() {
                 <div style={{
                   fontSize: '24px',
                   fontWeight: '700',
-                  color: '#162a41',
+                  color: '#282828',
                   marginBottom: '8px'
                 }}>
                   {milestone.year}
@@ -452,7 +452,7 @@ export default function AboutUs() {
                 <h3 style={{
                   fontSize: '16px',
                   fontWeight: '600',
-                  color: '#162a41',
+                  color: '#282828',
                   marginBottom: '8px'
                 }}>
                   {milestone.title}
@@ -486,7 +486,7 @@ export default function AboutUs() {
           <h2 style={{
             fontSize: '24px',
             fontWeight: '600',
-            color: '#162a41',
+            color: '#282828',
             marginBottom: '24px'
           }}>
             Get in Touch
@@ -522,7 +522,7 @@ export default function AboutUs() {
               color: '#6b7280'
             }}>
               <MapPin size={18} />
-              <span>San Francisco, CA</span>
+              <span>Gurugram, India</span>
             </div>
           </div>
         </motion.div>
