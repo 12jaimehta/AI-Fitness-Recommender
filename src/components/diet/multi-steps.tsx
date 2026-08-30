@@ -351,11 +351,12 @@ export default function RefactoredMultiStepForm({
               control={control}
               render={({ field }) => (
                 <FormSelect
-                    label={workoutForm ? "Activity level (from your workout)" : "Activity Level"}
+                  label={workoutForm ? "Activity level (from your workout)" : "Activity Level"}
                   value={field.value}
                   onChange={(v) => field.onChange(v)}
                   options={activityOptions}
                   error={errors.activityLevel?.message}
+                  variant="dropdown"
                 />
               )}
             />
@@ -375,6 +376,7 @@ export default function RefactoredMultiStepForm({
                     value={field.value}
                     onChange={(v) => field.onChange(v)}
                     options={dietaryOptions}
+                    variant="dropdown"
                   />
                 )}
               />

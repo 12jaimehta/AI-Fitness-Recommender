@@ -10,6 +10,6 @@ type Props = {
 };
 
 export default function SectionGrid({ children, cols = 2, gap = "gap-6", className = "" }: Props) {
-  const gridCols = cols === 2 ? "grid-cols-2" : "grid-cols-1";
+  const gridCols = cols === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1";
   return <div className={`grid ${gridCols} ${gap} ${className}`}>{children}</div>;
 }

@@ -7,6 +7,7 @@ import { useUser } from "@/lib/hooks/use-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import PageLoader from "@/components/ui/PageLoader";
 import OptionChipGrid from "@/components/shared/OptionChipGrid";
+import FormSelect from "@/components/shared/FormSelect";
 import { fitnessLevelOptions } from "@/lib/constant";
 import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
 import { profileSetupSchema } from "@/lib/validation/profileSchema";
@@ -185,38 +186,28 @@ export default function ProfileClientPage() {
                 {fieldErrors.age ? <p className="mt-1 text-xs text-red-600">{fieldErrors.age}</p> : null}
               </div>
               <div>
-                <label className="text-sm font-semibold text-[#282828]">Gender</label>
-                <select
+                <FormSelect
+                  label="Gender"
                   value={form.gender}
-                  onChange={(event) => setField("gender", event.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">Select gender</option>
-                  {GENDERS.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-                {fieldErrors.gender ? <p className="mt-1 text-xs text-red-600">{fieldErrors.gender}</p> : null}
+                  onChange={(value) => setField("gender", value)}
+                  options={GENDERS}
+                  error={fieldErrors.gender}
+                  required
+                  columns={1}
+                  variant="dropdown"
+                />
               </div>
               <div>
-                <label className="text-sm font-semibold text-[#282828]">Fitness level</label>
-                <select
+                <FormSelect
+                  label="Fitness level"
                   value={form.fitness_level}
-                  onChange={(event) => setField("fitness_level", event.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">Select level</option>
-                  {FITNESS.map((item) => (
-                    <option key={item.value} value={item.value}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-                {fieldErrors.fitness_level ? (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.fitness_level}</p>
-                ) : null}
+                  onChange={(value) => setField("fitness_level", value)}
+                  options={FITNESS}
+                  error={fieldErrors.fitness_level}
+                  required
+                  columns={1}
+                  variant="dropdown"  
+                />
               </div>
               <div>
                 <label className="text-sm font-semibold text-[#282828]">Height (cm)</label>

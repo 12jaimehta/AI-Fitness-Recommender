@@ -97,7 +97,7 @@ export default function DashboardClientPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb items={[{ label: "Home" }]} />
+        <PageBreadcrumb items={[{ label: "Home /" }]} />
 
         <header className="mb-10 border-b border-gray-200 pb-6">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">

@@ -286,6 +286,7 @@ export default function WorkoutMultiStepForm({
                     options={equipmentOptions}
                     error={errors.availableEquipment?.message}
                     required
+                    variant="dropdown"
                   />
                 )}
               />
@@ -314,6 +315,7 @@ export default function WorkoutMultiStepForm({
               options={muscleGroupOptions}
               selected={watched.targetMuscles || []}
               onToggle={toggleMuscleGroup}
+              variant="dropdown"
             />
             <Controller
               name="injuries"

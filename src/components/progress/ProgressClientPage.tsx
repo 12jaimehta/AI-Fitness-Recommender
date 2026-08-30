@@ -26,6 +26,7 @@ import type {
   WeeklyReview,
 } from "@/shared/types";
 import PageLoader from "@/components/ui/PageLoader";
+import FormSelect from "@/components/shared/FormSelect";
 import SurfaceCard from "@/components/shared/SurfaceCard";
 import TrendChart from "@/components/shared/TrendChart";
 import MacroRings from "@/components/progress/MacroRings";
@@ -248,19 +249,16 @@ export default function ProgressClientPage() {
           </button>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm font-semibold text-[#282828]">{periodLabel}</p>
-          <select
+          <FormSelect
+            label=""
             value={range}
-            onChange={(e) => setRange(e.target.value)}
-            className="rounded-xl border-2 border-[#282828]/20 bg-white px-3 py-2 text-sm font-semibold text-[#282828] outline-none"
-          >
-            {RANGE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={setRange}
+            options={RANGE_OPTIONS}
+            variant="dropdown"
+            compact
+          />
         </div>
 
         <SurfaceCard className="mb-4">

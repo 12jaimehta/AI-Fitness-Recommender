@@ -14,6 +14,7 @@ import {
   Home
 } from 'lucide-react';
 import Link from 'next/link';
+import FormSelect from "@/components/shared/FormSelect";
 
 export default function ContactUs() {
   const [formData, setFormData] = useState({
@@ -390,40 +391,20 @@ export default function ContactUs() {
                   </div>
 
                   <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#282828',
-                      marginBottom: '8px'
-                    }}>
-                      Subject
-                    </label>
-                    <select
-                      name="subject"
+                    <FormSelect
+                      label="Subject"
                       value={formData.subject}
-                      onChange={handleChange}
+                      onChange={(value) => setFormData({ ...formData, subject: value })}
+                      options={[
+                        { value: "general", label: "General inquiry" },
+                        { value: "technical", label: "Technical support" },
+                        { value: "billing", label: "Billing question" },
+                        { value: "feedback", label: "Feedback" },
+                        { value: "other", label: "Other" },
+                      ]}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid rgba(22, 42, 65, 0.2)',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        transition: 'border-color 0.3s ease',
-                        outline: 'none',
-                        background: '#ffffff'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#282828'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
-                    >
-                      <option value="">Select a subject</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="technical">Technical Support</option>
-                      <option value="billing">Billing Question</option>
-                      <option value="feedback">Feedback</option>
-                      <option value="other">Other</option>
-                    </select>
+                      variant="dropdown"
+                    />
                   </div>
 
                   <div style={{ marginBottom: '24px' }}>

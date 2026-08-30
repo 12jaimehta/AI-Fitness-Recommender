@@ -22,6 +22,10 @@ export interface FormSelectProps {
   error?: string;
   required?: boolean;
   disabled?: boolean;
+  hint?: string;
+  columns?: 1 | 2 | 3;
+  compact?: boolean;
+  variant?: "chips" | "dropdown";
   control?: any; // Control from react-hook-form
 }
 
