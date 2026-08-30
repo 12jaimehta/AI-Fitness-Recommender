@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,18 +18,23 @@ import { RefactoredMultiStepFormProps } from "@/lib/types";
 import {
   activityOptions,
   dietaryOptions,
-  goalOptions,
   steps,
   workoutOptions,
 } from "@/lib/constant";
 import FormTwoColumnLayout from "@/components/shared/FormTwoColumnLayout";
 import PlanFormHeader from "@/components/shared/PlanFormHeader";
+import PlanPairingCard from "@/components/shared/PlanPairingCard";
+import OptionChipGrid from "@/components/shared/OptionChipGrid";
+import { PROGRAM_GOAL_OPTIONS, coerceProgramGoal, dietActivityFromWorkoutDays, dietFrequencyFromWorkoutDays } from "@/shared/lib/program-goals";
+import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
+import { getUserProfile } from "@/lib/service/progress-database";
 
 export default function RefactoredMultiStepForm({
   onSubmit,
   loading,
 }: RefactoredMultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const workoutForm = typeof window === "undefined" ? null : readLastWorkoutForm();
 
   const {
     control,
@@ -39,7 +44,7 @@ export default function RefactoredMultiStepForm({
     trigger,
     formState: { errors },
   } = useForm<DietPlanFormData>({
-    resolver: zodResolver(dietPlanSchema) as any,
+    resolver: zodResolver(dietPlanSchema) as never,
     defaultValues: {
       weight: "",
       weightUnit: "kg",
@@ -62,6 +67,30 @@ export default function RefactoredMultiStepForm({
   });
 
   const watched = watch();
+
+  useEffect(() => {
+    const workout = readLastWorkoutForm();
+    if (workout?.goal) {
+      setValue("goal", coerceProgramGoal(workout.goal) || (workout.goal as DietPlanFormData["goal"]));
+    }
+    if (workout?.workoutFrequency) {
+      setValue("workoutFrequency", dietFrequencyFromWorkoutDays(workout.workoutFrequency));
+      setValue("activityLevel", dietActivityFromWorkoutDays(workout.workoutFrequency));
+    }
+    if (workout?.medicalConditions) setValue("medicalConditions", workout.medicalConditions);
+
+    getUserProfile()
+      .then((profile) => {
+        if (!profile) return;
+        if (profile.age) setValue("age", String(profile.age));
+        if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
+        if (profile.height) setValue("height", String(profile.height));
+        if (profile.initial_weight) setValue("weight", String(profile.initial_weight));
+        const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
+        if (profileGoal && !workout?.goal) setValue("goal", profileGoal);
+      })
+      .catch(() => {});
+  }, [setValue]);
 
   const nextStep = async () => {
     const fields = getFields(currentStep);
@@ -110,11 +139,14 @@ export default function RefactoredMultiStepForm({
       heading="Personalized AI Diet Plan"
       steps={steps}
       header={
-        <PlanFormHeader
-          currentLabel="Diet Plan"
-          currentPlanHref="/diet/plan"
-          currentPlanText="View Diet Plan"
-        />
+        <>
+          <PlanFormHeader
+            currentLabel="Diet Plan"
+            currentPlanHref="/diet/plan"
+            currentPlanText="View Diet Plan"
+          />
+          <PlanPairingCard context="diet-form" otherExists={Boolean(workoutForm)} goal={watched.goal} />
+        </>
       }
     >
       <FormStepHeader
@@ -319,7 +351,7 @@ export default function RefactoredMultiStepForm({
               control={control}
               render={({ field }) => (
                 <FormSelect
-                  label="Activity Level"
+                    label={workoutForm ? "Activity level (from your workout)" : "Activity Level"}
                   value={field.value}
                   onChange={(v) => field.onChange(v)}
                   options={activityOptions}
@@ -346,19 +378,16 @@ export default function RefactoredMultiStepForm({
                   />
                 )}
               />
-              <Controller
-                name="goal"
-                control={control}
-                render={({ field }) => (
-                  <FormSelect
-                    label="Fitness Goal"
-                    value={field.value}
-                    onChange={(v) => field.onChange(v)}
-                    options={goalOptions}
-                  />
-                )}
-              />
             </SectionGrid>
+
+            <OptionChipGrid
+              label="Training goal"
+              hint="Use the same goal as your workout so food matches Hyrox, Ironman, bodybuilding, or fat loss."
+              options={PROGRAM_GOAL_OPTIONS}
+              selected={watched.goal ? [watched.goal] : []}
+              onToggle={(value) => setValue("goal", value as DietPlanFormData["goal"], { shouldValidate: true })}
+              error={errors.goal?.message}
+            />
 
             <SectionGrid cols={2}>
               <Controller
@@ -383,7 +412,7 @@ export default function RefactoredMultiStepForm({
                 control={control}
                 render={({ field }) => (
                   <FormSelect
-                    label="Workout Frequency"
+                    label={workoutForm ? "Workout frequency (from your workout)" : "Workout Frequency"}
                     value={field.value}
                     onChange={(v) => field.onChange(v)}
                     options={workoutOptions}

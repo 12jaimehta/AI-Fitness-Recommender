@@ -2,15 +2,9 @@ import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
 import type { DietPlanData } from "@/shared/types";
 import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
+import { programGoalLabel } from "@/shared/lib/program-goals";
 
 function generatePlanTitle(formData: DietPlanFormData): string {
-  const goalMap: Record<string, string> = {
-    weight_loss: "Weight Loss",
-    muscle_gain: "Muscle Gain",
-    weight_maintenance: "Maintenance",
-    endurance: "Endurance",
-    general_health: "General Health",
-  };
   const preferenceMap: Record<string, string> = {
     vegetarian: "Vegetarian",
     "non-vegetarian": "Non-Vegetarian",
@@ -18,7 +12,7 @@ function generatePlanTitle(formData: DietPlanFormData): string {
     vegan: "Vegan",
     pescatarian: "Pescatarian",
   };
-  return `${goalMap[formData.goal] || "Custom"} ${preferenceMap[formData.dietaryPreference] || "Custom"} Plan`;
+  return `${programGoalLabel(formData.goal)} ${preferenceMap[formData.dietaryPreference] || "Custom"} Plan`;
 }
 
 function generatePlanDescription(formData: DietPlanFormData): string {
@@ -28,7 +22,7 @@ function generatePlanDescription(formData: DietPlanFormData): string {
     formData.heightUnit === "cm"
       ? `${formData.height} cm`
       : `${formData.feet}'${formData.inches}"`;
-  return `${weight}, ${height}, ${formData.age} years old - ${formData.dietaryPreference} diet for ${formData.goal.replace("_", " ")}`;
+  return `${weight}, ${height}, ${formData.age} years old - ${formData.dietaryPreference} diet for ${programGoalLabel(formData.goal)}`;
 }
 
 export async function createDietPlan(input: {

@@ -2,16 +2,34 @@
 import { api } from "@frontend/shared/api/http";
 import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import type { WorkoutPlanData } from "@/shared/types";
+import {
+  storeGeneratedWorkoutPlan,
+  readGeneratedWorkoutPlan,
+  type GeneratedWorkoutSession,
+} from "./generated-session";
 
 export type { WorkoutPlanData, DailyWorkout, Exercise } from "@/shared/types";
+export { storeGeneratedWorkoutPlan, readGeneratedWorkoutPlan, type GeneratedWorkoutSession };
+
+let inFlight: Promise<WorkoutPlanData> | null = null;
+let inFlightKey = "";
 
 export async function generateAIWorkoutPlan(
   userData: WorkoutPlanFormData
 ): Promise<WorkoutPlanData> {
-  return api<WorkoutPlanData>("/api/generate-workout", {
+  const key = JSON.stringify(userData);
+  if (inFlight && inFlightKey === key) return inFlight;
+
+  inFlightKey = key;
+  inFlight = api<WorkoutPlanData>("/api/generate-workout", {
     method: "POST",
     body: JSON.stringify(userData),
+  }).finally(() => {
+    inFlight = null;
+    inFlightKey = "";
   });
+
+  return inFlight;
 }
 
 export type SavedWorkoutPlan = {
@@ -46,4 +64,20 @@ export async function getUserWorkoutPlans(_userId: string) {
 
 export async function deleteWorkoutPlan(_userId: string, planId: string) {
   await api(`/api/workout-plans/${planId}`, { method: "DELETE" });
+}
+
+export async function loadCurrentWorkoutPlan(): Promise<GeneratedWorkoutSession | null> {
+  const stored = readGeneratedWorkoutPlan();
+  if (stored) return stored;
+
+  try {
+    const plans = await getUserWorkoutPlans("");
+    const latest = plans?.[0];
+    if (!latest?.workout_plan) return null;
+    const session = { formData: latest.form_data, plan: latest.workout_plan };
+    storeGeneratedWorkoutPlan(session);
+    return session;
+  } catch {
+    return null;
+  }
 }

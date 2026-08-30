@@ -18,6 +18,9 @@ import {
 import { WorkoutPlanData } from "@/lib/service/dietWorkoutplan";
 import PlanDisplayShell from "@/components/shared/PlanDisplayShell";
 import PlanFormHeader from "@/components/shared/PlanFormHeader";
+import PlanPairingCard from "@/components/shared/PlanPairingCard";
+import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
+import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
 import PlanResultHeader from "@/components/shared/PlanResultHeader";
 import PlanStatGrid from "@/components/shared/PlanStatGrid";
 import PlanViewToggle from "@/components/shared/PlanViewToggle";
@@ -101,8 +104,13 @@ export default function WorkoutPlanDisplay({
     <PlanDisplayShell>
       <PlanFormHeader
         currentLabel="Workout Plan"
-        currentPlanHref="/diet/plan"
-        currentPlanText="See your current workout plan"
+        currentPlanHref="/diet"
+        currentPlanText="Make a matching diet"
+      />
+      <PlanPairingCard
+        context="workout-result"
+        otherExists={Boolean(readGeneratedDietPlan())}
+        goal={readLastWorkoutForm()?.goal}
       />
       <PlanResultHeader
         icon={Dumbbell}

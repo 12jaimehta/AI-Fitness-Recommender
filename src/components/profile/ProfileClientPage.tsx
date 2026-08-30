@@ -6,7 +6,8 @@ import { getUserProfile, updateUserProfile } from "@/lib/service/progress-databa
 import { useUser } from "@/lib/hooks/use-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import OptionChipGrid from "@/components/shared/OptionChipGrid";
-import { fitnessLevelOptions, goalOptions } from "@/lib/constant";
+import { fitnessLevelOptions } from "@/lib/constant";
+import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
 import { profileSetupSchema } from "@/lib/validation/profileSchema";
 import { isProfileComplete } from "@/shared/lib/profile";
 import type { UserProfile } from "@/shared/types";
@@ -18,7 +19,7 @@ const GENDERS = [
 ];
 
 const FITNESS = fitnessLevelOptions.filter((item) => item.value);
-const GOALS = goalOptions.filter((item) => item.value);
+const GOALS = PROGRAM_GOAL_OPTIONS;
 
 const emptyForm = {
   full_name: "",

@@ -300,7 +300,7 @@ Total: ~410 kcal`
   };
 
   // Decide which base meals to use depending on user's goal
-  const useWeightLoss = (userData.goal === "weight_loss");
+  const useWeightLoss = (userData.goal === "fat_loss");
   const baseMeals = useWeightLoss ? weightLossMeals : leanModeMeals;
 
   // Build single day meals with proper null checking

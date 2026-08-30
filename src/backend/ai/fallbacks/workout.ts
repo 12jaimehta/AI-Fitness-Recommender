@@ -157,11 +157,16 @@ export function generateFallbackWorkoutPlan(userData: WorkoutPlanFormData, estim
     }
   ];
 
+  const muscles =
+    userData.targetMuscles && userData.targetMuscles.length
+      ? userData.targetMuscles
+      : ["full body"];
+
   if (userData.planType === "weekly") {
     const weeklyPlan: any = {};
     const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
     
-    days.forEach((day, index) => {
+    days.forEach((day) => {
       if (recommendedRestDays.includes(day.charAt(0).toUpperCase() + day.slice(1))) {
         weeklyPlan[day] = {
           day: day.charAt(0).toUpperCase() + day.slice(1),
@@ -172,7 +177,7 @@ export function generateFallbackWorkoutPlan(userData: WorkoutPlanFormData, estim
           estimatedCalories: "0 calories"
         };
       } else {
-        const muscleGroups = userData.targetMuscles.slice(0, 2);
+        const muscleGroups = muscles.slice(0, 2);
         weeklyPlan[day] = {
           day: day.charAt(0).toUpperCase() + day.slice(1),
           muscleGroups: muscleGroups,
@@ -199,10 +204,10 @@ export function generateFallbackWorkoutPlan(userData: WorkoutPlanFormData, estim
     return {
       singleWorkout: {
         day: "Workout",
-        muscleGroups: userData.targetMuscles.slice(0, 2),
+        muscleGroups: muscles.slice(0, 2),
         exercises: selectedExercises.map(ex => ({
           ...ex,
-          muscleGroup: userData.targetMuscles.includes(ex.muscleGroup) ? ex.muscleGroup : userData.targetMuscles[0]
+          muscleGroup: muscles.includes(ex.muscleGroup) ? ex.muscleGroup : muscles[0]
         })),
         duration: `${userData.workoutDuration} minutes`,
         difficulty: userData.fitnessLevel,

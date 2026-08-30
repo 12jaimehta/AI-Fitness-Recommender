@@ -7,6 +7,8 @@ import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { loadCurrentDietPlan, saveDietPlan } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PlanPairingCard from "@/components/shared/PlanPairingCard";
+import { readGeneratedWorkoutPlan } from "@frontend/features/workout-plan";
 
 const MEAL_ORDER = [
   "breakfast",
@@ -239,6 +241,12 @@ export default function DietPlanResultPage() {
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Your meal plan</h1>
           <p className="mt-2 text-gray-600">Eat these meals. The numbers are how much energy each meal has.</p>
         </header>
+
+        <PlanPairingCard
+          context="diet-result"
+          otherExists={Boolean(readGeneratedWorkoutPlan())}
+          goal={formData?.goal}
+        />
 
         <section className="mb-8">
           <h2 className="mb-4 text-lg font-semibold text-[#282828]">Eat this much today</h2>

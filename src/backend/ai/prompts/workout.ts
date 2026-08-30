@@ -1,31 +1,43 @@
 import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import type { WorkoutMetrics } from "../workout-metrics";
+import { coerceProgramGoal, programGoalLabel, workoutPromptFocus } from "@/shared/lib/program-goals";
 
 export function buildWorkoutPrompt(userData: WorkoutPlanFormData, metrics: WorkoutMetrics) {
   const equipmentNotes =
     userData.availableEquipment === "none"
-      ? "All exercises must be bodyweight only."
+      ? "All exercises must be bodyweight only, or simple outdoor work if the goal needs running."
       : userData.availableEquipment === "basic"
-        ? "Use dumbbells, resistance bands, and common home gym items mixed with bodyweight."
-        : "Full gym: barbells, cables, machines, cardio, functional equipment.";
+        ? "Use dumbbells, resistance bands, and common home gym items mixed with bodyweight. For Hyrox/running, include outdoor or treadmill running if needed."
+        : "Full gym: barbells, cables, machines, cardio, sleds if present, functional equipment.";
 
   const weekly = userData.planType === "weekly";
+  const goal = coerceProgramGoal(userData.goal) || "general_fitness";
+  const muscles = userData.targetMuscles || [];
+  const dietNote =
+    userData.pairedCalorieTarget
+      ? `User already has a diet at about ${userData.pairedCalorieTarget} calories` +
+        (userData.pairedProteinTarget ? ` and ${userData.pairedProteinTarget} g protein` : "") +
+        `. Keep the training load honest for that fuel.`
+      : "User does not have a paired diet yet. Training still comes first.";
 
-  return `You are an expert fitness trainer. Generate a complete workout plan.
+  return `You are an expert coach. Generate a workout plan for this goal: ${programGoalLabel(goal)}.
 ---
 Age: ${userData.age}
 Gender: ${userData.gender}
 Fitness Level: ${userData.fitnessLevel}
-Goal: ${userData.goal}
+Goal: ${goal} (${programGoalLabel(goal)})
 Workout Duration: ${userData.workoutDuration} minutes
 Workout Frequency: ${userData.workoutFrequency} days per week
 Available Equipment: ${userData.availableEquipment}
-Preferred Workout Time: ${userData.preferredWorkoutTime}
-Target Muscles: ${userData.targetMuscles.join(", ")}
+Preferred Workout Time: ${userData.preferredWorkoutTime || "not set"}
 Injuries: ${userData.injuries || "None"}
 Medical Conditions: ${userData.medicalConditions || "None"}
 Plan Type: ${weekly ? "7-Day Weekly Plan" : "Single Day Plan"}
+${dietNote}
 ---
+
+Program style:
+${workoutPromptFocus(goal, muscles)}
 
 ${
   weekly
@@ -71,5 +83,5 @@ ${
 }`
 }
 
-All exercises must fit ${userData.fitnessLevel} and ${userData.availableEquipment}. Focus on: ${userData.targetMuscles.join(", ")}.`;
+All work must fit ${userData.fitnessLevel} and ${userData.availableEquipment}.`;
 }

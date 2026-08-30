@@ -11,18 +11,21 @@ export default function OptionChipGrid({
   selected,
   onToggle,
   error,
+  hint,
 }: {
   label: string;
   options: Option[];
   selected: string[];
   onToggle: (value: string) => void;
   error?: string;
+  hint?: string;
 }) {
   return (
     <div>
       <label className="block text-sm font-semibold text-slate-900 mb-3">
         {label}
       </label>
+      {hint ? <p className="mb-3 text-sm text-gray-500">{hint}</p> : null}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {options.map((opt) => {
           const active = selected.includes(opt.value);

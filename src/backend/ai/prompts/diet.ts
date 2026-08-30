@@ -1,5 +1,6 @@
 import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
 import { mealJsonFields, mealSlotGuide, type NutritionTargets } from "../nutrition";
+import { coerceProgramGoal, dietPromptFocus, programGoalLabel } from "@/shared/lib/program-goals";
 
 const MEAL_SHAPE =
   '{ "name": string, "calories": number, "protein": number, "carbs": number, "fat": number, "ingredientBreakdown": string }';
@@ -15,6 +16,12 @@ export function buildDietPrompt(userData: DietPlanFormData, nutrition: Nutrition
   const extraMeals = mealJsonFields(userData.mealsPerDay);
   const extraBlock = extraMeals.length ? extraMeals.join(",\n      ") + "," : "";
   const weekly = userData.planType === "weekly";
+  const goal = coerceProgramGoal(userData.goal) || "general_fitness";
+  const trainingNote =
+    userData.pairedTrainingDays
+      ? `Paired workout: ${programGoalLabel(goal)}, ${userData.pairedTrainingDays} days/week` +
+        (userData.pairedTrainingDuration ? `, ${userData.pairedTrainingDuration} minutes per session.` : ".")
+      : "No paired workout yet. Still fuel the stated goal.";
 
   const mealsSchema = `{
     "breakfast": ${MEAL_SHAPE},
@@ -43,9 +50,11 @@ Age: ${userData.age}
 Gender: ${userData.gender}
 Weight: ${userData.weight} ${userData.weightUnit}
 Height: ${height}
-Goal: ${userData.goal}
+Goal: ${goal} (${programGoalLabel(goal)})
 Dietary Preference: ${userData.dietaryPreference}
 Activity Level: ${userData.activityLevel}
+${trainingNote}
+Fueling: ${dietPromptFocus(goal)}
 Allergies: ${userData.allergies || "None"}
 Medical Conditions: ${userData.medicalConditions || "None"}
 Favorite Foods: ${userData.favoriteFoods || "None specified"}
@@ -82,5 +91,5 @@ Reply with strict JSON:
   "fatTarget": "${nutrition.fat}"
 }
 
-All meals must match ${userData.dietaryPreference} and the goal ${userData.goal}.`;
+All meals must match ${userData.dietaryPreference} and the goal ${programGoalLabel(goal)}.`;
 }

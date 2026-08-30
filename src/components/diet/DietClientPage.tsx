@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { generateAIDietPlan, saveDietPlan, storeGeneratedDietPlan } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
+import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
 
 const RefactoredMultiStepForm = dynamic(
   () => import("@/components/diet").then((m) => ({ default: m.RefactoredMultiStepForm })),
@@ -32,8 +33,14 @@ export default function DietClientPage() {
     setError("");
     setLoading(true);
     try {
-      const plan = await generateAIDietPlan(data);
-      storeGeneratedDietPlan({ formData: data, plan });
+      const workout = readLastWorkoutForm();
+      const payload: DietPlanFormData = {
+        ...data,
+        pairedTrainingDays: workout?.workoutFrequency,
+        pairedTrainingDuration: workout?.workoutDuration,
+      };
+      const plan = await generateAIDietPlan(payload);
+      storeGeneratedDietPlan({ formData: payload, plan });
       if (user) {
         void saveDietPlan(user.id, data, plan).catch(() => {});
       }

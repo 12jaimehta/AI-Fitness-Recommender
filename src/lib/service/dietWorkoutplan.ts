@@ -18,8 +18,12 @@ export {
   saveWorkoutPlan,
   getUserWorkoutPlans,
   deleteWorkoutPlan,
+  storeGeneratedWorkoutPlan,
+  readGeneratedWorkoutPlan,
+  loadCurrentWorkoutPlan,
   type WorkoutPlanData,
   type DailyWorkout,
   type Exercise,
   type SavedWorkoutPlan,
+  type GeneratedWorkoutSession,
 } from "@frontend/features/workout-plan";

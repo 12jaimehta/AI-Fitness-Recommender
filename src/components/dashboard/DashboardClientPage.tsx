@@ -10,18 +10,18 @@ import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 
 const PRIMARY = [
   {
-    href: "/diet",
-    title: "Diet plan",
-    text: "Make a new meal plan.",
-    action: "Make a diet plan",
-    icon: Apple,
-  },
-  {
     href: "/workout",
     title: "Workout plan",
-    text: "Make a new workout plan.",
+    text: "Set training first (Hyrox, Ironman, bodybuilding). Then match food to it.",
     action: "Make a workout plan",
     icon: Dumbbell,
+  },
+  {
+    href: "/diet",
+    title: "Diet plan",
+    text: "Fuel the workout. Calories follow how you train.",
+    action: "Make a diet plan",
+    icon: Apple,
   },
   {
     href: "/progress",
@@ -40,6 +40,7 @@ const PRIMARY = [
 ] as const;
 
 const ACCOUNT_LINKS = [
+  { href: "/workout/plan", title: "Current workout plan", detail: "See the sessions you just generated." },
   { href: "/diet/plan", title: "Current diet plan", detail: "See the meal plan you just generated." },
   { href: "/my-profile", title: "My profile", detail: "Your name, age, and fitness details." },
   { href: "/fyte-connect/become-trainer", title: "Become a trainer", detail: "List yourself so people can hire you." },

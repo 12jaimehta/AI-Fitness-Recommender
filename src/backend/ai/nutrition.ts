@@ -1,4 +1,6 @@
 import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
+import type { ProgramGoal } from "@/shared/lib/program-goals";
+import { coerceProgramGoal } from "@/shared/lib/program-goals";
 
 export type NutritionTargets = {
   calories: number;
@@ -38,10 +40,18 @@ export function calculateNutritionTargets(userData: DietPlanFormData): Nutrition
   }
 
   let calories = Math.round(bmr * ACTIVITY_MULTIPLIERS[userData.activityLevel]);
-  if (userData.goal === "weight_loss") calories -= 500;
-  else if (userData.goal === "muscle_gain") calories += 300;
+  const goal = coerceProgramGoal(userData.goal) || (userData.goal as ProgramGoal);
+  if (goal === "fat_loss") calories -= 500;
+  else if (goal === "bodybuilding") calories += 250;
+  else if (goal === "strength") calories += 150;
+  else if (goal === "hyrox") calories += 300;
+  else if (goal === "ironman") calories += 500;
+  else if (goal === "running") calories += 250;
+  else if (goal === "athletic") calories += 200;
 
-  const protein = Math.round(weightKg * 1.6);
+  const proteinPerKg =
+    goal === "fat_loss" || goal === "bodybuilding" || goal === "strength" ? 2.0 : goal === "hyrox" || goal === "ironman" ? 1.8 : 1.6;
+  const protein = Math.round(weightKg * proteinPerKg);
   const fat = Math.round((calories * 0.25) / 9);
   const carbs = Math.round((calories - protein * 4 - fat * 9) / 4);
 

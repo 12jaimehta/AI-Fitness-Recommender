@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,7 @@ import GenderSelectCard, { FemaleImage, MaleImage } from "@/components/ui/form/g
 import SectionGrid from "@/components/ui/form/sectionGrid";
 import FormTwoColumnLayout from "@/components/shared/FormTwoColumnLayout";
 import PlanFormHeader from "@/components/shared/PlanFormHeader";
+import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import {
   equipmentOptions,
   fitnessLevelOptions,
@@ -21,9 +22,11 @@ import {
   preferredTimeOptions,
   workoutDurationOptions,
   workoutFrequencyDaysOptions,
-  workoutGoalOptions,
   workoutSteps,
 } from "@/lib/constant";
+import { PROGRAM_GOAL_OPTIONS, coerceProgramGoal } from "@/shared/lib/program-goals";
+import { readLastDietForm } from "@frontend/features/plan-pairing";
+import { getUserProfile } from "@/lib/service/progress-database";
 
 interface WorkoutMultiStepFormProps {
   onSubmit: (data: WorkoutPlanFormData) => void;
@@ -35,6 +38,7 @@ export default function WorkoutMultiStepForm({
   loading,
 }: WorkoutMultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const dietForm = typeof window === "undefined" ? null : readLastDietForm();
 
   const {
     control,
@@ -44,7 +48,7 @@ export default function WorkoutMultiStepForm({
     trigger,
     formState: { errors },
   } = useForm<WorkoutPlanFormData>({
-    resolver: zodResolver(workoutPlanSchema) as any,
+    resolver: zodResolver(workoutPlanSchema) as never,
     defaultValues: {
       age: "",
       gender: undefined,
@@ -63,10 +67,27 @@ export default function WorkoutMultiStepForm({
 
   const watched = watch();
 
+  useEffect(() => {
+    const diet = readLastDietForm();
+    if (diet?.goal) setValue("goal", coerceProgramGoal(diet.goal) || (diet.goal as WorkoutPlanFormData["goal"]));
+    if (diet?.medicalConditions) setValue("medicalConditions", diet.medicalConditions);
+    getUserProfile()
+      .then((profile) => {
+        if (!profile) return;
+        if (profile.age) setValue("age", String(profile.age));
+        if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
+        if (profile.fitness_level === "beginner" || profile.fitness_level === "intermediate" || profile.fitness_level === "advanced") {
+          setValue("fitnessLevel", profile.fitness_level);
+        }
+        const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
+        if (profileGoal && !diet?.goal) setValue("goal", profileGoal);
+      })
+      .catch(() => {});
+  }, [setValue]);
+
   const nextStep = async () => {
     const fields = getFields(currentStep);
-    const ok = await trigger(fields as any);
-
+    const ok = await trigger(fields as never);
     if (ok && currentStep < workoutSteps.length - 1) {
       setCurrentStep((s) => s + 1);
     }
@@ -83,14 +104,7 @@ export default function WorkoutMultiStepForm({
       case 1:
         return ["fitnessLevel", "goal"];
       case 2:
-        return [
-          "workoutDuration",
-          "workoutFrequency",
-          "availableEquipment",
-          "preferredWorkoutTime",
-        ];
-      case 3:
-        return ["targetMuscles"];
+        return ["workoutDuration", "workoutFrequency", "availableEquipment"];
       default:
         return [];
     }
@@ -99,13 +113,9 @@ export default function WorkoutMultiStepForm({
   const toggleMuscleGroup = (muscle: string) => {
     const currentMuscles = watched.targetMuscles || [];
     if (currentMuscles.includes(muscle)) {
-      setValue("targetMuscles", currentMuscles.filter((m) => m !== muscle), {
-        shouldValidate: true,
-      });
+      setValue("targetMuscles", currentMuscles.filter((item) => item !== muscle));
     } else {
-      setValue("targetMuscles", [...currentMuscles, muscle], {
-        shouldValidate: true,
-      });
+      setValue("targetMuscles", [...currentMuscles, muscle]);
     }
   };
 
@@ -115,11 +125,14 @@ export default function WorkoutMultiStepForm({
       heading="Personalized AI Workout Plan"
       steps={workoutSteps}
       header={
-        <PlanFormHeader
-          currentLabel="Workout Plan"
-          currentPlanHref="/diet/plan"
-          currentPlanText="See your current workout plan"
-        />
+        <>
+          <PlanFormHeader
+            currentLabel="Workout Plan"
+            currentPlanHref="/workout/plan"
+            currentPlanText="View Workout Plan"
+          />
+          <PlanPairingCard context="workout-form" otherExists={Boolean(dietForm)} goal={watched.goal} />
+        </>
       }
     >
       <FormStepHeader
@@ -181,35 +194,21 @@ export default function WorkoutMultiStepForm({
               <label className="block text-sm font-semibold text-slate-900 mb-3">
                 Select Your Gender
               </label>
-
               <Controller
                 name="gender"
                 control={control}
                 render={({ field }) => (
                   <GenderSelectCard
                     options={[
-                      {
-                        value: "male",
-                        icon: <MaleImage className="w-16 h-16" />,
-                        label: "Male",
-                      },
-                      {
-                        value: "female",
-                        icon: <FemaleImage className="w-16 h-16" />,
-                        label: "Female",
-                      },
+                      { value: "male", icon: <MaleImage className="w-16 h-16" />, label: "Male" },
+                      { value: "female", icon: <FemaleImage className="w-16 h-16" />, label: "Female" },
                     ]}
                     value={field.value}
                     onChange={field.onChange}
                   />
                 )}
               />
-
-              {errors.gender?.message && (
-                <p className="mt-2 text-sm text-red-500">
-                  {errors.gender.message}
-                </p>
-              )}
+              {errors.gender?.message ? <p className="mt-2 text-sm text-red-500">{errors.gender.message}</p> : null}
             </div>
           </div>
         );
@@ -217,36 +216,28 @@ export default function WorkoutMultiStepForm({
       case 1:
         return (
           <div className="space-y-8">
-            <SectionGrid cols={2}>
-              <Controller
-                name="fitnessLevel"
-                control={control}
-                render={({ field }) => (
-                  <FormSelect
-                    label="Fitness Level"
-                    value={field.value}
-                    onChange={(v) => field.onChange(v)}
-                    options={fitnessLevelOptions}
-                    error={errors.fitnessLevel?.message}
-                    required
-                  />
-                )}
-              />
-              <Controller
-                name="goal"
-                control={control}
-                render={({ field }) => (
-                  <FormSelect
-                    label="Fitness Goal"
-                    value={field.value}
-                    onChange={(v) => field.onChange(v)}
-                    options={workoutGoalOptions}
-                    error={errors.goal?.message}
-                    required
-                  />
-                )}
-              />
-            </SectionGrid>
+            <Controller
+              name="fitnessLevel"
+              control={control}
+              render={({ field }) => (
+                <FormSelect
+                  label="Fitness Level"
+                  value={field.value}
+                  onChange={(value) => field.onChange(value)}
+                  options={fitnessLevelOptions}
+                  error={errors.fitnessLevel?.message}
+                  required
+                />
+              )}
+            />
+            <OptionChipGrid
+              label="Training goal"
+              hint="Required. This drives the plan: Hyrox, Ironman, bodybuilding, and so on."
+              options={PROGRAM_GOAL_OPTIONS}
+              selected={watched.goal ? [watched.goal] : []}
+              onToggle={(value) => setValue("goal", value as WorkoutPlanFormData["goal"], { shouldValidate: true })}
+              error={errors.goal?.message}
+            />
           </div>
         );
 
@@ -261,7 +252,7 @@ export default function WorkoutMultiStepForm({
                   <FormSelect
                     label="Workout Duration"
                     value={field.value}
-                    onChange={(v) => field.onChange(v)}
+                    onChange={(value) => field.onChange(value)}
                     options={workoutDurationOptions}
                     error={errors.workoutDuration?.message}
                     required
@@ -275,7 +266,7 @@ export default function WorkoutMultiStepForm({
                   <FormSelect
                     label="Workout Frequency"
                     value={field.value}
-                    onChange={(v) => field.onChange(v)}
+                    onChange={(value) => field.onChange(value)}
                     options={workoutFrequencyDaysOptions}
                     error={errors.workoutFrequency?.message}
                     required
@@ -283,7 +274,6 @@ export default function WorkoutMultiStepForm({
                 )}
               />
             </SectionGrid>
-
             <SectionGrid cols={2}>
               <Controller
                 name="availableEquipment"
@@ -292,7 +282,7 @@ export default function WorkoutMultiStepForm({
                   <FormSelect
                     label="Available Equipment"
                     value={field.value}
-                    onChange={(v) => field.onChange(v)}
+                    onChange={(value) => field.onChange(value)}
                     options={equipmentOptions}
                     error={errors.availableEquipment?.message}
                     required
@@ -304,12 +294,10 @@ export default function WorkoutMultiStepForm({
                 control={control}
                 render={({ field }) => (
                   <FormSelect
-                    label="Preferred Workout Time"
-                    value={field.value}
-                    onChange={(v) => field.onChange(v)}
+                    label="Preferred time (optional)"
+                    value={field.value || ""}
+                    onChange={(value) => field.onChange(value || undefined)}
                     options={preferredTimeOptions}
-                    error={errors.preferredWorkoutTime?.message}
-                    required
                   />
                 )}
               />
@@ -321,13 +309,12 @@ export default function WorkoutMultiStepForm({
         return (
           <div className="grid gap-4">
             <OptionChipGrid
-              label="Target Muscle Groups"
+              label="Target muscle groups"
+              hint="Optional. Leave blank and we will program the full goal (Hyrox, Ironman, bodybuilding, and so on)."
               options={muscleGroupOptions}
               selected={watched.targetMuscles || []}
               onToggle={toggleMuscleGroup}
-              error={errors.targetMuscles?.message}
             />
-
             <Controller
               name="injuries"
               control={control}
@@ -339,7 +326,6 @@ export default function WorkoutMultiStepForm({
                 />
               )}
             />
-
             <Controller
               name="medicalConditions"
               control={control}

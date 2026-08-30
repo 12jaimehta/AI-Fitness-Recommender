@@ -16,6 +16,7 @@ import {
   Target,
   Users
 } from "lucide-react";
+import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
 
 
 export const slides = [
@@ -107,7 +108,7 @@ export const workoutSteps = [
   { id: "personal", title: "Personal Information", icon: User, description: "Tell us about yourself" },
   { id: "fitness", title: "Fitness Profile", icon: Activity, description: "Your fitness level and goals" },
   { id: "workout", title: "Workout Preferences", icon: Dumbbell, description: "Your workout schedule and equipment" },
-  { id: "health", title: "Health Information", icon: Target, description: "Health considerations and target areas" },
+  { id: "health", title: "Optional details", icon: Target, description: "Injuries and muscle bias if you want them" },
 ];
 
 export const fitnessLevelOptions = [
@@ -119,12 +120,7 @@ export const fitnessLevelOptions = [
 
 export const workoutGoalOptions = [
   { value: "", label: "Select your goal" },
-  { value: "muscle_gain", label: "Muscle Gain" },
-  { value: "fat_loss", label: "Fat Loss" },
-  { value: "strength", label: "Strength" },
-  { value: "endurance", label: "Endurance" },
-  { value: "general_fitness", label: "General Fitness" },
-  { value: "athletic_performance", label: "Athletic Performance" },
+  ...PROGRAM_GOAL_OPTIONS,
 ];
 
 export const workoutDurationOptions = [
@@ -184,11 +180,7 @@ export const dietaryOptions = [
 
 export const goalOptions = [
   { value: "", label: "Select goal" },
-  { value: "weight_loss", label: "Weight Loss" },
-  { value: "muscle_gain", label: "Muscle Gain" },
-  { value: "weight_maintenance", label: "Weight Maintenance" },
-  { value: "endurance", label: "Endurance" },
-  { value: "general_health", label: "General Health" },
+  ...PROGRAM_GOAL_OPTIONS,
 ];
 
 export const activityOptions = [
