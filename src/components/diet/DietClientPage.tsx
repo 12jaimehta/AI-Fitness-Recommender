@@ -7,16 +7,13 @@ import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { generateAIDietPlan, saveDietPlan, storeGeneratedDietPlan } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
+import PageLoader from "@/components/ui/PageLoader";
 
 const RefactoredMultiStepForm = dynamic(
   () => import("@/components/diet").then((m) => ({ default: m.RefactoredMultiStepForm })),
   {
     ssr: false,
-    loading: () => (
-      <div className="min-h-[40vh] flex items-center justify-center bg-gray-50">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    ),
+    loading: () => <PageLoader />,
   }
 );
 
@@ -55,11 +52,11 @@ export default function DietClientPage() {
   return (
     <>
       {loading ? (
-        <div className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-gray-50">
-          <div className="h-12 w-12 rounded-full border-4 border-[#282828]/20 border-t-[#282828] animate-spin" />
-          <p className="mt-6 text-base text-gray-700">Making your meal plan</p>
-          <p className="mt-2 text-sm text-gray-500">This can take one to two minutes. Please wait.</p>
-        </div>
+        <PageLoader
+          overlay
+          title="Making your meal plan"
+          subtitle="This can take one to two minutes. Please wait."
+        />
       ) : null}
       <div className="text-center space-y-10">
         {error ? (

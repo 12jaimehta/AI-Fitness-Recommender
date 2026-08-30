@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, type ReactNode } from "react";
-import { motion } from "framer-motion";
-import { Activity } from "lucide-react";
 import PageLoader from "@/components/ui/PageLoader";
 
 export default function PlanGeneratorClient<TForm, TPlan>({
@@ -57,19 +55,13 @@ export default function PlanGeneratorClient<TForm, TPlan>({
   };
 
   if (!isClient) {
-    return (
-      <div className="min-h-[60vh] flex justify-center items-center pt-20">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity }}>
-          <Activity size={40} />
-        </motion.div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
     <>
       {loading ? (
-        <PageLoader title="Loading ..." />
+        <PageLoader overlay title="Making your plan" subtitle="This can take one to two minutes. Please wait." />
       ) : plan ? (
         renderDisplay({
           plan,

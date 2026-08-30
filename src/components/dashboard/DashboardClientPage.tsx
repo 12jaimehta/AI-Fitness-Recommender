@@ -7,6 +7,7 @@ import { useUser } from "@/lib/hooks/use-user";
 import { getDailyProgress, getUserProfile } from "@/lib/service/progress-database";
 import type { DailyProgress, UserProfile } from "@/shared/types";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageLoader from "@/components/ui/PageLoader";
 
 const PRIMARY = [
   {
@@ -81,13 +82,7 @@ export default function DashboardClientPage() {
   }, [isSignedIn]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto flex min-h-[50vh] max-w-7xl items-center justify-center px-4">
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const workout = daily?.workout_plan?.today_workout;

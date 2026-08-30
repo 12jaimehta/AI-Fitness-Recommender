@@ -6,6 +6,7 @@ import { UserPlus, Users } from "lucide-react";
 import { getMarketplace } from "@frontend/features/fyte-connect";
 import type { Trainer } from "@/shared/types";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageLoader from "@/components/ui/PageLoader";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 
 export default function FyteConnectClientPage() {
@@ -34,6 +35,10 @@ export default function FyteConnectClientPage() {
       );
     });
   }, [trainers, q]);
+
+  if (loading) {
+    return <PageLoader title="Loading trainers..." />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -90,9 +95,7 @@ export default function FyteConnectClientPage() {
             />
           </div>
 
-          {loading ? (
-            <p className="text-gray-600">Loading...</p>
-          ) : filteredTrainers.length ? (
+          {filteredTrainers.length ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredTrainers.map((trainer) => (
                 <article

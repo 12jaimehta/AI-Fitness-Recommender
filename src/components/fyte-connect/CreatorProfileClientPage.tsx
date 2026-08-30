@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getCreator } from "@frontend/features/fyte-connect";
 import type { Creator, CreatorPlan } from "@/shared/types";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageLoader from "@/components/ui/PageLoader";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 import RatingReview from "@/components/fyte-connect/RatingReview";
 
@@ -41,13 +42,7 @@ export default function CreatorProfileClientPage() {
   }
 
   if (!creator) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-16">
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (

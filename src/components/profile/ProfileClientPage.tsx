@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getUserProfile, updateUserProfile } from "@/lib/service/progress-database";
 import { useUser } from "@/lib/hooks/use-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageLoader from "@/components/ui/PageLoader";
 import OptionChipGrid from "@/components/shared/OptionChipGrid";
 import { fitnessLevelOptions } from "@/lib/constant";
 import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
@@ -129,13 +130,7 @@ export default function ProfileClientPage() {
   };
 
   if (userLoading || loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto flex min-h-[50vh] max-w-7xl items-center justify-center px-4">
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   const inputClass =

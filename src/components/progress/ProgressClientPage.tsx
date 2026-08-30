@@ -25,7 +25,7 @@ import type {
   TrackKind,
   WeeklyReview,
 } from "@/shared/types";
-import InlineLoader from "@/components/shared/InlineLoader";
+import PageLoader from "@/components/ui/PageLoader";
 import SurfaceCard from "@/components/shared/SurfaceCard";
 import TrendChart from "@/components/shared/TrendChart";
 import MacroRings from "@/components/progress/MacroRings";
@@ -161,7 +161,7 @@ export default function ProgressClientPage() {
   };
 
   if (userLoading || (loading && !daily)) {
-    return <InlineLoader title="Loading tracking..." />;
+    return <PageLoader title="Loading tracking..." />;
   }
 
   if (activeExercise) {

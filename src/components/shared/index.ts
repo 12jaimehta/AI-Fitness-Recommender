@@ -10,6 +10,7 @@ export { default as ProgressBar } from './ProgressBar';
 export { default as UnifiedNavbar } from './UnifiedNavbar';
 export { default as UnifiedFooter } from './UnifiedFooter';
 export { default as LoadingSpinner } from './LoadingSpinner';
+export { default as PageLoader } from '@/components/ui/PageLoader';
 export { default as SavedPlanActions } from './SavedPlanActions';
 export { default as PlanGeneratorClient } from './PlanGeneratorClient';
 export { default as PlanDisplayShell } from './PlanDisplayShell';

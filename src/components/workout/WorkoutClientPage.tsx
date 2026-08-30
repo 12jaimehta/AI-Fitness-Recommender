@@ -12,16 +12,13 @@ import {
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { storeLastWorkoutForm } from "@frontend/features/plan-pairing";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
+import PageLoader from "@/components/ui/PageLoader";
 
 const WorkoutMultiStepForm = dynamic(
   () => import("@/components/workout").then((m) => ({ default: m.WorkoutMultiStepForm })),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex min-h-[40vh] items-center justify-center bg-gray-50">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    ),
+    loading: () => <PageLoader />,
   }
 );
 
@@ -61,11 +58,11 @@ export default function WorkoutClientPage() {
   return (
     <>
       {loading ? (
-        <div className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-gray-50">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#282828]/20 border-t-[#282828]" />
-          <p className="mt-6 text-base text-gray-700">Making your workout plan</p>
-          <p className="mt-2 text-sm text-gray-500">This can take one to two minutes. Please wait.</p>
-        </div>
+        <PageLoader
+          overlay
+          title="Making your workout plan"
+          subtitle="This can take one to two minutes. Please wait."
+        />
       ) : null}
       <div className="space-y-10 text-center">
         {error ? (

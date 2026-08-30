@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useUser } from "@/lib/hooks/use-user";
 import Tabs from "@/components/ui/Tabs";
+import PageLoader from "@/components/ui/PageLoader";
 import { magicLinkSchema, signInSchema, type MagicLinkForm, type SignInForm } from "@/lib/validation/signINSchema";
 import { UnifiedFooter } from "@/components";
 
@@ -62,6 +63,10 @@ export default function SignInPage() {
 
   const inputClass =
     "mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]";
+
+  if (authLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

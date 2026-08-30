@@ -6,6 +6,7 @@ import Link from "next/link";
 import { getPlan, purchasePlan } from "@frontend/features/fyte-connect";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageLoader from "@/components/ui/PageLoader";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 import RatingReview from "@/components/fyte-connect/RatingReview";
 import type { CreatorPlan } from "@/shared/types";
@@ -44,13 +45,7 @@ export default function PlanCheckoutClientPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-16">
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (!plan) {

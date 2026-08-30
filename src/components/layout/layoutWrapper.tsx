@@ -1,6 +1,7 @@
 "use client"; 
 import UnifiedNavbar from "@/components/shared/UnifiedNavbar";
 import UnifiedFooter from "@/components/shared/UnifiedFooter";
+import PageLoader from "@/components/ui/PageLoader";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/hooks/use-user";
@@ -14,6 +15,16 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
       router.push("/sign-in");
     }
   }, [user, isSignedIn, userLoading, router]);
+
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <UnifiedNavbar />
+        <PageLoader />
+        <UnifiedFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
