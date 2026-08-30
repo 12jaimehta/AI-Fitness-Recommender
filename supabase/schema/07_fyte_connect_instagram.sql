@@ -6,4 +6,4 @@
 
 ALTER TABLE public.trainer_profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 ALTER TABLE public.trainer_profiles ADD COLUMN IF NOT EXISTS instagram_handle TEXT;
-ALTER TABLE public.creators ADD COLUMN IF NOT EXISTS instagram_handle TEXT;
+ALTER TABLE public.creators ADD COLUMN IF NOT EXISTS instagram_handle TEXT; 
