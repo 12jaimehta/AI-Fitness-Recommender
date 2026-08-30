@@ -14,11 +14,14 @@ import { useRouter } from "next/navigation";
 import { menuItems, slides } from "@/lib/constant";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { createClient } from "@/lib/supabase/supabase-client";
+import { getUserProfile } from "@/lib/service/progress-database";
+import { isProfileComplete } from "@/shared/lib/profile";
 
 export default function HomePage() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+    const [profileComplete, setProfileComplete] = useState(true);
     
     const router = useRouter();
     const { isSignedIn, user } = useCurrentUser();
@@ -69,7 +72,17 @@ export default function HomePage() {
 
     // Extract display name from email if name isn't available
     const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
-    const homeHref = isSignedIn ? "/dashboard" : "/";
+    const homeHref = isSignedIn ? (profileComplete ? "/dashboard" : "/") : "/";
+
+    useEffect(() => {
+        if (!isSignedIn) {
+            setProfileComplete(true);
+            return;
+        }
+        getUserProfile()
+            .then((profile) => setProfileComplete(isProfileComplete(profile)))
+            .catch(() => {});
+    }, [isSignedIn, user?.id]);
 
     return (
         <div className="min-h-screen relative overflow-hidden">
@@ -130,7 +143,7 @@ export default function HomePage() {
                                                 onClick={handleSignOut}
                                                 className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
                                             >
-                                                <LogOut size={16} /> Sign Out
+                                                <LogOut size={16} /> Log out
                                             </button>
                                         </motion.div>
                                     )}
@@ -209,11 +222,21 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                     <button
+                                        onClick={() => {
+                                            router.push("/my-profile");
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className="w-full flex items-center justify-center gap-2 bg-white text-[#282828] font-bold px-6 py-4 rounded-xl transition-all active:scale-95 border border-gray-200"
+                                    >
+                                        <User size={20} />
+                                        My profile
+                                    </button>
+                                    <button
                                         onClick={handleSignOut}
-                                        className="w-full flex items-center justify-center gap-2 bg-red-50 text-red-600 font-bold px-6 py-4 rounded-xl transition-all active:scale-95 border border-red-100"
+                                        className="w-full flex items-center justify-center gap-2 bg-[#282828] text-white font-bold px-6 py-4 rounded-xl transition-all active:scale-95"
                                     >
                                         <LogOut size={20} />
-                                        Logout
+                                        Log out
                                     </button>
                                 </div>
                             ) : (

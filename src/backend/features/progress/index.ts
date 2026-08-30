@@ -4,6 +4,7 @@ import { ApiError } from "@backend/shared/lib/errors";
 import { buildProgressInsightsPrompt } from "@backend/ai/prompts/insights";
 import { fallbackProgressInsights } from "@backend/ai/fallbacks/insights";
 import { asLoggedMeals, mealsPerDayFromForm, parseLeadingNumber, weekStartMonday } from "@/shared/lib/plan-tracking";
+import { hasRequiredProfileDetails } from "@/shared/lib/profile";
 import { getLatestDietPlan, getLatestWorkoutPlan, getTrackingContext } from "./plans";
 import type {
   ChartPoint,
@@ -92,12 +93,27 @@ export async function upsertProfile(profile: Omit<UserProfile, "created_at" | "u
 
 export async function updateProfile(updates: Partial<UserProfile>) {
   const { supabase, user } = await requireUser();
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .update(updates)
-    .eq("id", user.id)
-    .select()
-    .single();
+  const { data: existing } = await supabase.from("user_profiles").select("*").eq("id", user.id).maybeSingle();
+  const merged = {
+    ...(existing || {}),
+    ...updates,
+    id: user.id,
+    email: updates.email || existing?.email || user.email || "",
+  };
+  const payload = {
+    id: user.id,
+    email: merged.email,
+    full_name: merged.full_name ?? null,
+    age: merged.age ?? null,
+    gender: merged.gender ?? null,
+    height: merged.height ?? null,
+    initial_weight: merged.initial_weight ?? null,
+    fitness_level: merged.fitness_level ?? null,
+    goals: Array.isArray(merged.goals) ? merged.goals : [],
+    profile_completed: hasRequiredProfileDetails(merged),
+  };
+
+  const { data, error } = await supabase.from("user_profiles").upsert(payload).select().single();
   if (error) throw new ApiError(error.message, 400);
   return data as UserProfile;
 }

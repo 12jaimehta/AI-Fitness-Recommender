@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isProfileComplete, profileAllowedPath } from "@/shared/lib/profile";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -25,7 +26,31 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+
+  if (user && !profileAllowedPath(pathname)) {
+    const { data: profile, error } = await supabase
+      .from("user_profiles")
+      .select("full_name, age, gender, height, initial_weight, fitness_level, goals, profile_completed")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!error && !isProfileComplete(profile)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/my-profile";
+      redirectUrl.search = "";
+      const redirect = NextResponse.redirect(redirectUrl);
+      supabaseResponse.cookies.getAll().forEach(({ name, value }) => {
+        redirect.cookies.set(name, value);
+      });
+      return redirect;
+    }
+  }
+
   return supabaseResponse;
 }
 
