@@ -11,6 +11,7 @@ import {
 import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";
 import FormNavigation from "@/components/shared/FormNavigation";
+import FormStepHeader from "@/components/shared/FormStepHeader";
 import GenderSelectCard, { FemaleImage, MaleImage } from "../ui/form/genderSelectCard";
 import SectionGrid from "../ui/form/sectionGrid";
 import { RefactoredMultiStepFormProps } from "@/lib/types";
@@ -21,7 +22,8 @@ import {
   steps,
   workoutOptions,
 } from "@/lib/constant";
-import FormTwoColumnLayout from "../ui/twoColumnLayout";
+import FormTwoColumnLayout from "@/components/shared/FormTwoColumnLayout";
+import PlanFormHeader from "@/components/shared/PlanFormHeader";
 
 export default function RefactoredMultiStepForm({
   onSubmit,
@@ -106,19 +108,21 @@ export default function RefactoredMultiStepForm({
     <FormTwoColumnLayout
       currentStep={currentStep}
       heading="Personalized AI Diet Plan"
+      steps={steps}
+      header={
+        <PlanFormHeader
+          currentLabel="Diet Plan"
+          currentPlanHref="/diet/plan"
+          currentPlanText="View Diet Plan"
+        />
+      }
     >
-      {/* Header */}
-      <header className="mb-8 flex flex-col gap-2 items-center">
-        <p className="text-sm text-slate-500">
-          Step {currentStep + 1} of {steps.length}
-        </p>
-        <h1 className="mt-1 text-2xl sm:text-3xl font-bold text-slate-900">
-          {steps[currentStep].title}
-        </h1>
-        <p className="mt-2 text-sm sm:text-base text-slate-600 max-w-2xl">
-          {steps[currentStep].description}
-        </p>
-      </header>
+      <FormStepHeader
+        currentStep={currentStep}
+        totalSteps={steps.length}
+        title={steps[currentStep].title}
+        description={steps[currentStep].description}
+      />
 
       {/* Step Content */}
       <AnimatePresence mode="wait">
@@ -144,6 +148,8 @@ export default function RefactoredMultiStepForm({
           onSubmit={handleSubmit(onSubmit)}
           loading={loading}
           isLastStep={currentStep === steps.length - 1}
+          submitLabel="Make my meal plan"
+          loadingLabel="Making your meal plan..."
         />
       </div>
 

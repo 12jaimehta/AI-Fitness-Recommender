@@ -1,94 +1,67 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Activity } from "lucide-react";
+import { useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
-import PlanActions from "@/components/diet/PlanActions";
-import { DietPlanData, generateAIDietPlan } from "@/lib/service/dietWorkoutplan";
-import PageLoader from "@/components/ui/PageLoader";
+import { useRouter } from "next/navigation";
+import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
+import { generateAIDietPlan, saveDietPlan, storeGeneratedDietPlan } from "@/lib/service/dietWorkoutplan";
+import { useCurrentUser } from "@/lib/hooks/use-current-user";
 
-// dynamic imports
 const RefactoredMultiStepForm = dynamic(
-  () => import("@/components/diet").then(m => ({ default: m.RefactoredMultiStepForm })),
-  { ssr: false, loading: () => <PageLoader title="Loading Page ..." /> }
-);
-
-const RefactoredDietPlanDisplay = dynamic(
-  () => import("@/components/diet").then(m => ({ default: m.RefactoredDietPlanDisplay })),
-  { ssr: false, loading: () => <PageLoader title="Loading Page ..." /> }
+  () => import("@/components/diet").then((m) => ({ default: m.RefactoredMultiStepForm })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[40vh] flex items-center justify-center bg-gray-50">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    ),
+  }
 );
 
 export default function DietClientPage() {
-  const [dietPlan, setDietPlan] = useState<DietPlanData | null>(null);
+  const router = useRouter();
+  const { user } = useCurrentUser();
+  const submitting = useRef(false);
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<DietPlanFormData | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => setIsClient(true), []);
-
-  const handleFormSubmit = async (data: DietPlanFormData) => {
+  const handleSubmit = async (data: DietPlanFormData) => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setError("");
     setLoading(true);
-    setFormData(data);
     try {
       const plan = await generateAIDietPlan(data);
-      setDietPlan(plan);
-    } finally {
+      storeGeneratedDietPlan({ formData: data, plan });
+      if (user) {
+        void saveDietPlan(user.id, data, plan).catch(() => {});
+      }
+      router.push("/diet/plan");
+    } catch (err) {
+      submitting.current = false;
       setLoading(false);
+      setError(err instanceof Error ? err.message : "Could not make your meal plan. Try again.");
     }
   };
-
-  const handleNewPlan = () => {
-    setDietPlan(null);
-    setFormData(null);
-  };
-
-  const handleRegenerate = async () => {
-    if (!formData) return;
-    setLoading(true);
-
-    try {
-      const plan = await generateAIDietPlan(formData);
-      setDietPlan(plan);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // initial skeleton while client mounts
-  if (!isClient) {
-    return (
-      <div className="min-h-[60vh] flex justify-center items-center pt-20">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity }}>
-          <Activity size={40} />
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <>
       {loading ? (
-        <PageLoader title="Loading ..." />
-      ) : dietPlan ? (
-        <RefactoredDietPlanDisplay
-          dietPlan={dietPlan}
-          onNewPlan={handleNewPlan}
-          onRegenerate={handleRegenerate}
-          loading={loading}
-        />
-      ) : (
-        <div className="text-center space-y-10">
-          <RefactoredMultiStepForm onSubmit={handleFormSubmit} loading={loading} />
+        <div className="fixed inset-0 z-60 flex flex-col items-center justify-center bg-gray-50">
+          <div className="h-12 w-12 rounded-full border-4 border-[#282828]/20 border-t-[#282828] animate-spin" />
+          <p className="mt-6 text-base text-gray-700">Making your meal plan</p>
+          <p className="mt-2 text-sm text-gray-500">This can take one to two minutes. Please wait.</p>
         </div>
-      )}
-
-      {dietPlan && formData && (
-        <div className="fixed bottom-6 left-0 right-0 mx-auto w-fit z-50">
-          <PlanActions formData={formData} dietPlan={dietPlan} />
-        </div>
-      )}
+      ) : null}
+      <div className="text-center space-y-10">
+        {error ? (
+          <p className="mx-auto max-w-xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+        <RefactoredMultiStepForm onSubmit={handleSubmit} loading={loading} />
+      </div>
     </>
   );
 }

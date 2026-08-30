@@ -12,7 +12,17 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 
+  const homeHref = isSignedIn ? "/dashboard" : "/";
   const isHomePage = pathname === "/";
+
+  const navLinks = navItems.map((item) =>
+    item.name === "Home" ? { ...item, href: homeHref } : item
+  );
+
+  const isNavActive = (href: string) => {
+    if (href === "/" || href === "/dashboard") return pathname === href;
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   if (isLoading) {
     return (
@@ -58,7 +68,7 @@ export default function Navbar() {
         <div className="max-w-[1200px] mx-auto px-6 py-4 flex justify-between items-center">
 
           <div
-            onClick={() => router.push("/")}
+            onClick={() => router.push(homeHref)}
             className={`font-bold text-2xl cursor-pointer ${
               isHomePage ? "text-white" : "text-[#282828]"
             }`}
@@ -67,13 +77,13 @@ export default function Navbar() {
           </div>
           {/* Desktop Navigation */}
           <div className="hidden md:flex gap-4 items-center">
-            {navItems.map((item) => (
+            {navLinks.map((item) => (
               <button
                 key={item.name}
                 onClick={() => router.push(item.href)}
                 className={`px-4 py-2 rounded-md font-medium text-sm transition 
                   ${isHomePage ? "text-white" : "text-[#282828]"} 
-                  ${pathname === item.href ? "opacity-100" : "opacity-70 hover:opacity-100"}
+                  ${isNavActive(item.href) ? "opacity-100" : "opacity-70 hover:opacity-100"}
                 `}
               >
                 {item.name}
@@ -133,7 +143,7 @@ export default function Navbar() {
             `}
           >
             <div className="flex flex-col gap-2">
-              {navItems.map((item) => (
+              {navLinks.map((item) => (
                 <button
                   key={item.name}
                   onClick={() => {

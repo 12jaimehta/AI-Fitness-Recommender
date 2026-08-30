@@ -25,19 +25,6 @@ export interface FormSelectProps {
   control?: any; // Control from react-hook-form
 }
 
-export interface GenderOption {
-  value: string;
-  label: string;
-  image: string;
-  description: string;
-}
-
-export interface GenderSelectorProps {
-  selectedGender: string;
-  onGenderSelect: (gender: string) => void;
-  error?: string;
-}
-
 export interface MealAlternative {
   name: string;
   calories: number;
@@ -52,24 +39,6 @@ export interface MealData {
   fat: number;
   ingredientBreakdown: string | object;
   alternatives?: MealAlternative[];
-}
-
-export interface ImprovedMealCardProps {
-  mealType: string;
-  mealData: MealData;
-  isExpanded: boolean;
-  onToggle: () => void;
-  index: number;
-  mealIcon: React.ReactElement;
-  mealColor: string;
-}
-
-export interface NutritionCardProps {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ size?: number; color?: string }>;
-  color: string;
-  index: number;
 }
 
 export interface Step {

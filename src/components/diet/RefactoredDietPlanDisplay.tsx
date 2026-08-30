@@ -3,8 +3,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  RefreshCw, 
-  RotateCcw, 
   Mail,
   Sun,
   Flame,
@@ -13,17 +11,20 @@ import {
   TrendingUp,
   Dumbbell,
   Timer,
-  Calendar,
   ChevronDown,
   ChevronUp,
   Utensils,
-  Heart,
-  CheckCircle2
+  Heart
 } from "lucide-react";
 
-// Define interfaces
 import { sendDietPlanEmail } from "@/lib/service/email-service";
 import { DietPlanData } from "@/lib/service/dietWorkoutplan";
+import PlanDisplayShell from "@/components/shared/PlanDisplayShell";
+import PlanResultHeader from "@/components/shared/PlanResultHeader";
+import PlanStatGrid from "@/components/shared/PlanStatGrid";
+import PlanViewToggle from "@/components/shared/PlanViewToggle";
+import PlanTips from "@/components/shared/PlanTips";
+import { clampSize, isMobile } from "@/components/shared/planDisplayUtils";
 
 interface RefactoredDietPlanDisplayProps {
   dietPlan: DietPlanData;
@@ -130,350 +131,44 @@ export default function RefactoredDietPlanDisplay({
   const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#ffffff',
-      padding: '40px 20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <Header 
-          onRegenerate={onRegenerate} 
-          onNewPlan={onNewPlan} 
-          onSendEmail={handleSendEmail}
-          loading={loading} 
-          emailLoading={emailLoading}
-        />
-        
-        <NutritionSection nutritionTargets={nutritionTargets} />
-        
-        <ViewToggle activeView={activeView} onViewChange={setActiveView} />
-        
-        <MealPlansSection 
-          dietPlan={dietPlan}
-          activeView={activeView}
-          selectedDay={selectedDay}
-          expandedMeals={expandedMeals}
-          onDaySelect={setSelectedDay}
-          onMealToggle={toggleMealExpansion}
-          getMealIcon={getMealIcon}
-          days={days}
-        />
-        
-        <NutritionTips nutritionTips={dietPlan.nutritionTips} />
-      </div>
-    </div>
-  );
-}
-
-function Header({ 
-  onRegenerate, 
-  onNewPlan, 
-  onSendEmail, 
-  loading, 
-  emailLoading 
-}: { 
-  onRegenerate: () => void; 
-  onNewPlan: () => void; 
-  onSendEmail: () => void; 
-  loading: boolean; 
-  emailLoading: boolean; 
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ textAlign: 'center', marginBottom: '50px' }}
-    >
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '80px',
-        height: '80px',
-        borderRadius: '20px',
-        background: '#282828',
-        marginBottom: '20px'
-      }}>
-        <Utensils size={40} color="#ffffff" />
-      </div>
-      
-      <h1 style={{
-        fontSize: clampSize(32, 48),
-        fontWeight: '800',
-        color: '#282828',
-        marginBottom: '15px'
-      }}>
-        Your Personalized Diet Plan
-      </h1>
-      <p style={{ color: '#6b7280', fontSize: clampSize(16, 18), marginBottom: '30px' }}>
-        Designed specifically for your goals and preferences
-      </p>
-
-      <ActionButtons 
-        onRegenerate={onRegenerate} 
-        onNewPlan={onNewPlan} 
-        onSendEmail={onSendEmail}
-        loading={loading} 
-        emailLoading={emailLoading}
+    <PlanDisplayShell>
+      <PlanResultHeader
+        icon={Utensils}
+        title="Your Personalized Diet Plan"
+        subtitle="Designed specifically for your goals and preferences"
+        loading={loading}
+        onRegenerate={onRegenerate}
+        onNewPlan={onNewPlan}
+        extraAction={{
+          label: "Send to Email",
+          loadingLabel: "Sending...",
+          loading: emailLoading,
+          icon: Mail,
+          onClick: handleSendEmail,
+        }}
       />
-    </motion.div>
-  );
-}
 
-function ActionButtons({ 
-  onRegenerate, 
-  onNewPlan, 
-  onSendEmail, 
-  loading, 
-  emailLoading 
-}: { 
-  onRegenerate: () => void; 
-  onNewPlan: () => void; 
-  onSendEmail: () => void; 
-  loading: boolean; 
-  emailLoading: boolean; 
-}) {
-  return (
-    <motion.div 
-      style={{ 
-        display: 'flex', 
-        gap: '15px', 
-        justifyContent: 'center', 
-        flexWrap: 'wrap',
-        flexDirection: isMobile() ? 'column' : 'row',
-        alignItems: 'center'
-      }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-    >
-      <motion.button
-        whileHover={!loading ? { 
-          scale: 1.05,
-          boxShadow: '0 15px 35px rgba(22, 42, 65, 0.3)'
-        } : {}}
-        whileTap={!loading ? { scale: 0.95 } : {}}
-        onClick={onRegenerate}
-        disabled={loading}
-        style={{
-          background: loading ? '#9ca3af' : '#282828',
-          color: '#ffffff',
-          border: 'none',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          opacity: loading ? 0.7 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-          minWidth: '140px',
-          justifyContent: 'center'
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <RefreshCw size={18} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-        {loading ? "Generating..." : "Regenerate"}
-      </motion.button>
+      <PlanStatGrid title="Daily Nutrition Targets" items={nutritionTargets} />
 
-      <motion.button
-        whileHover={{ 
-          scale: 1.05,
-          boxShadow: '0 8px 25px rgba(22, 42, 65, 0.2)'
-        }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onNewPlan}
-        style={{
-          background: '#ffffff',
-          color: '#282828',
-          border: '2px solid #282828',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-          minWidth: '140px',
-          justifyContent: 'center'
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <RotateCcw size={18} />
-        New Plan
-      </motion.button>
+      <PlanViewToggle activeView={activeView} onViewChange={setActiveView} />
 
-      <motion.button
-        whileHover={{ 
-          scale: 1.05,
-          boxShadow: '0 8px 25px rgba(22, 42, 65, 0.2)'
-        }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onSendEmail}
-        disabled={emailLoading}
-        style={{
-          background: emailLoading ? '#9ca3af' : '#ffffff',
-          color: emailLoading ? '#666666' : '#282828',
-          border: '2px solid #282828',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: emailLoading ? 'not-allowed' : 'pointer',
-          opacity: emailLoading ? 0.7 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-          minWidth: '140px',
-          justifyContent: 'center'
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.7, type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <Mail size={18} style={{ animation: emailLoading ? 'pulse 1s linear infinite' : 'none' }} />
-        {emailLoading ? "Sending..." : "Send to Email"}
-      </motion.button>
-    </motion.div>
-  );
-}
+      <MealPlansSection
+        dietPlan={dietPlan}
+        activeView={activeView}
+        selectedDay={selectedDay}
+        expandedMeals={expandedMeals}
+        onDaySelect={setSelectedDay}
+        onMealToggle={toggleMealExpansion}
+        getMealIcon={getMealIcon}
+        days={days}
+      />
 
-function NutritionSection({ nutritionTargets }: { nutritionTargets: any[] }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      style={{ marginBottom: '50px' }}
-    >
-      <h2 style={{
-        fontSize: clampSize(24, 28),
-        fontWeight: '700',
-        color: '#282828',
-        marginBottom: '25px',
-        textAlign: 'center'
-      }}>
-        Daily Nutrition Targets
-      </h2>
-      
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile() ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px'
-      }}>
-        {nutritionTargets.map((target, index) => (
-          <motion.div
-            key={target.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
-            style={{
-              background: 'rgba(22, 42, 65, 0.05)',
-              border: '2px solid rgba(22, 42, 65, 0.1)',
-              borderRadius: '16px',
-              padding: '24px',
-              textAlign: 'center',
-              transition: 'all 0.3s ease'
-            }}
-            whileHover={{ 
-              scale: 1.05,
-              borderColor: '#282828',
-              boxShadow: '0 8px 25px rgba(22, 42, 65, 0.15)'
-            }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '50px',
-              height: '50px',
-              borderRadius: '12px',
-              background: '#282828',
-              margin: '0 auto 15px'
-            }}>
-              <target.icon size={24} color="#ffffff" />
-            </div>
-            <div style={{
-              fontSize: clampSize(20, 24),
-              fontWeight: '700',
-              color: '#282828',
-              marginBottom: '5px'
-            }}>
-              {target.value}
-            </div>
-            <div style={{
-              fontSize: '14px',
-              color: '#6b7280',
-              fontWeight: '500'
-            }}>
-              {target.label}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
-
-function ViewToggle({ activeView, onViewChange }: { activeView: 'single' | 'weekly'; onViewChange: (view: 'single' | 'weekly') => void }) {
-  const tabs = [
-    { id: 'single', label: 'Daily View', icon: Sun },
-    { id: 'weekly', label: 'Weekly View', icon: Calendar }
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      style={{ marginBottom: '40px' }}
-    >
-      <div style={{
-        display: 'flex',
-        background: 'rgba(22, 42, 65, 0.05)',
-        borderRadius: '12px',
-        padding: '4px',
-        maxWidth: '400px',
-        margin: '0 auto'
-      }}>
-        {tabs.map((tab) => (
-          <motion.button
-            key={tab.id}
-            onClick={() => onViewChange(tab.id as 'single' | 'weekly')}
-            style={{
-              flex: 1,
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeView === tab.id ? '#282828' : 'transparent',
-              color: activeView === tab.id ? '#ffffff' : '#282828',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <tab.icon size={16} />
-            {tab.label}
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
+      <PlanTips
+        title="Nutrition Tips & Recommendations"
+        icon={Heart}
+        tips={dietPlan.nutritionTips}
+      />
+    </PlanDisplayShell>
   );
 }
 
@@ -794,79 +489,3 @@ function MacroNutrients({ mealData }: { mealData: any }) {
   );
 }
 
-function NutritionTips({ nutritionTips }: { nutritionTips: string[] }) {
-  if (!nutritionTips || nutritionTips.length === 0) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8 }}
-    >
-      <div style={{
-        background: 'rgba(22, 42, 65, 0.02)',
-        border: '2px solid rgba(22, 42, 65, 0.1)',
-        borderRadius: '16px',
-        padding: '30px'
-      }}>
-        <h3 style={{
-          fontSize: clampSize(20, 24),
-          fontWeight: '700',
-          color: '#282828',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <Heart size={24} color="#282828" />
-          Nutrition Tips & Recommendations
-        </h3>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile() ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '15px'
-        }}>
-          {nutritionTips.map((tip, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9 + index * 0.1 }}
-              style={{
-                display: 'flex',
-                gap: '10px',
-                padding: '15px',
-                background: 'rgba(22, 42, 65, 0.03)',
-                borderRadius: '12px',
-                border: '1px solid rgba(22, 42, 65, 0.1)'
-              }}
-            >
-              <CheckCircle2 size={18} color="#282828" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <span style={{ 
-                color: '#374151', 
-                fontSize: '14px', 
-                lineHeight: '1.6',
-                fontWeight: '500'
-              }}>
-                {tip}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// Utility functions
-function clampSize(min: number, max: number): string {
-  const width = typeof window !== 'undefined' ? window.innerWidth : 1200;
-  if (width < 768) return `${min}px`;
-  if (width > 1200) return `${max}px`;
-  return `${min + (max - min) * ((width - 768) / (1200 - 768))}px`;
-}
-
-function isMobile(): boolean {
-  return typeof window !== 'undefined' && window.innerWidth < 768;
-}

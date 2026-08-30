@@ -2,7 +2,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import MotionButton from "@/components/ui/MotionButton";
 
 interface FormNavigationProps {
@@ -13,6 +13,8 @@ interface FormNavigationProps {
   onSubmit: () => void;
   loading: boolean;
   isLastStep: boolean;
+  submitLabel?: string;
+  loadingLabel?: string;
 }
 
 export default function FormNavigation({
@@ -23,6 +25,8 @@ export default function FormNavigation({
   onSubmit,
   loading,
   isLastStep,
+  submitLabel = "Generate AI Diet Plan",
+  loadingLabel = "Please wait...",
 }: FormNavigationProps) {
   return (
     <motion.div
@@ -53,9 +57,12 @@ export default function FormNavigation({
           >
             <MotionButton
               type="button"
-              onClick={onSubmit}
+              onClick={() => {
+                if (loading) return;
+                onSubmit();
+              }}
               loading={loading}
-              className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md"
+              className="relative overflow-hidden bg-[#282828] hover:bg-[#454545] text-white shadow-md"
             >
               {!loading && (
                 <motion.div
@@ -73,7 +80,7 @@ export default function FormNavigation({
                   >
                     <Loader2 size={20} />
                   </motion.div>
-                  Generating AI Magic...
+                  {loadingLabel}
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
@@ -83,7 +90,7 @@ export default function FormNavigation({
                   >
                   </motion.div>
 
-                  Generate AI Diet Plan 
+                  {submitLabel} 
                 </div>
               )}
             </MotionButton>

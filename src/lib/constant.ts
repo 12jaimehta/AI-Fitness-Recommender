@@ -1,11 +1,7 @@
-import { Metadata } from "next";
 import {
   Heart,
   Dumbbell,
   Apple,
-  Mail,
-  Phone,
-  MapPin,
   Github,
   Twitter,
   Instagram,
@@ -17,7 +13,8 @@ import {
   Handshake,
   User,
   Activity,
-  Target
+  Target,
+  Users
 } from "lucide-react";
 
 
@@ -51,16 +48,12 @@ export const slides = [
     cta: "Get Started Now",
   },
 ];
-export const metadata: Metadata = {
-  title: "AI Diet Plan Generator",
-  description: "Get personalized nutrition plans powered by AI",
-};
 export const navItems = [
   { name: "Home", href: "/" },
   { name: "Diet Plan", href: "/diet" },
   { name: "Workout Plan", href: "/workout" },
   { name: "Progress", href: "/progress" },
-  { name: "Fyte Connect", href: "/fyte-connect" },
+  { name: "Trainers", href: "/fyte-connect" },
 ];
 export const menuItems = [
   { label: "Help", path: "/help" },
@@ -77,7 +70,7 @@ export const footerSections = [
     items: [
       { name: "AI Diet Plans", icon: Apple, href: "/diet" },
       { name: "Workout Routines", icon: Dumbbell, href: "/workout" },
-      { name: "Personalized Plans", icon: Heart, href: "/" },
+      { name: "Trainers", icon: Users, href: "/fyte-connect" },
     ],
   },
   {
@@ -108,6 +101,76 @@ export const steps = [
   { id: "physical", title: "Physical Details", icon: Activity, description: "Your measurements and activity" },
   { id: "preferences", title: "Dietary Preferences", icon: Heart, description: "Your food preferences and goals" },
   { id: "health", title: "Health Information", icon: Target, description: "Health considerations and favorites" },
+];
+
+export const workoutSteps = [
+  { id: "personal", title: "Personal Information", icon: User, description: "Tell us about yourself" },
+  { id: "fitness", title: "Fitness Profile", icon: Activity, description: "Your fitness level and goals" },
+  { id: "workout", title: "Workout Preferences", icon: Dumbbell, description: "Your workout schedule and equipment" },
+  { id: "health", title: "Health Information", icon: Target, description: "Health considerations and target areas" },
+];
+
+export const fitnessLevelOptions = [
+  { value: "", label: "Select fitness level" },
+  { value: "beginner", label: "Beginner (Just starting)" },
+  { value: "intermediate", label: "Intermediate (6-12 months)" },
+  { value: "advanced", label: "Advanced (1+ years)" },
+];
+
+export const workoutGoalOptions = [
+  { value: "", label: "Select your goal" },
+  { value: "muscle_gain", label: "Muscle Gain" },
+  { value: "fat_loss", label: "Fat Loss" },
+  { value: "strength", label: "Strength" },
+  { value: "endurance", label: "Endurance" },
+  { value: "general_fitness", label: "General Fitness" },
+  { value: "athletic_performance", label: "Athletic Performance" },
+];
+
+export const workoutDurationOptions = [
+  { value: "", label: "Select duration" },
+  { value: "30", label: "30 minutes" },
+  { value: "45", label: "45 minutes" },
+  { value: "60", label: "60 minutes" },
+  { value: "90", label: "90 minutes" },
+];
+
+export const workoutFrequencyDaysOptions = [
+  { value: "", label: "Select frequency" },
+  { value: "2", label: "2 days per week" },
+  { value: "3", label: "3 days per week" },
+  { value: "4", label: "4 days per week" },
+  { value: "5", label: "5 days per week" },
+  { value: "6", label: "6 days per week" },
+];
+
+export const equipmentOptions = [
+  { value: "", label: "Select available equipment" },
+  { value: "none", label: "No equipment (bodyweight only)" },
+  { value: "basic", label: "Basic equipment (dumbbells, resistance bands)" },
+  { value: "full_gym", label: "Full gym access" },
+];
+
+export const preferredTimeOptions = [
+  { value: "", label: "Select preferred time" },
+  { value: "morning", label: "Morning" },
+  { value: "afternoon", label: "Afternoon" },
+  { value: "evening", label: "Evening" },
+];
+
+export const muscleGroupOptions = [
+  { value: "chest", label: "Chest" },
+  { value: "back", label: "Back" },
+  { value: "shoulders", label: "Shoulders" },
+  { value: "biceps", label: "Biceps" },
+  { value: "triceps", label: "Triceps" },
+  { value: "legs", label: "Legs" },
+  { value: "glutes", label: "Glutes" },
+  { value: "core", label: "Core" },
+  { value: "abs", label: "Abs" },
+  { value: "calves", label: "Calves" },
+  { value: "forearms", label: "Forearms" },
+  { value: "traps", label: "Traps" },
 ];
 
 export const dietaryOptions = [

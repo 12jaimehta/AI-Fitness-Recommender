@@ -92,7 +92,7 @@ export default function UnifiedFooter() {
           className="border-t border-white/10 pt-10 flex items-center justify-between flex-wrap gap-6"
         >
           <div className="text-sm opacity-80">
-            © 2025 fyteAI. All rights reserved.
+            © 2026 fyteAI. All rights reserved.
           </div>
 
           {/* Social Links */}

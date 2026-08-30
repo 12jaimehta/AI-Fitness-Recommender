@@ -3,25 +3,26 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  RefreshCw, 
-  RotateCcw, 
   Printer,
   Dumbbell,
-  Clock,
   Flame,
-  Target,
-  Activity,
-  TrendingUp,
-  AlertCircle,
   Calendar,
+  Activity,
+  AlertCircle,
   ChevronDown,
   ChevronUp,
   Zap,
-  CheckCircle2,
   Play
 } from "lucide-react";
 
 import { WorkoutPlanData } from "@/lib/service/dietWorkoutplan";
+import PlanDisplayShell from "@/components/shared/PlanDisplayShell";
+import PlanFormHeader from "@/components/shared/PlanFormHeader";
+import PlanResultHeader from "@/components/shared/PlanResultHeader";
+import PlanStatGrid from "@/components/shared/PlanStatGrid";
+import PlanViewToggle from "@/components/shared/PlanViewToggle";
+import PlanTips from "@/components/shared/PlanTips";
+import { clampSize, isMobile } from "@/components/shared/planDisplayUtils";
 
 interface WorkoutPlanDisplayProps {
   workoutPlan: WorkoutPlanData;
@@ -97,315 +98,48 @@ export default function WorkoutPlanDisplay({
   ];
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#ffffff',
-      padding: '40px 20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <Header onRegenerate={onRegenerate} onNewPlan={onNewPlan} loading={loading} />
-        
-        <WorkoutStats workoutStats={workoutStats} />
-        
-        {workoutPlan.weeklyPlan && (
-          <ViewToggle activeView={activeView} onViewChange={setActiveView} />
-        )}
-        
-        <WorkoutPlansSection 
-          workoutPlan={workoutPlan}
-          activeView={activeView}
-          selectedDay={selectedDay}
-          expandedWorkouts={expandedWorkouts}
-          showAlternatives={showAlternatives}
-          onDaySelect={setSelectedDay}
-          onWorkoutToggle={toggleWorkoutExpansion}
-          onAlternativesToggle={toggleAlternatives}
-          days={days}
-        />
-        
-        <WorkoutTips workoutTips={workoutPlan.workoutTips} />
-      </div>
-    </div>
-  );
-}
-
-function Header({ onRegenerate, onNewPlan, loading }: { onRegenerate: () => void; onNewPlan: () => void; loading: boolean }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ textAlign: 'center', marginBottom: '50px' }}
-    >
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '80px',
-        height: '80px',
-        borderRadius: '20px',
-        background: '#282828',
-        marginBottom: '20px'
-      }}>
-        <Dumbbell size={40} color="#ffffff" />
-      </div>
-      
-      <h1 style={{
-        fontSize: clampSize(32, 48),
-        fontWeight: '800',
-        color: '#282828',
-        marginBottom: '15px'
-      }}>
-        Your Personalized Workout Plan
-      </h1>
-      <p style={{ color: '#6b7280', fontSize: clampSize(16, 18), marginBottom: '30px' }}>
-        Tailored to your fitness level and goals
-      </p>
-
-      <ActionButtons onRegenerate={onRegenerate} onNewPlan={onNewPlan} loading={loading} />
-    </motion.div>
-  );
-}
-
-function ActionButtons({ onRegenerate, onNewPlan, loading }: { onRegenerate: () => void; onNewPlan: () => void; loading: boolean }) {
-  return (
-    <motion.div 
-      style={{ 
-        display: 'flex', 
-        gap: '15px', 
-        justifyContent: 'center', 
-        flexWrap: 'wrap',
-        flexDirection: isMobile() ? 'column' : 'row',
-        alignItems: 'center'
-      }}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
-    >
-      <motion.button
-        whileHover={!loading ? { 
-          scale: 1.05,
-          boxShadow: '0 15px 35px rgba(22, 42, 65, 0.3)'
-        } : {}}
-        whileTap={!loading ? { scale: 0.95 } : {}}
-        onClick={onRegenerate}
-        disabled={loading}
-        style={{
-          background: loading ? '#9ca3af' : '#282828',
-          color: '#ffffff',
-          border: 'none',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          opacity: loading ? 0.7 : 1,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-          minWidth: '140px',
-          justifyContent: 'center'
+    <PlanDisplayShell>
+      <PlanFormHeader
+        currentLabel="Workout Plan"
+        currentPlanHref="/diet/plan"
+        currentPlanText="See your current workout plan"
+      />
+      <PlanResultHeader
+        icon={Dumbbell}
+        title="Your Personalized Workout Plan"
+        subtitle="Tailored to your fitness level and goals"
+        loading={loading}
+        onRegenerate={onRegenerate}
+        onNewPlan={onNewPlan}
+        extraAction={{
+          label: "Print Plan",
+          icon: Printer,
+          onClick: () => window.print(),
         }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <RefreshCw size={18} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-        {loading ? "Generating..." : "Regenerate"}
-      </motion.button>
+      />
 
-      <motion.button
-        whileHover={{ 
-          scale: 1.05,
-          boxShadow: '0 8px 25px rgba(22, 42, 65, 0.2)'
-        }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onNewPlan}
-        style={{
-          background: '#ffffff',
-          color: '#282828',
-          border: '2px solid #282828',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-          minWidth: '140px',
-          justifyContent: 'center'
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <RotateCcw size={18} />
-        New Plan
-      </motion.button>
+      <PlanStatGrid title="Workout Overview" items={workoutStats} />
 
-      <motion.button
-        whileHover={{ 
-          scale: 1.05,
-          boxShadow: '0 8px 25px rgba(22, 42, 65, 0.2)'
-        }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => window.print()}
-        style={{
-          background: '#ffffff',
-          color: '#282828',
-          border: '2px solid #282828',
-          padding: '14px 28px',
-          borderRadius: '12px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          transition: 'all 0.3s ease',
-          minWidth: '140px',
-          justifyContent: 'center'
-        }}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.7, type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <Printer size={18} />
-        Print Plan
-      </motion.button>
-    </motion.div>
-  );
-}
+      <PlanViewToggle activeView={activeView} onViewChange={setActiveView} />
 
-function WorkoutStats({ workoutStats }: { workoutStats: any[] }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      style={{ marginBottom: '50px' }}
-    >
-      <h2 style={{
-        fontSize: clampSize(24, 28),
-        fontWeight: '700',
-        color: '#282828',
-        marginBottom: '25px',
-        textAlign: 'center'
-      }}>
-        Workout Overview
-      </h2>
-      
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile() ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '20px'
-      }}>
-        {workoutStats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
-            style={{
-              background: 'rgba(22, 42, 65, 0.05)',
-              border: '2px solid rgba(22, 42, 65, 0.1)',
-              borderRadius: '16px',
-              padding: '24px',
-              textAlign: 'center',
-              transition: 'all 0.3s ease'
-            }}
-            whileHover={{ 
-              scale: 1.05,
-              borderColor: '#282828',
-              boxShadow: '0 8px 25px rgba(22, 42, 65, 0.15)'
-            }}
-          >
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '50px',
-              height: '50px',
-              borderRadius: '12px',
-              background: '#282828',
-              margin: '0 auto 15px'
-            }}>
-              <stat.icon size={24} color="#ffffff" />
-            </div>
-            <div style={{
-              fontSize: clampSize(20, 24),
-              fontWeight: '700',
-              color: '#282828',
-              marginBottom: '5px'
-            }}>
-              {stat.value}
-            </div>
-            <div style={{
-              fontSize: '14px',
-              color: '#6b7280',
-              fontWeight: '500'
-            }}>
-              {stat.label}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.div>
-  );
-}
+      <WorkoutPlansSection
+        workoutPlan={workoutPlan}
+        activeView={activeView}
+        selectedDay={selectedDay}
+        expandedWorkouts={expandedWorkouts}
+        showAlternatives={showAlternatives}
+        onDaySelect={setSelectedDay}
+        onWorkoutToggle={toggleWorkoutExpansion}
+        onAlternativesToggle={toggleAlternatives}
+        days={days}
+      />
 
-function ViewToggle({ activeView, onViewChange }: { activeView: 'single' | 'weekly'; onViewChange: (view: 'single' | 'weekly') => void }) {
-  const tabs = [
-    { id: 'single', label: 'Daily View', icon: Target },
-    { id: 'weekly', label: 'Weekly View', icon: Calendar }
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      style={{ marginBottom: '40px' }}
-    >
-      <div style={{
-        display: 'flex',
-        background: 'rgba(22, 42, 65, 0.05)',
-        borderRadius: '12px',
-        padding: '4px',
-        maxWidth: '400px',
-        margin: '0 auto'
-      }}>
-        {tabs.map((tab) => (
-          <motion.button
-            key={tab.id}
-            onClick={() => onViewChange(tab.id as 'single' | 'weekly')}
-            style={{
-              flex: 1,
-              padding: '12px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              background: activeView === tab.id ? '#282828' : 'transparent',
-              color: activeView === tab.id ? '#ffffff' : '#282828',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px'
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <tab.icon size={16} />
-            {tab.label}
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
+      <PlanTips
+        title="Workout Tips & Recommendations"
+        icon={Zap}
+        tips={workoutPlan.workoutTips}
+      />
+    </PlanDisplayShell>
   );
 }
 
@@ -896,79 +630,3 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
   );
 }
 
-function WorkoutTips({ workoutTips }: { workoutTips: string[] }) {
-  if (!workoutTips || workoutTips.length === 0) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8 }}
-    >
-      <div style={{
-        background: 'rgba(22, 42, 65, 0.02)',
-        border: '2px solid rgba(22, 42, 65, 0.1)',
-        borderRadius: '16px',
-        padding: '30px'
-      }}>
-        <h3 style={{
-          fontSize: clampSize(20, 24),
-          fontWeight: '700',
-          color: '#282828',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <Zap size={24} color="#282828" />
-          Workout Tips & Recommendations
-        </h3>
-        
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile() ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '15px'
-        }}>
-          {workoutTips.map((tip, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9 + index * 0.1 }}
-              style={{
-                display: 'flex',
-                gap: '10px',
-                padding: '15px',
-                background: 'rgba(22, 42, 65, 0.03)',
-                borderRadius: '12px',
-                border: '1px solid rgba(22, 42, 65, 0.1)'
-              }}
-            >
-              <CheckCircle2 size={18} color="#282828" style={{ flexShrink: 0, marginTop: '2px' }} />
-              <span style={{ 
-                color: '#374151', 
-                fontSize: '14px', 
-                lineHeight: '1.6',
-                fontWeight: '500'
-              }}>
-                {tip}
-              </span>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// Utility functions
-function clampSize(min: number, max: number): string {
-  const width = typeof window !== 'undefined' ? window.innerWidth : 1200;
-  if (width < 768) return `${min}px`;
-  if (width > 1200) return `${max}px`;
-  return `${min + (max - min) * ((width - 768) / (1200 - 768))}px`;
-}
-
-function isMobile(): boolean {
-  return typeof window !== 'undefined' && window.innerWidth < 768;
-}

@@ -50,13 +50,13 @@ export default function ProfilePage() {
         setFormState({
             ...data,
             goals: goalsString,
-        });
+        } as unknown as ProfileFormState);
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
       // Fallback for missing profile: direct user to setup if needed
       if (!profileData) {
-          router.push('/setup-profile'); // Assuming a dedicated setup path
+          router.push('/progress');
       }
     } finally {
       setIsLoading(false);
@@ -163,7 +163,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen pt-28 max-w-xl mx-auto p-6 text-center">
         <StepTitle title="Profile Setup Required" subtitle="It looks like you haven't set up your profile yet. Please complete the initial setup to proceed." />
-        <Button onClick={() => router.push('/setup-profile')} className="mt-6">Go to Setup</Button>
+        <Button onClick={() => router.push('/progress')} className="mt-6">Go to Setup</Button>
       </div>
     );
   }

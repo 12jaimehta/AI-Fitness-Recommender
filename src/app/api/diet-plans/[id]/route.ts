@@ -1,37 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createServerClientWrapper } from '@/lib/supabase/supabase-server'
+import { deleteDietPlan } from "@backend/features/diet-plans";
+import { jsonError, jsonOk } from "@backend/shared";
 
 export async function DELETE(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: planId } = await params
-
-    // Create Supabase client for server-side operations
-    const supabase = await createServerClientWrapper()
-
-    // Get the current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { error } = await supabase
-      .from('diet_plans')
-      .delete()
-      .eq('id', planId)
-      .eq('user_id', user.id)
-
-    if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
-
-    return NextResponse.json({ success: true })
+    const { id } = await params;
+    await deleteDietPlan(id);
+    return jsonOk({ success: true });
   } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return jsonError(error);
   }
 }

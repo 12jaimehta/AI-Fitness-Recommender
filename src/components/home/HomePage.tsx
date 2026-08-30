@@ -68,7 +68,8 @@ export default function HomePage() {
     };
 
     // Extract display name from email if name isn't available
-    const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
+    const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+    const homeHref = isSignedIn ? "/dashboard" : "/";
 
     return (
         <div className="min-h-screen relative overflow-hidden">
@@ -78,14 +79,14 @@ export default function HomePage() {
                     {/* Logo */}
                     <div
                         className="text-white font-extrabold text-[28px] cursor-pointer transition-all duration-300 hover:scale-105 text-shadow-md"
-                        onClick={() => router.push("/")}
+                        onClick={() => router.push(homeHref)}
                     >
                         fyteAI
                     </div>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-8">
-                        <button onClick={() => router.push("/")} className="nav-link text-white font-semibold hover:text-white/80 transition">Home</button>
+                        <button onClick={() => router.push(homeHref)} className="nav-link text-white font-semibold hover:text-white/80 transition">Home</button>
                         <button onClick={() => router.push("/diet")} className="nav-link text-white font-semibold hover:text-white/80 transition">Diet Plan</button>
                         <button onClick={() => router.push("/workout")} className="nav-link text-white font-semibold hover:text-white/80 transition">Workout Plan</button>
                         <button onClick={() => router.push("/progress")} className="nav-link text-white font-semibold hover:text-white/80 transition">Track Progress</button>
@@ -184,7 +185,7 @@ export default function HomePage() {
                                 <button
                                     key={index}
                                     onClick={() => {
-                                        router.push(item === "Home" ? "/" : "/" + item.toLowerCase().replace(" ", ""));
+                                        router.push(item === "Home" ? homeHref : "/" + item.toLowerCase().replace(" ", ""));
                                         setIsMobileMenuOpen(false);
                                     }}
                                     className="w-full text-left text-[18px] font-semibold text-[#282828] px-5 py-4 rounded-xl mb-2 transition-all duration-300 hover:bg-[#282828]/5"

@@ -1,17 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/supabase-client";
+import { createRating, listRatings } from "@frontend/features/fyte-connect";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
-import { Star } from "lucide-react";
-import { motion } from "framer-motion";
+import Link from "next/link";
 
 type TargetType = "trainer" | "creator" | "plan";
-
-interface RatingReviewProps {
-  targetType: TargetType;
-  targetId: string;
-}
 
 interface RatingRow {
   id: string;
@@ -19,47 +13,31 @@ interface RatingRow {
   rating: number;
   review: string | null;
   created_at: string;
-  user_profiles?: {
-    full_name: string | null;
-  } | null;
+  user_profiles?: { full_name: string | null } | null;
 }
 
-export default function RatingReview({ targetType, targetId }: RatingReviewProps) {
-  const supabase = createClient();
-  const { user, isSignedIn } = useCurrentUser();
-
+export default function RatingReview({
+  targetType,
+  targetId,
+}: {
+  targetType: TargetType;
+  targetId: string;
+}) {
+  const { isSignedIn } = useCurrentUser();
   const [ratings, setRatings] = useState<RatingRow[]>([]);
   const [avgRating, setAvgRating] = useState<number | null>(null);
-  const [rating, setRating] = useState<number>(0);
+  const [rating, setRating] = useState(0);
   const [review, setReview] = useState("");
   const [loading, setLoading] = useState(false);
 
   const loadRatings = async () => {
-    const { data, error } = await supabase
-      .from("ratings")
-      .select(
-        `
-        id,
-        user_id,
-        rating,
-        review,
-        created_at,
-        user_profiles ( full_name )
-      `
-      )
-      .eq("target_type", targetType)
-      .eq("target_id", targetId)
-      .order("created_at", { ascending: false });
-
-    if (!error && data) {
-      setRatings(data as any);
-      if (data.length) {
-        const avg =
-          data.reduce((sum: number, r: any) => sum + r.rating, 0) / data.length;
-        setAvgRating(parseFloat(avg.toFixed(1)));
-      } else {
-        setAvgRating(null);
-      }
+    const data = (await listRatings(targetType, targetId)) as RatingRow[];
+    setRatings(data || []);
+    if (data?.length) {
+      const avg = data.reduce((sum, item) => sum + item.rating, 0) / data.length;
+      setAvgRating(parseFloat(avg.toFixed(1)));
+    } else {
+      setAvgRating(null);
     }
   };
 
@@ -68,140 +46,91 @@ export default function RatingReview({ targetType, targetId }: RatingReviewProps
   }, [targetId, targetType]);
 
   const handleSubmit = async () => {
-    if (!isSignedIn || !user) return;
-    if (rating === 0) return;
-
+    if (!isSignedIn || rating === 0) return;
     setLoading(true);
-    const { error } = await supabase.from("ratings").insert({
-      user_id: user.id,
-      target_type: targetType,
-      target_id: targetId,
-      rating,
-      review: review.trim() || null,
-    });
-
-    setLoading(false);
-    if (!error) {
+    try {
+      await createRating({
+        targetType,
+        targetId,
+        rating,
+        review: review.trim() || null,
+      });
       setRating(0);
       setReview("");
       await loadRatings();
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="mt-10 bg-white/5 border border-white/10 rounded-2xl p-6 text-white">
-      <div className="flex items-center justify-between mb-4 gap-4">
+    <section className="mt-10 rounded-2xl border border-gray-200 bg-white p-6">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-wide text-white/60">
-            Ratings & Reviews
-          </p>
-          <h3 className="text-xl font-bold mt-1">What people say</h3>
-        </div>
-        <div className="text-right">
-          <p className="text-3xl font-extrabold flex items-center justify-end gap-1">
-            {avgRating ?? "—"}
-            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-          </p>
-          <p className="text-xs text-white/60">
-            {ratings.length} review{ratings.length !== 1 ? "s" : ""}
+          <h2 className="text-lg font-semibold text-[#282828]">Reviews</h2>
+          <p className="text-sm text-gray-500">
+            {ratings.length} review{ratings.length === 1 ? "" : "s"}
           </p>
         </div>
+        <p className="text-xl font-semibold text-[#282828]">{avgRating ?? "-"}</p>
       </div>
 
-      {/* Add Review */}
       {isSignedIn ? (
-        <div className="mb-6 border border-white/10 rounded-xl p-4 bg-white/5">
-          <p className="text-sm font-semibold mb-2">Rate this</p>
-          <div className="flex items-center gap-2 mb-3">
-            {[1, 2, 3, 4, 5].map((s) => (
+        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <p className="mb-2 text-sm font-medium text-[#282828]">Your rating</p>
+          <div className="mb-3 flex gap-2">
+            {[1, 2, 3, 4, 5].map((value) => (
               <button
-                key={s}
+                key={value}
                 type="button"
-                onClick={() => setRating(s)}
-                className="focus:outline-none"
+                onClick={() => setRating(value)}
+                className={`h-9 w-9 rounded-lg text-sm font-semibold ${
+                  value <= rating ? "bg-[#282828] text-white" : "border border-gray-200 bg-white text-gray-600"
+                }`}
               >
-                <Star
-                  className={`w-7 h-7 transition-all ${
-                    s <= rating
-                      ? "fill-yellow-400 text-yellow-400 scale-110"
-                      : "text-white/30 hover:text-yellow-300"
-                  }`}
-                />
+                {value}
               </button>
             ))}
           </div>
-
           <textarea
-            className="w-full bg-[#0f1c2f] border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#282828]/60"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#282828]"
             rows={3}
-            placeholder="Share your experience (optional)..."
+            placeholder="Write a short review (optional)"
             value={review}
-            onChange={(e) => setReview(e.target.value)}
+            onChange={(event) => setReview(event.target.value)}
           />
-
-          <div className="mt-3 flex justify-end">
-            <motion.button
-              whileTap={{ scale: 0.96 }}
-              disabled={loading || rating === 0}
-              onClick={handleSubmit}
-              className={`px-5 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 
-                ${
-                  rating === 0 || loading
-                    ? "bg-white/10 text-white/40 cursor-not-allowed"
-                    : "bg-[#282828] hover:bg-[#1d3b61] text-white"
-                }`}
-            >
-              {loading ? "Submitting..." : "Submit Review"}
-            </motion.button>
-          </div>
+          <button
+            type="button"
+            disabled={loading || rating === 0}
+            onClick={handleSubmit}
+            className="mt-3 rounded-xl bg-[#282828] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {loading ? "Saving..." : "Submit review"}
+          </button>
         </div>
       ) : (
-        <p className="text-xs text-white/60 mb-4">
-          Sign in to rate and review.
+        <p className="mb-4 text-sm text-gray-600">
+          <Link href="/sign-in" className="font-semibold text-[#282828]">
+            Sign in
+          </Link>{" "}
+          to leave a review.
         </p>
       )}
 
-      {/* List Reviews */}
-      <div className="space-y-4 max-h-[260px] overflow-y-auto custom-scrollbar pr-1">
-        {ratings.map((r) => (
-          <div
-            key={r.id}
-            className="border border-white/10 rounded-xl p-3 bg-black/20"
-          >
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-sm font-semibold">
-                {r.user_profiles?.full_name || "Anonymous"}
+      <div className="space-y-3">
+        {ratings.map((item) => (
+          <article key={item.id} className="rounded-xl border border-gray-200 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-[#282828]">
+                {item.user_profiles?.full_name || "Member"}
               </p>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star
-                    key={s}
-                    className={`w-4 h-4 ${
-                      s <= r.rating
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-white/30"
-                    }`}
-                  />
-                ))}
-              </div>
+              <p className="text-sm text-gray-500">{item.rating} / 5</p>
             </div>
-            {r.review && (
-              <p className="text-xs text-white/70 mt-1 leading-relaxed">
-                {r.review}
-              </p>
-            )}
-            <p className="text-[10px] text-white/40 mt-1">
-              {new Date(r.created_at).toLocaleDateString()}
-            </p>
-          </div>
+            {item.review ? <p className="mt-2 text-sm text-gray-600">{item.review}</p> : null}
+          </article>
         ))}
-
-        {ratings.length === 0 && (
-          <p className="text-xs text-white/50 italic">
-            No reviews yet. Be the first one!
-          </p>
-        )}
+        {ratings.length === 0 ? <p className="text-sm text-gray-500">No reviews yet.</p> : null}
       </div>
-    </div>
+    </section>
   );
 }
