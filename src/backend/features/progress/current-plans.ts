@@ -1,50 +1,37 @@
-import type { DietPlanData, WorkoutPlanData } from "@/shared/types";
 import type { CurrentPlans } from "@/shared/types/progress-tracking";
 import { requireUser } from "@backend/shared/api/supabase";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import { mapDietPlan, mapWorkoutPlan } from "@/shared/lib/current-plans";
+import { getCurrentDiet, getCurrentWorkout } from "@backend/features/plan-cache";
 import { utcToday } from "./db";
 
-type DietRow = {
-  id: string;
-  title: string;
-  form_data: { mealsPerDay?: string | number };
-  diet_plan: DietPlanData;
-};
-
-type WorkoutRow = {
-  id: string;
-  title: string;
-  form_data: { workoutFrequency?: string | number; workoutDuration?: string | number };
-  workout_plan: WorkoutPlanData;
-};
-
 export async function getCurrentPlans(dateInput?: string | null): Promise<CurrentPlans> {
-  const { supabase, user } = await requireUser();
+  const { user } = await requireUser();
   const date = parseIsoDate(dateInput, utcToday());
-
-  const [dietRes, workoutRes] = await Promise.all([
-    supabase
-      .from("diet_plans")
-      .select("id, title, form_data, diet_plan")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase
-      .from("workout_plans")
-      .select("id, title, form_data, workout_plan")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-
-  const diet = (dietRes.data as DietRow | null) || null;
-  const workout = (workoutRes.data as WorkoutRow | null) || null;
+  const [diet, workout] = await Promise.all([getCurrentDiet(user.id), getCurrentWorkout(user.id)]);
 
   return {
-    diet_plan: diet ? mapDietPlan(diet, date) : null,
-    workout_plan: workout ? mapWorkoutPlan(workout, date) : null,
+    diet_plan: diet
+      ? mapDietPlan(
+          {
+            id: diet.id || "current-diet",
+            title: diet.title || "Diet plan",
+            form_data: diet.formData,
+            diet_plan: diet.plan,
+          },
+          date
+        )
+      : null,
+    workout_plan: workout
+      ? mapWorkoutPlan(
+          {
+            id: workout.id || "current-workout",
+            title: workout.title || "Workout plan",
+            form_data: workout.formData,
+            workout_plan: workout.plan,
+          },
+          date
+        )
+      : null,
   };
 }

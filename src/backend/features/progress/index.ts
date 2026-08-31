@@ -5,6 +5,7 @@ import { buildProgressInsightsPrompt } from "@backend/ai/prompts/insights";
 import { fallbackProgressInsights } from "@backend/ai/fallbacks/insights";
 import { asLoggedMeals, mealsPerDayFromForm, parseLeadingNumber, weekStartMonday } from "@/shared/lib/plan-tracking";
 import { hasRequiredProfileDetails } from "@/shared/lib/profile";
+import { recacheUserPlans } from "@backend/features/plan-cache";
 import { getLatestDietPlan, getLatestWorkoutPlan, getTrackingContext } from "./plans";
 import type {
   ChartPoint,
@@ -88,6 +89,7 @@ export async function upsertProfile(profile: Omit<UserProfile, "created_at" | "u
   const payload = { ...profile, id: user.id, email: profile.email || user.email };
   const { data, error } = await supabase.from("user_profiles").upsert(payload).select().single();
   if (error) throw new ApiError(error.message, 400);
+  await recacheUserPlans(user.id);
   return data as UserProfile;
 }
 
@@ -115,6 +117,7 @@ export async function updateProfile(updates: Partial<UserProfile>) {
 
   const { data, error } = await supabase.from("user_profiles").upsert(payload).select().single();
   if (error) throw new ApiError(error.message, 400);
+  await recacheUserPlans(user.id);
   return data as UserProfile;
 }
 

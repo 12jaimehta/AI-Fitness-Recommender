@@ -1,11 +1,12 @@
 import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
 import type { DietPlanData } from "@/shared/types";
-
-const STORAGE_KEY = "fyte.generated-diet-plan";
+import { persistPlanCache, purgeLegacyPlanStorage } from "@frontend/features/plan-cache/storage";
 
 export type GeneratedDietSession = {
   formData: DietPlanFormData;
   plan: DietPlanData;
+  id?: string;
+  title?: string;
 };
 
 let memoryPlan: GeneratedDietSession | null = null;
@@ -21,38 +22,22 @@ function hasPlanContent(plan?: DietPlanData | null) {
   return meals || weekly;
 }
 
-function writeStorage(storage: Storage, session: GeneratedDietSession) {
-  storage.setItem(STORAGE_KEY, JSON.stringify(session));
+export function applyGeneratedDietPlan(session: GeneratedDietSession) {
+  if (!hasPlanContent(session?.plan)) return;
+  memoryPlan = session;
 }
 
-function readStorage(storage: Storage): GeneratedDietSession | null {
-  try {
-    const raw = storage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as GeneratedDietSession;
-    if (!hasPlanContent(parsed?.plan)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+export function clearGeneratedDietPlan() {
+  memoryPlan = null;
 }
 
 export function storeGeneratedDietPlan(session: GeneratedDietSession) {
-  memoryPlan = session;
-  try {
-    writeStorage(sessionStorage, session);
-  } catch {
-    /* quota or private mode */
-  }
-  try {
-    writeStorage(localStorage, session);
-  } catch {
-    /* quota or private mode */
-  }
+  applyGeneratedDietPlan(session);
+  purgeLegacyPlanStorage();
+  void persistPlanCache({ diet: session });
 }
 
 export function readGeneratedDietPlan(): GeneratedDietSession | null {
   if (hasPlanContent(memoryPlan?.plan)) return memoryPlan;
-  if (typeof window === "undefined") return null;
-  return readStorage(sessionStorage) || readStorage(localStorage);
+  return null;
 }

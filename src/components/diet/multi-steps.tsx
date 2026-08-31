@@ -27,6 +27,7 @@ import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import OptionChipGrid from "@/components/shared/OptionChipGrid";
 import { PROGRAM_GOAL_OPTIONS, coerceProgramGoal, dietActivityFromWorkoutDays, dietFrequencyFromWorkoutDays } from "@/shared/lib/program-goals";
 import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { getUserProfile } from "@/lib/service/progress-database";
 
 export default function RefactoredMultiStepForm({
@@ -34,7 +35,7 @@ export default function RefactoredMultiStepForm({
   loading,
 }: RefactoredMultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const workoutForm = typeof window === "undefined" ? null : readLastWorkoutForm();
+  const [workoutForm, setWorkoutForm] = useState<ReturnType<typeof readLastWorkoutForm>>(null);
 
   const {
     control,
@@ -69,27 +70,35 @@ export default function RefactoredMultiStepForm({
   const watched = watch();
 
   useEffect(() => {
-    const workout = readLastWorkoutForm();
-    if (workout?.goal) {
-      setValue("goal", coerceProgramGoal(workout.goal) || (workout.goal as DietPlanFormData["goal"]));
-    }
-    if (workout?.workoutFrequency) {
-      setValue("workoutFrequency", dietFrequencyFromWorkoutDays(workout.workoutFrequency));
-      setValue("activityLevel", dietActivityFromWorkoutDays(workout.workoutFrequency));
-    }
-    if (workout?.medicalConditions) setValue("medicalConditions", workout.medicalConditions);
+    let cancelled = false;
+    void hydratePlanCache().then(() => {
+      if (cancelled) return;
+      const workout = readLastWorkoutForm();
+      setWorkoutForm(workout);
+      if (workout?.goal) {
+        setValue("goal", coerceProgramGoal(workout.goal) || (workout.goal as DietPlanFormData["goal"]));
+      }
+      if (workout?.workoutFrequency) {
+        setValue("workoutFrequency", dietFrequencyFromWorkoutDays(workout.workoutFrequency));
+        setValue("activityLevel", dietActivityFromWorkoutDays(workout.workoutFrequency));
+      }
+      if (workout?.medicalConditions) setValue("medicalConditions", workout.medicalConditions);
 
-    getUserProfile()
-      .then((profile) => {
-        if (!profile) return;
-        if (profile.age) setValue("age", String(profile.age));
-        if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
-        if (profile.height) setValue("height", String(profile.height));
-        if (profile.initial_weight) setValue("weight", String(profile.initial_weight));
-        const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
-        if (profileGoal && !workout?.goal) setValue("goal", profileGoal);
-      })
-      .catch(() => {});
+      getUserProfile()
+        .then((profile) => {
+          if (!profile || cancelled) return;
+          if (profile.age) setValue("age", String(profile.age));
+          if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
+          if (profile.height) setValue("height", String(profile.height));
+          if (profile.initial_weight) setValue("weight", String(profile.initial_weight));
+          const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
+          if (profileGoal && !workout?.goal) setValue("goal", profileGoal);
+        })
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [setValue]);
 
   const nextStep = async () => {

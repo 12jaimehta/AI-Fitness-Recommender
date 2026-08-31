@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { generateAIDietPlan, saveDietPlan, storeGeneratedDietPlan } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
 import PageLoader from "@/components/ui/PageLoader";
 
@@ -30,6 +31,7 @@ export default function DietClientPage() {
     setError("");
     setLoading(true);
     try {
+      await hydratePlanCache();
       const workout = readLastWorkoutForm();
       const payload: DietPlanFormData = {
         ...data,
@@ -39,7 +41,7 @@ export default function DietClientPage() {
       const plan = await generateAIDietPlan(payload);
       storeGeneratedDietPlan({ formData: payload, plan });
       if (user) {
-        void saveDietPlan(user.id, data, plan).catch(() => {});
+      void saveDietPlan(user.id, payload, plan).catch(() => {});
       }
       router.push("/diet/plan");
     } catch (err) {

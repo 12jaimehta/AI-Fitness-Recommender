@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@frontend/shared/api/supabase";
+import {
+  clearClientPlanCache,
+  dropUserPlanCache,
+  persistClientPlans,
+  purgeLegacyPlanStorage,
+} from "@frontend/features/plan-cache";
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -27,9 +33,20 @@ export function useUser() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setIsLoading(false);
+
+      if (event === "SIGNED_OUT") {
+        clearClientPlanCache();
+      }
+      if (event === "SIGNED_IN") {
+        purgeLegacyPlanStorage();
+        void persistClientPlans();
+      }
+      if (event === "USER_UPDATED") {
+        void dropUserPlanCache();
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -49,4 +66,10 @@ export function useCurrentUser() {
     isSignedIn,
     loading: isLoading,
   };
+}
+
+export async function signOutAndClearCache() {
+  await dropUserPlanCache();
+  const supabase = createClient();
+  await supabase.auth.signOut();
 }

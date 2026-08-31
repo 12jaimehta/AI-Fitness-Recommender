@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Printer,
@@ -20,7 +20,8 @@ import PlanDisplayShell from "@/components/shared/PlanDisplayShell";
 import PlanFormHeader from "@/components/shared/PlanFormHeader";
 import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
-import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
+import { readGeneratedWorkoutPlan } from "@frontend/features/workout-plan";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 import PlanResultHeader from "@/components/shared/PlanResultHeader";
 import PlanStatGrid from "@/components/shared/PlanStatGrid";
 import PlanViewToggle from "@/components/shared/PlanViewToggle";
@@ -65,6 +66,15 @@ export default function WorkoutPlanDisplay({
   const [selectedDay, setSelectedDay] = useState<string>('monday');
   const [activeView, setActiveView] = useState<'single' | 'weekly'>('single');
   const [showAlternatives, setShowAlternatives] = useState<Record<string, boolean>>({});
+  const [otherExists, setOtherExists] = useState(false);
+  const [pairedGoal, setPairedGoal] = useState<string | undefined>();
+
+  useEffect(() => {
+    void hydratePlanCache().then(() => {
+      setOtherExists(Boolean(readGeneratedDietPlan()));
+      setPairedGoal(readGeneratedWorkoutPlan()?.formData?.goal);
+    });
+  }, []);
 
   const toggleWorkoutExpansion = (dayKey: string) => {
     setExpandedWorkouts(prev => ({
@@ -109,8 +119,8 @@ export default function WorkoutPlanDisplay({
       />
       <PlanPairingCard
         context="workout-result"
-        otherExists={Boolean(readGeneratedDietPlan())}
-        goal={readLastWorkoutForm()?.goal}
+        otherExists={otherExists}
+        goal={pairedGoal}
       />
       <PlanResultHeader
         icon={Dumbbell}

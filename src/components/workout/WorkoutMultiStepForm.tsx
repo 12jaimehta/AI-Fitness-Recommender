@@ -26,6 +26,7 @@ import {
 } from "@/lib/constant";
 import { PROGRAM_GOAL_OPTIONS, coerceProgramGoal } from "@/shared/lib/program-goals";
 import { readLastDietForm } from "@frontend/features/plan-pairing";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { getUserProfile } from "@/lib/service/progress-database";
 
 interface WorkoutMultiStepFormProps {
@@ -38,7 +39,7 @@ export default function WorkoutMultiStepForm({
   loading,
 }: WorkoutMultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const dietForm = typeof window === "undefined" ? null : readLastDietForm();
+  const [dietForm, setDietForm] = useState<ReturnType<typeof readLastDietForm>>(null);
 
   const {
     control,
@@ -68,21 +69,29 @@ export default function WorkoutMultiStepForm({
   const watched = watch();
 
   useEffect(() => {
-    const diet = readLastDietForm();
-    if (diet?.goal) setValue("goal", coerceProgramGoal(diet.goal) || (diet.goal as WorkoutPlanFormData["goal"]));
-    if (diet?.medicalConditions) setValue("medicalConditions", diet.medicalConditions);
-    getUserProfile()
-      .then((profile) => {
-        if (!profile) return;
-        if (profile.age) setValue("age", String(profile.age));
-        if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
-        if (profile.fitness_level === "beginner" || profile.fitness_level === "intermediate" || profile.fitness_level === "advanced") {
-          setValue("fitnessLevel", profile.fitness_level);
-        }
-        const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
-        if (profileGoal && !diet?.goal) setValue("goal", profileGoal);
-      })
-      .catch(() => {});
+    let cancelled = false;
+    void hydratePlanCache().then(() => {
+      if (cancelled) return;
+      const diet = readLastDietForm();
+      setDietForm(diet);
+      if (diet?.goal) setValue("goal", coerceProgramGoal(diet.goal) || (diet.goal as WorkoutPlanFormData["goal"]));
+      if (diet?.medicalConditions) setValue("medicalConditions", diet.medicalConditions);
+      getUserProfile()
+        .then((profile) => {
+          if (!profile || cancelled) return;
+          if (profile.age) setValue("age", String(profile.age));
+          if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
+          if (profile.fitness_level === "beginner" || profile.fitness_level === "intermediate" || profile.fitness_level === "advanced") {
+            setValue("fitnessLevel", profile.fitness_level);
+          }
+          const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
+          if (profileGoal && !diet?.goal) setValue("goal", profileGoal);
+        })
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [setValue]);
 
   const nextStep = async () => {

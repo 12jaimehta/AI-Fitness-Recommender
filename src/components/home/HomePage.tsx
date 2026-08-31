@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { menuItems, slides } from "@/lib/constant";
-import { useCurrentUser } from "@/lib/hooks/use-current-user";
-import { createClient } from "@/lib/supabase/supabase-client";
+import { useCurrentUser, signOutAndClearCache } from "@frontend/features/auth";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
 
@@ -60,8 +59,7 @@ export default function HomePage() {
 
     const handleSignOut = async () => {
         try {
-            const supabase = createClient();
-            await supabase.auth.signOut();
+            await signOutAndClearCache();
             router.refresh();
             setIsUserMenuOpen(false);
             setIsMobileMenuOpen(false);

@@ -10,7 +10,7 @@ import {
   storeGeneratedWorkoutPlan,
 } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
-import { storeLastWorkoutForm } from "@frontend/features/plan-pairing";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
 import PageLoader from "@/components/ui/PageLoader";
 
@@ -35,13 +35,13 @@ export default function WorkoutClientPage() {
     setError("");
     setLoading(true);
     try {
+      await hydratePlanCache();
       const diet = readGeneratedDietPlan();
       const payload: WorkoutPlanFormData = {
         ...data,
         pairedCalorieTarget: diet?.plan.calorieTarget,
         pairedProteinTarget: diet?.plan.proteinTarget,
       };
-      storeLastWorkoutForm(payload);
       const plan = await generateAIWorkoutPlan(payload);
       storeGeneratedWorkoutPlan({ formData: payload, plan });
       if (user) {

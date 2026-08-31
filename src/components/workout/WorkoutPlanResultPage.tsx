@@ -135,6 +135,7 @@ export default function WorkoutPlanResultPage() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [missing, setMissing] = useState(false);
+  const [otherExists, setOtherExists] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -147,6 +148,7 @@ export default function WorkoutPlanResultPage() {
       }
       setFormData(stored.formData);
       setPlan(stored.plan);
+      setOtherExists(Boolean(readGeneratedDietPlan()));
     });
     return () => {
       cancelled = true;
@@ -224,7 +226,7 @@ export default function WorkoutPlanResultPage() {
 
         <PlanPairingCard
           context="workout-result"
-          otherExists={Boolean(readGeneratedDietPlan())}
+          otherExists={otherExists}
           goal={formData?.goal}
         />
 

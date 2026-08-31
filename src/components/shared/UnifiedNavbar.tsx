@@ -2,7 +2,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, Menu, User, X } from "lucide-react";
-import { useUser } from "@/lib/hooks/use-user";
+import { useUser, signOutAndClearCache } from "@frontend/features/auth";
 import { navItems } from "@/lib/constant";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
@@ -50,8 +50,7 @@ export default function Navbar() {
   }, []);
 
   const handleSignOut = async () => {
-    const supabase = (await import("@/lib/supabase/supabase-client")).createClient();
-    await supabase.auth.signOut();
+    await signOutAndClearCache();
     setIsUserMenuOpen(false);
     setIsMobileMenuOpen(false);
     router.push("/");

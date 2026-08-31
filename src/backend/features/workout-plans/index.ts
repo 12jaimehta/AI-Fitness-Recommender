@@ -2,6 +2,7 @@ import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema"
 import type { WorkoutPlanData } from "@/shared/types";
 import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
+import { setCurrentWorkout, recacheWorkoutFromDb, dropWorkoutCache } from "@backend/features/plan-cache";
 
 function generateTitle(formData: WorkoutPlanFormData) {
   return `${formData.goal.replace("_", " ")} ${formData.fitnessLevel} plan`;
@@ -27,6 +28,12 @@ export async function createWorkoutPlan(input: {
     .single();
 
   if (error) throw new ApiError(error.message, 400);
+  await setCurrentWorkout(user.id, {
+    formData: input.formData,
+    plan: input.workoutPlan,
+    id: data.id,
+    title: data.title,
+  });
   return data;
 }
 
@@ -55,4 +62,6 @@ export async function deleteWorkoutPlan(planId: string) {
     .eq("user_id", user.id);
 
   if (error) throw new ApiError(error.message, 400);
+  const latest = await recacheWorkoutFromDb(user.id);
+  if (!latest) await dropWorkoutCache(user.id);
 }

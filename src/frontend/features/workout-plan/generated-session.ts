@@ -1,11 +1,12 @@
 import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import type { WorkoutPlanData } from "@/shared/types";
-
-const STORAGE_KEY = "fyte.generated-workout-plan";
+import { persistPlanCache, purgeLegacyPlanStorage } from "@frontend/features/plan-cache/storage";
 
 export type GeneratedWorkoutSession = {
   formData: WorkoutPlanFormData;
   plan: WorkoutPlanData;
+  id?: string;
+  title?: string;
 };
 
 let memoryPlan: GeneratedWorkoutSession | null = null;
@@ -19,38 +20,22 @@ function hasPlanContent(plan?: WorkoutPlanData | null) {
   );
 }
 
-function writeStorage(storage: Storage, session: GeneratedWorkoutSession) {
-  storage.setItem(STORAGE_KEY, JSON.stringify(session));
+export function applyGeneratedWorkoutPlan(session: GeneratedWorkoutSession) {
+  if (!hasPlanContent(session?.plan)) return;
+  memoryPlan = session;
 }
 
-function readStorage(storage: Storage): GeneratedWorkoutSession | null {
-  try {
-    const raw = storage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as GeneratedWorkoutSession;
-    if (!hasPlanContent(parsed?.plan)) return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+export function clearGeneratedWorkoutPlan() {
+  memoryPlan = null;
 }
 
 export function storeGeneratedWorkoutPlan(session: GeneratedWorkoutSession) {
-  memoryPlan = session;
-  try {
-    writeStorage(sessionStorage, session);
-  } catch {
-    /* quota or private mode */
-  }
-  try {
-    writeStorage(localStorage, session);
-  } catch {
-    /* quota or private mode */
-  }
+  applyGeneratedWorkoutPlan(session);
+  purgeLegacyPlanStorage();
+  void persistPlanCache({ workout: session });
 }
 
 export function readGeneratedWorkoutPlan(): GeneratedWorkoutSession | null {
   if (hasPlanContent(memoryPlan?.plan)) return memoryPlan;
-  if (typeof window === "undefined") return null;
-  return readStorage(sessionStorage) || readStorage(localStorage);
+  return null;
 }

@@ -5,8 +5,10 @@ import type { DietPlanData } from "@/shared/types";
 import {
   storeGeneratedDietPlan,
   readGeneratedDietPlan,
+  clearGeneratedDietPlan,
   type GeneratedDietSession,
 } from "./generated-session";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 
 export type { DietPlanData, MealData, DailyMeals } from "@/shared/types";
 export { storeGeneratedDietPlan, readGeneratedDietPlan, type GeneratedDietSession };
@@ -61,21 +63,11 @@ export async function getUserDietPlans(_userId: string) {
 }
 
 export async function loadCurrentDietPlan(): Promise<GeneratedDietSession | null> {
-  const stored = readGeneratedDietPlan();
-  if (stored) return stored;
-
-  try {
-    const plans = await getUserDietPlans("");
-    const latest = plans?.[0];
-    if (!latest?.diet_plan) return null;
-    const session = { formData: latest.form_data, plan: latest.diet_plan };
-    storeGeneratedDietPlan(session);
-    return session;
-  } catch {
-    return null;
-  }
+  await hydratePlanCache();
+  return readGeneratedDietPlan();
 }
 
 export async function deleteDietPlan(_userId: string, planId: string) {
   await api(`/api/diet-plans/${planId}`, { method: "DELETE" });
+  clearGeneratedDietPlan();
 }

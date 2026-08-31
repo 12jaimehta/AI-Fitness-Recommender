@@ -5,8 +5,10 @@ import type { WorkoutPlanData } from "@/shared/types";
 import {
   storeGeneratedWorkoutPlan,
   readGeneratedWorkoutPlan,
+  clearGeneratedWorkoutPlan,
   type GeneratedWorkoutSession,
 } from "./generated-session";
+import { hydratePlanCache } from "@frontend/features/plan-cache";
 
 export type { WorkoutPlanData, DailyWorkout, Exercise } from "@/shared/types";
 export { storeGeneratedWorkoutPlan, readGeneratedWorkoutPlan, type GeneratedWorkoutSession };
@@ -64,20 +66,10 @@ export async function getUserWorkoutPlans(_userId: string) {
 
 export async function deleteWorkoutPlan(_userId: string, planId: string) {
   await api(`/api/workout-plans/${planId}`, { method: "DELETE" });
+  clearGeneratedWorkoutPlan();
 }
 
 export async function loadCurrentWorkoutPlan(): Promise<GeneratedWorkoutSession | null> {
-  const stored = readGeneratedWorkoutPlan();
-  if (stored) return stored;
-
-  try {
-    const plans = await getUserWorkoutPlans("");
-    const latest = plans?.[0];
-    if (!latest?.workout_plan) return null;
-    const session = { formData: latest.form_data, plan: latest.workout_plan };
-    storeGeneratedWorkoutPlan(session);
-    return session;
-  } catch {
-    return null;
-  }
+  await hydratePlanCache();
+  return readGeneratedWorkoutPlan();
 }

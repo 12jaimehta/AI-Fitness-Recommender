@@ -3,6 +3,7 @@ import type { DietPlanData } from "@/shared/types";
 import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import { programGoalLabel } from "@/shared/lib/program-goals";
+import { setCurrentDiet, recacheDietFromDb, dropDietCache } from "@backend/features/plan-cache";
 
 function generatePlanTitle(formData: DietPlanFormData): string {
   const preferenceMap: Record<string, string> = {
@@ -45,6 +46,12 @@ export async function createDietPlan(input: {
     .single();
 
   if (error) throw new ApiError(error.message, 400);
+  await setCurrentDiet(user.id, {
+    formData: input.formData,
+    plan: input.dietPlan,
+    id: data.id,
+    title: data.title,
+  });
   return data;
 }
 
@@ -69,4 +76,6 @@ export async function deleteDietPlan(planId: string) {
     .eq("user_id", user.id);
 
   if (error) throw new ApiError(error.message, 400);
+  const latest = await recacheDietFromDb(user.id);
+  if (!latest) await dropDietCache(user.id);
 }
