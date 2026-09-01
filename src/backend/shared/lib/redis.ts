@@ -1,59 +1,34 @@
-import Redis from "ioredis";
+import { Redis } from "@upstash/redis";
 
 const TTL_SECONDS = 60 * 60 * 24 * 30;
-const CONNECT_MS = 200;
-const COMMAND_MS = 250;
+const COMMAND_MS = 2_000;
 const DOWN_MS = 10_000;
 
 type RedisGlobal = {
-  __fyteRedisFast?: Redis;
+  __fyteUpstash?: Redis;
   __fyteRedisDownUntil?: number;
 };
-
-function redisUrl() {
-  return process.env.REDIS_URL || "";
-}
 
 function markRedisDown() {
   const globalForRedis = globalThis as RedisGlobal;
   globalForRedis.__fyteRedisDownUntil = Date.now() + DOWN_MS;
-  const redis = globalForRedis.__fyteRedisFast;
-  if (redis) {
-    globalForRedis.__fyteRedisFast = undefined;
-    redis.disconnect(false);
-  }
+  globalForRedis.__fyteUpstash = undefined;
 }
 
 function redisIsSkipped() {
   return Date.now() < ((globalThis as RedisGlobal).__fyteRedisDownUntil || 0);
 }
 
-export function getRedis(): Redis | null {
-  const url = redisUrl();
-  if (!url || redisIsSkipped()) return null;
+function getRedis(): Redis | null {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token || redisIsSkipped()) return null;
 
   const globalForRedis = globalThis as RedisGlobal;
-  if (!globalForRedis.__fyteRedisFast) {
-    const redis = new Redis(url, {
-      maxRetriesPerRequest: 0,
-      enableReadyCheck: false,
-      enableOfflineQueue: false,
-      lazyConnect: true,
-      connectTimeout: CONNECT_MS,
-      commandTimeout: COMMAND_MS,
-      retryStrategy() {
-        return null;
-      },
-    });
-    redis.on("error", () => {
-      markRedisDown();
-    });
-    redis.on("end", () => {
-      markRedisDown();
-    });
-    globalForRedis.__fyteRedisFast = redis;
+  if (!globalForRedis.__fyteUpstash) {
+    globalForRedis.__fyteUpstash = new Redis({ url, token });
   }
-  return globalForRedis.__fyteRedisFast;
+  return globalForRedis.__fyteUpstash;
 }
 
 export function userCacheKeys(userId: string) {
@@ -86,19 +61,14 @@ async function withBudget<T>(work: Promise<T>): Promise<T | null> {
 export async function cacheGet<T>(key: string): Promise<T | null> {
   const redis = getRedis();
   if (!redis) return null;
-  const raw = await withBudget(redis.get(key));
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
+  const raw = await withBudget(redis.get<T>(key));
+  return raw ?? null;
 }
 
 export async function cacheSet(key: string, value: unknown, ttl = TTL_SECONDS) {
   const redis = getRedis();
   if (!redis) return;
-  await withBudget(redis.set(key, JSON.stringify(value), "EX", ttl));
+  await withBudget(redis.set(key, value, { ex: ttl }));
 }
 
 export async function cacheDel(...keys: string[]) {
