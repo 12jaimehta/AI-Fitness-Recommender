@@ -88,7 +88,7 @@ export default function QuickVitals({
               <button
                 type="button"
                 onClick={saveWeight}
-                className="shrink-0 rounded-xl bg-[#282828] px-4 text-sm font-semibold text-white"
+                className="inline-flex h-11 shrink-0 items-center justify-center rounded-xl bg-[#282828] px-5 text-sm font-semibold text-white"
               >
                 Save
               </button>
@@ -162,7 +162,7 @@ export default function QuickVitals({
               <button
                 type="button"
                 onClick={addWater}
-                className="mt-4 w-full rounded-xl bg-[#282828] px-4 py-3 text-sm font-semibold text-white"
+                className="mt-4 inline-flex h-11 w-full max-w-[12rem] mr-2 items-center justify-center rounded-xl bg-[#282828] px-5 text-sm font-semibold text-white"
               >
                 Add 250 ml
               </button>
@@ -170,7 +170,7 @@ export default function QuickVitals({
                 type="button"
                 onClick={removeWater}
                 disabled={localWater < WATER_STEP_ML}
-                className="mt-2 w-full rounded-xl border-2 border-[#282828] bg-white px-4 py-2.5 text-sm font-semibold text-[#282828] disabled:opacity-40"
+                className="mt-2 inline-flex h-11 w-full max-w-[12rem] items-center justify-center rounded-xl border-2 border-[#282828] bg-white px-5 text-sm font-semibold text-[#282828] disabled:opacity-40"
               >
                 Remove 250 ml
               </button>

@@ -46,9 +46,13 @@ const RANGE_OPTIONS = [
 ];
 
 const CARD = "rounded-2xl border border-gray-200 bg-white p-5 sm:p-6";
-const PRIMARY_BTN = "rounded-xl bg-[#282828] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60";
+const PRIMARY_BTN =
+  "inline-flex h-11 min-w-[10.5rem] items-center justify-center whitespace-nowrap rounded-xl bg-[#282828] px-5 text-sm font-semibold text-white disabled:opacity-60 w-full sm:w-auto";
 const SECONDARY_BTN =
-  "rounded-xl border-2 border-[#282828] bg-white px-4 py-3 text-sm font-semibold text-[#282828] disabled:opacity-40";
+  "inline-flex h-11 min-w-[10.5rem] items-center justify-center whitespace-nowrap rounded-xl border-2 border-[#282828] bg-white px-5 text-sm font-semibold text-[#282828] disabled:opacity-40 w-full sm:w-auto";
+const ACTION_ROW = "mt-4 flex w-full max-w-xl flex-col gap-2 sm:flex-row sm:flex-wrap";
+const RANGE_TAB =
+  "inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-xl border-2 px-3 text-sm font-semibold sm:px-4";
 
 function mergeExercises(planExercises: CurrentPlanExercise[], logged: ExerciseLogEntry[]) {
   const byId = new Map(logged.map((item) => [item.exercise_id, item]));
@@ -283,11 +287,11 @@ export default function ProgressClientPage() {
         <section className="mt-6">
           <h2 className="text-lg font-semibold text-[#282828]">What are you logging?</h2>
           <p className="mt-1 text-sm text-gray-600">Tap meals or workout. The list below follows what you pick.</p>
-          <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="mt-4 grid max-w-xl grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setTrack("diet")}
-              className={`rounded-2xl border-2 p-5 text-left transition ${
+              className={`rounded-2xl border-2 p-4 text-left transition sm:p-5 ${
                 track === "diet"
                   ? "border-[#282828] bg-[#282828] text-white"
                   : "border-gray-200 bg-white text-[#282828]"
@@ -307,7 +311,7 @@ export default function ProgressClientPage() {
             <button
               type="button"
               onClick={() => setTrack("workout")}
-              className={`rounded-2xl border-2 p-5 text-left transition ${
+              className={`rounded-2xl border-2 p-4 text-left transition sm:p-5 ${
                 track === "workout"
                   ? "border-[#282828] bg-[#282828] text-white"
                   : "border-gray-200 bg-white text-[#282828]"
@@ -328,7 +332,7 @@ export default function ProgressClientPage() {
         </section>
 
         <section className={`${CARD} mt-6`}>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-[#282828]">
                 {track === "diet" ? "Calories and protein" : "Workouts"}
@@ -341,16 +345,16 @@ export default function ProgressClientPage() {
                     : "Your daily logs for this month, one point per day."}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[24rem]">
               {RANGE_OPTIONS.map((option) => (
                 <button
                   key={option.value}
                   type="button"
                   onClick={() => setRange(option.value)}
-                  className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+                  className={`${RANGE_TAB} ${
                     range === option.value
-                      ? "bg-[#282828] text-white"
-                      : "border-2 border-[#282828] bg-white text-[#282828]"
+                      ? "border-[#282828] bg-[#282828] text-white"
+                      : "border-[#282828] bg-white text-[#282828]"
                   }`}
                 >
                   {option.label}
@@ -539,12 +543,14 @@ function DietMealsPanel({
             </p>
           </div>
         ) : null}
-        <button type="button" onClick={() => onAiLog("other")} className={`${PRIMARY_BTN} mt-4 w-full`}>
-          Log a meal
-        </button>
-        <Link href="/diet" className={`${SECONDARY_BTN} mt-2 inline-flex w-full items-center justify-center`}>
-          Make a diet plan
-        </Link>
+        <div className={ACTION_ROW}>
+          <button type="button" onClick={() => onAiLog("other")} className={PRIMARY_BTN}>
+            Log a meal
+          </button>
+          <Link href="/diet" className={SECONDARY_BTN}>
+            Make a diet plan
+          </Link>
+        </div>
       </section>
     );
   }
@@ -654,15 +660,17 @@ function WorkoutPanel({
       <section className={CARD}>
         <h2 className="text-lg font-semibold text-[#282828]">Workout</h2>
         <p className="mt-1 text-sm text-gray-600">Tap Mark trained after you train. Or make a plan for set logging.</p>
-        <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
-          {daily?.actuals.workout_completed ? "Trained · tap to undo" : "Mark trained"}
-        </button>
-        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-2 w-full`}>
-          Log with text
-        </button>
-        <Link href="/workout" className={`${SECONDARY_BTN} mt-2 inline-flex w-full items-center justify-center`}>
-          Make a workout plan
-        </Link>
+        <div className={ACTION_ROW}>
+          <button type="button" onClick={onComplete} disabled={busy === "workout"} className={PRIMARY_BTN}>
+            {daily?.actuals.workout_completed ? "Trained · tap to undo" : "Mark trained"}
+          </button>
+          <button type="button" onClick={onAi} className={SECONDARY_BTN}>
+            Log with text
+          </button>
+          <Link href="/workout" className={SECONDARY_BTN}>
+            Make a workout plan
+          </Link>
+        </div>
       </section>
     );
   }
@@ -673,12 +681,14 @@ function WorkoutPanel({
       <section className={CARD}>
         <h2 className="text-lg font-semibold text-[#282828]">Rest day</h2>
         <p className="mt-1 text-sm text-gray-600">No session planned. Tap Mark trained if you still trained.</p>
-        <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
-          {daily?.actuals.workout_completed ? "Trained · tap to undo" : "Mark trained"}
-        </button>
-        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-2 w-full`}>
-          Log with text
-        </button>
+        <div className={ACTION_ROW}>
+          <button type="button" onClick={onComplete} disabled={busy === "workout"} className={PRIMARY_BTN}>
+            {daily?.actuals.workout_completed ? "Trained · tap to undo" : "Mark trained"}
+          </button>
+          <button type="button" onClick={onAi} className={SECONDARY_BTN}>
+            Log with text
+          </button>
+        </div>
       </section>
     );
   }
@@ -693,17 +703,19 @@ function WorkoutPanel({
         <p className="mt-2 text-xs text-gray-500">
           Logging a set counts as trained. Tap Mark trained if you skipped set logging. Tap again to undo.
         </p>
-        <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
-          {daily?.actuals.workout_completed ? (
-            <span className="inline-flex items-center justify-center gap-2">
-              <Check size={16} /> Trained · tap to undo
-            </span>
-          ) : busy === "workout" ? (
-            "Saving..."
-          ) : (
-            "Mark trained"
-          )}
-        </button>
+        <div className={ACTION_ROW}>
+          <button type="button" onClick={onComplete} disabled={busy === "workout"} className={PRIMARY_BTN}>
+            {daily?.actuals.workout_completed ? (
+              <span className="inline-flex items-center justify-center gap-2">
+                <Check size={16} /> Trained · tap to undo
+              </span>
+            ) : busy === "workout" ? (
+              "Saving..."
+            ) : (
+              "Mark trained"
+            )}
+          </button>
+        </div>
       </section>
 
       <section className={CARD}>
@@ -741,9 +753,11 @@ function WorkoutPanel({
             );
           })}
         </div>
-        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-4 w-full`}>
-          Log another workout
-        </button>
+        <div className={ACTION_ROW}>
+          <button type="button" onClick={onAi} className={SECONDARY_BTN}>
+            Log another workout
+          </button>
+        </div>
       </section>
     </div>
   );
