@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { DailyMeals, DietPlanData, MealData } from "@/shared/types";
 import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { resolveDietPlan, saveDietPlan, beginDietPlanGeneration } from "@/lib/service/dietWorkoutplan";
@@ -146,13 +147,13 @@ function MealCard({ mealType, meal }: { mealType: string; meal: MealData }) {
 }
 
 export default function DietPlanResultPage() {
+  const router = useRouter();
   const { user, loading } = useCurrentUser();
   const [formData, setFormData] = useState<DietPlanFormData | null>(null);
   const [plan, setPlan] = useState<DietPlanData | null>(null);
   const [selectedDay, setSelectedDay] = useState<(typeof WEEKDAYS)[number]>(todayWeekday());
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
-  const [missing, setMissing] = useState(false);
   const [otherExists, setOtherExists] = useState(false);
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
@@ -161,7 +162,6 @@ export default function DietPlanResultPage() {
     let cancelled = false;
     if (loading) return;
     setError("");
-    setMissing(false);
     resolveDietPlan(user?.id).then((result) => {
       if (cancelled) return;
       if (result.status === "ready") {
@@ -174,12 +174,12 @@ export default function DietPlanResultPage() {
         setError(result.error);
         return;
       }
-      setMissing(true);
+      router.replace("/diet");
     });
     return () => {
       cancelled = true;
     };
-  }, [loading, user?.id, retryKey]);
+  }, [loading, user?.id, retryKey, router]);
 
   const showWeek = Boolean(plan && hasDifferentWeekDays(plan));
   const meals = useMemo(() => {
@@ -237,30 +237,6 @@ export default function DietPlanResultPage() {
               Edit details
             </Link>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (missing) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-          <PageBreadcrumb
-            items={[
-              { label: "Home" },
-              { label: "Diet Plan", href: "/diet" },
-              { label: "Your meals" },
-            ]}
-          />
-          <h1 className="text-2xl font-bold text-gray-900">No diet plan yet</h1>
-          <p className="mt-2 text-gray-600">Make a plan first. Then you can view it here.</p>
-          <Link
-            href="/diet"
-            className="mt-6 inline-flex rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white"
-          >
-            Make a diet plan
-          </Link>
         </div>
       </div>
     );
