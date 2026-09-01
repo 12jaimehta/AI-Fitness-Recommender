@@ -42,7 +42,7 @@ export async function upsertVitals(input: {
   const water =
     input.water_intake_ml != null
       ? Number(input.water_intake_ml)
-      : current.water_intake_ml + Number(input.water_increment_ml || 0);
+      : Math.max(0, current.water_intake_ml + Number(input.water_increment_ml || 0));
 
   const row = {
     user_id: user.id,

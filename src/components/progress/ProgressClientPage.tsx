@@ -220,7 +220,10 @@ export default function ProgressClientPage() {
           weight={daily?.actuals.weight_kg ?? null}
           water={daily?.actuals.water_intake_ml || 0}
           sleep={daily?.actuals.sleep_hours ?? null}
-          onWater={() => void saveVitals({ date, water_increment_ml: 250 }).then(() => load(true))}
+          waterTarget={daily?.targets.water_ml || 3000}
+          onWater={(deltaMl) =>
+            void saveVitals({ date, water_increment_ml: deltaMl }).then(() => load(true))
+          }
           onSave={(patch) => void saveVitals({ date, ...patch }).then(() => load(true))}
         />
 
