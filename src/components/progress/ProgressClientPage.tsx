@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Apple, Check, Dumbbell } from "lucide-react";
+import { motion } from "framer-motion";
+import { Apple, Check, ChevronRight, Dumbbell } from "lucide-react";
 import { useUser } from "@/lib/hooks/use-user";
 import {
   aiLogMeal,
@@ -19,22 +20,21 @@ import {
 import { emptySetsForExercise } from "@/shared/lib/current-plans";
 import { localIsoDate } from "@/shared/lib/plan-tracking";
 import type {
+  CurrentDietPlan,
   CurrentPlanExercise,
   DailyProgress,
   ExerciseLogEntry,
+  MealLogRow,
   ProgressAnalytics,
   TrackKind,
   WeeklyReview,
   CoachingAdvice,
 } from "@/shared/types";
 import PageLoader from "@/components/ui/PageLoader";
-import FormSelect from "@/components/shared/FormSelect";
-import SurfaceCard from "@/components/shared/SurfaceCard";
+import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import CoachingCard from "@/components/shared/CoachingCard";
 import TrendChart from "@/components/shared/TrendChart";
-import MacroRings from "@/components/progress/MacroRings";
 import QuickVitals from "@/components/progress/QuickVitals";
-import PlannedMealChecklist from "@/components/progress/PlannedMealChecklist";
 import AIMealLogModal from "@/components/progress/AIMealLogModal";
 import AIWorkoutLogModal from "@/components/progress/AIWorkoutLogModal";
 import ExerciseSetLogger from "@/components/progress/ExerciseSetLogger";
@@ -44,6 +44,11 @@ const RANGE_OPTIONS = [
   { value: "year", label: "This year" },
   { value: "last_year", label: "Last year" },
 ];
+
+const CARD = "rounded-2xl border border-gray-200 bg-white p-5 sm:p-6";
+const PRIMARY_BTN = "rounded-xl bg-[#282828] px-4 py-3 text-sm font-semibold text-white disabled:opacity-60";
+const SECONDARY_BTN =
+  "rounded-xl border-2 border-[#282828] bg-white px-4 py-3 text-sm font-semibold text-[#282828] disabled:opacity-40";
 
 function mergeExercises(planExercises: CurrentPlanExercise[], logged: ExerciseLogEntry[]) {
   const byId = new Map(logged.map((item) => [item.exercise_id, item]));
@@ -61,6 +66,43 @@ function mergeExercises(planExercises: CurrentPlanExercise[], logged: ExerciseLo
   });
   const extras = logged.filter((item) => !planExercises.some((exercise) => exercise.exercise_id === item.exercise_id));
   return [...fromPlan, ...extras];
+}
+
+function FillBar({
+  label,
+  help,
+  value,
+  target,
+  unit,
+}: {
+  label: string;
+  help: string;
+  value: number;
+  target: number;
+  unit: string;
+}) {
+  const pct = target > 0 ? Math.min(100, Math.round((value / target) * 100)) : 0;
+  return (
+    <div>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-[#282828]">{label}</p>
+          <p className="mt-0.5 text-xs text-gray-500">{help}</p>
+        </div>
+        <p className="shrink-0 text-sm font-semibold text-[#282828]">
+          {Math.round(value)} / {target || 0} {unit}
+        </p>
+      </div>
+      <div className="mt-2 h-3 overflow-hidden rounded-full bg-gray-100">
+        <motion.div
+          className="h-full rounded-full bg-[#282828]"
+          initial={false}
+          animate={{ width: `${pct}%` }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export default function ProgressClientPage() {
@@ -190,25 +232,43 @@ export default function ProgressClientPage() {
       ? (analytics?.points || []).map((point) => ({ label: point.label, value: point.calories }))
       : (analytics?.points || []).map((point) => ({ label: point.label, value: point.workout ? 1 : 0 }));
 
-  const mealSlotLabel =
-    daily?.diet_plan?.meals.find((meal) => meal.slot === aiSlot)?.meal_name || "Meal";
+  const mealSlotLabel = daily?.diet_plan?.meals.find((meal) => meal.slot === aiSlot)?.meal_name || "Meal";
+  const mealsLogged = daily?.actuals.meals_logged.filter((meal) => meal.source_type === "plan_checkoff").length || 0;
+  const mealsTotal = daily?.diet_plan?.meals.length || 0;
+  const dateLabel = new Date(`${date}T12:00:00`).toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-8 lg:py-12">
-        <header className="mb-6 text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Tracking</h1>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="mt-3 rounded-xl border-2 border-[#282828]/15 bg-white px-3 py-2 text-sm font-semibold text-[#282828]"
-          />
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+        <PageBreadcrumb items={[{ label: "Home" }, { label: "Tracking" }]} />
+
+        <header className="mb-8 border-b border-gray-200 pb-6">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Tracking</h1>
+          <p className="mt-2 text-gray-600">Check in, then tap meals or workout for this day.</p>
         </header>
 
-        {error && (
-          <p className="mb-4 text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
-        )}
+        {error ? (
+          <p className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-500">{error}</p>
+        ) : null}
+
+        <section className={`${CARD} mb-6`}>
+          <h2 className="text-lg font-semibold text-[#282828]">Which day?</h2>
+          <p className="mt-1 text-sm text-gray-600">Change the date to log another day. Today is the default.</p>
+          <label className="mt-4 block max-w-sm">
+            <span className="mb-2 block text-sm font-semibold text-[#282828]">Date</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              className="w-full rounded-xl border-2 border-[#282828] bg-white px-4 py-3 text-base font-semibold text-[#282828] outline-none"
+            />
+          </label>
+          <p className="mt-2 text-xs text-gray-500">{dateLabel}</p>
+        </section>
 
         {coaching ? (
           <div className="mb-6">
@@ -221,132 +281,159 @@ export default function ProgressClientPage() {
           water={daily?.actuals.water_intake_ml || 0}
           sleep={daily?.actuals.sleep_hours ?? null}
           waterTarget={daily?.targets.water_ml || 3000}
-          onWater={(deltaMl) =>
-            void saveVitals({ date, water_increment_ml: deltaMl }).then(() => load(true))
-          }
+          onWater={(deltaMl) => void saveVitals({ date, water_increment_ml: deltaMl }).then(() => load(true))}
           onSave={(patch) => void saveVitals({ date, ...patch }).then(() => load(true))}
         />
 
-        <div className="grid grid-cols-2 gap-3 my-6">
-          <button
-            type="button"
-            onClick={() => setTrack("diet")}
-            className={`rounded-2xl p-5 text-left border-2 transition ${
-              track === "diet" ? "bg-[#282828] text-white border-[#282828]" : "bg-white text-[#282828] border-[#282828]/15"
-            }`}
-          >
-            <Apple size={22} />
-            <p className="mt-3 text-sm font-medium opacity-80">Track diet</p>
-            <p className="text-2xl font-bold mt-1">
-              {daily?.diet_plan
-                ? `${daily.actuals.meals_logged.filter((m) => m.source_type === "plan_checkoff").length}/${daily.diet_plan.meals.length}`
-                : "—"}
-            </p>
-            <p className="text-xs opacity-70 mt-1">meals today</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setTrack("workout")}
-            className={`rounded-2xl p-5 text-left border-2 transition ${
-              track === "workout" ? "bg-[#282828] text-white border-[#282828]" : "bg-white text-[#282828] border-[#282828]/15"
-            }`}
-          >
-            <Dumbbell size={22} />
-            <p className="mt-3 text-sm font-medium opacity-80">Track workout</p>
-            <p className="text-2xl font-bold mt-1">
-              {daily?.workout_plan?.today_workout.is_rest_day
-                ? "Rest"
-                : daily?.actuals.workout_completed
-                  ? "Done"
-                  : daily?.targets.workout_focus || "—"}
-            </p>
-            <p className="text-xs opacity-70 mt-1">today</p>
-          </button>
-        </div>
-
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-semibold text-[#282828]">{periodLabel}</p>
-          <FormSelect
-            label=""
-            value={range}
-            onChange={setRange}
-            options={RANGE_OPTIONS}
-            variant="dropdown"
-            compact
-          />
-        </div>
-
-        <SurfaceCard className="mb-4">
-          {track === "diet" ? (
-            <>
-              <MacroRings
-                calories={daily?.actuals.total_calories || 0}
-                calorieTarget={daily?.targets.calories || 0}
-                protein={daily?.actuals.total_protein_g || 0}
-                proteinTarget={daily?.targets.protein_g || 0}
-                water={daily?.actuals.water_intake_ml || 0}
-                waterTarget={daily?.targets.water_ml || 3000}
-              />
-              <TrendChart points={chartPoints} />
-            </>
-          ) : (
-            <>
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Sessions</p>
-              <p className="text-4xl font-extrabold text-[#282828] mt-1 mb-4">
-                {analytics?.summary.total_workouts_completed ?? 0}
-                <span className="text-sm font-medium text-slate-400 ml-2">{periodLabel.toLowerCase()}</span>
+        <section className="mt-6">
+          <h2 className="text-lg font-semibold text-[#282828]">What are you logging?</h2>
+          <p className="mt-1 text-sm text-gray-600">Tap meals or workout. The list below follows what you pick.</p>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setTrack("diet")}
+              className={`rounded-2xl border-2 p-5 text-left transition ${
+                track === "diet"
+                  ? "border-[#282828] bg-[#282828] text-white"
+                  : "border-gray-200 bg-white text-[#282828]"
+              }`}
+            >
+              <Apple size={22} />
+              <p className="mt-3 text-sm font-medium opacity-80">Meals</p>
+              <p className="mt-1 text-2xl font-bold">{daily?.diet_plan ? `${mealsLogged}/${mealsTotal}` : "—"}</p>
+              <p className="mt-1 text-xs opacity-70">logged today</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTrack("workout")}
+              className={`rounded-2xl border-2 p-5 text-left transition ${
+                track === "workout"
+                  ? "border-[#282828] bg-[#282828] text-white"
+                  : "border-gray-200 bg-white text-[#282828]"
+              }`}
+            >
+              <Dumbbell size={22} />
+              <p className="mt-3 text-sm font-medium opacity-80">Workout</p>
+              <p className="mt-1 text-2xl font-bold">
+                {daily?.workout_plan?.today_workout.is_rest_day
+                  ? "Rest"
+                  : daily?.actuals.workout_completed
+                    ? "Done"
+                    : daily?.targets.workout_focus || "—"}
               </p>
-              <TrendChart points={chartPoints} unit="sessions" />
-            </>
+              <p className="mt-1 text-xs opacity-70">today</p>
+            </button>
+          </div>
+        </section>
+
+        <section className={`${CARD} mt-6`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[#282828]">
+                {track === "diet" ? "Calories over time" : "Sessions over time"}
+              </h2>
+              <p className="mt-1 text-sm text-gray-600">
+                {track === "diet"
+                  ? "How much you ate versus the days in this range."
+                  : "Days you completed a workout in this range."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {RANGE_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setRange(option.value)}
+                  className={`rounded-xl px-3 py-2 text-sm font-semibold ${
+                    range === option.value
+                      ? "bg-[#282828] text-white"
+                      : "border-2 border-[#282828] bg-white text-[#282828]"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {track === "diet" ? (
+            <div className="mt-5 space-y-4">
+              <FillBar
+                label="Calories"
+                help="Filled from meals you log today."
+                value={daily?.actuals.total_calories || 0}
+                target={daily?.targets.calories || 0}
+                unit="kcal"
+              />
+              <FillBar
+                label="Protein"
+                help="Filled from meals you log today."
+                value={daily?.actuals.total_protein_g || 0}
+                target={daily?.targets.protein_g || 0}
+                unit="g"
+              />
+            </div>
+          ) : (
+            <p className="mt-5 text-3xl font-bold text-[#282828]">
+              {analytics?.summary.total_workouts_completed ?? 0}
+              <span className="ml-2 text-sm font-medium text-gray-500">{periodLabel.toLowerCase()}</span>
+            </p>
           )}
-        </SurfaceCard>
 
-        {track === "diet" ? (
-          <PlannedMealChecklist
-            plan={daily?.diet_plan || null}
-            logs={daily?.actuals.meals_logged || []}
-            busy={busy}
-            onCheck={async (slot) => {
-              setBusy(slot);
-              try {
-                await quickCheckMeal(slot, date);
-                await load(true);
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Could not log meal.");
-              } finally {
-                setBusy("");
-              }
-            }}
-            onAiLog={setAiSlot}
-          />
-        ) : (
-          <WorkoutPanel
-            daily={daily}
-            exercises={exercises}
-            busy={busy}
-            onComplete={async () => {
-              setBusy("workout");
-              try {
-                await quickCheckWorkout({}, date);
-                await load(true);
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Could not log workout.");
-              } finally {
-                setBusy("");
-              }
-            }}
-            onOpenExercise={(item) => void openExercise(item)}
-            onAi={() => setAiWorkout(true)}
-          />
-        )}
+          <div className="mt-4">
+            <TrendChart points={chartPoints} unit={track === "diet" ? "kcal" : "sessions"} />
+          </div>
+        </section>
 
-        {review && (
-          <SurfaceCard className="mt-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Weekly coach</p>
-            <p className="font-bold text-[#282828]">{review.ai_headline}</p>
-            <p className="text-sm text-slate-600 mt-2">{review.insights[0]}</p>
-          </SurfaceCard>
-        )}
+        <div className="mt-6">
+          {track === "diet" ? (
+            <DietMealsPanel
+              plan={daily?.diet_plan || null}
+              logs={daily?.actuals.meals_logged || []}
+              busy={busy}
+              onCheck={async (slot) => {
+                setBusy(slot);
+                try {
+                  await quickCheckMeal(slot, date);
+                  await load(true);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Could not log meal.");
+                } finally {
+                  setBusy("");
+                }
+              }}
+              onAiLog={setAiSlot}
+            />
+          ) : (
+            <WorkoutPanel
+              daily={daily}
+              exercises={exercises}
+              busy={busy}
+              onComplete={async () => {
+                setBusy("workout");
+                try {
+                  await quickCheckWorkout({}, date);
+                  await load(true);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : "Could not log workout.");
+                } finally {
+                  setBusy("");
+                }
+              }}
+              onOpenExercise={(item) => void openExercise(item)}
+              onAi={() => setAiWorkout(true)}
+            />
+          )}
+        </div>
+
+        {review ? (
+          <section className={`${CARD} mt-6`}>
+            <h2 className="text-lg font-semibold text-[#282828]">This week</h2>
+            <p className="mt-1 text-sm text-gray-600">A short read of how the last seven days went.</p>
+            <p className="mt-4 font-semibold text-[#282828]">{review.ai_headline}</p>
+            {review.insights[0] ? <p className="mt-2 text-sm text-gray-600">{review.insights[0]}</p> : null}
+          </section>
+        ) : null}
       </div>
 
       <AIMealLogModal
@@ -370,6 +457,110 @@ export default function ProgressClientPage() {
   );
 }
 
+function DietMealsPanel({
+  plan,
+  logs,
+  busy,
+  onCheck,
+  onAiLog,
+}: {
+  plan: CurrentDietPlan | null;
+  logs: MealLogRow[];
+  busy: string;
+  onCheck: (slot: string) => void;
+  onAiLog: (slot: string) => void;
+}) {
+  if (!plan) {
+    return (
+      <section className={CARD}>
+        <h2 className="text-lg font-semibold text-[#282828]">Today&apos;s meals</h2>
+        <p className="mt-1 text-sm text-gray-600">Make a diet plan first. Then you can tap each meal as you eat it.</p>
+        <Link href="/diet" className={`${PRIMARY_BTN} mt-4 inline-flex w-full items-center justify-center`}>
+          Make a diet plan
+        </Link>
+      </section>
+    );
+  }
+
+  const checkedCount = logs.filter((log) => log.source_type === "plan_checkoff").length;
+  const extras = logs.filter((log) => log.source_type !== "plan_checkoff");
+
+  return (
+    <section className={CARD}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-[#282828]">Today&apos;s meals</h2>
+          <p className="mt-1 text-sm text-gray-600">Tap a meal when you eat it. Tap Something else if you swapped it.</p>
+        </div>
+        <p className="shrink-0 text-sm font-semibold text-[#282828]">
+          {checkedCount}/{plan.meals.length}
+        </p>
+      </div>
+      <p className="mt-1 text-xs text-gray-500">{plan.plan_name}</p>
+
+      <div className="mt-5 space-y-3">
+        {plan.meals.map((meal) => {
+          const checked = logs.some((log) => log.meal_slot === meal.slot && log.source_type === "plan_checkoff");
+          const item = meal.items[0];
+          const saving = busy === meal.slot;
+          return (
+            <div key={meal.meal_id} className="overflow-hidden rounded-2xl border border-gray-200">
+              <button
+                type="button"
+                onClick={() => onCheck(meal.slot)}
+                disabled={saving}
+                className={`w-full px-4 py-3 text-left transition disabled:opacity-60 ${
+                  checked ? "bg-[#282828] text-white" : "bg-white text-[#282828]"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className={`text-xs font-semibold ${checked ? "text-white/70" : "text-gray-500"}`}>
+                      {meal.meal_name} · {meal.recommended_time}
+                    </p>
+                    <p className="mt-0.5 truncate font-semibold">{item?.name}</p>
+                    <p className={`mt-0.5 text-xs ${checked ? "text-white/70" : "text-gray-500"}`}>
+                      {meal.total_meal_calories} kcal · {meal.total_meal_protein}g protein
+                    </p>
+                  </div>
+                  {checked ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold">
+                      <Check size={16} /> Ate it
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold">{saving ? "Saving..." : "Tap to log"}</span>
+                  )}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => onAiLog(meal.slot)}
+                className="w-full border-t border-gray-200 bg-gray-50 px-4 py-2.5 text-left text-xs font-semibold text-[#282828]"
+              >
+                Something else
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {extras.length > 0 ? (
+        <div className="mt-5 space-y-2 border-t border-gray-200 pt-4">
+          <p className="text-sm font-semibold text-[#282828]">Also logged</p>
+          {extras.map((log) => (
+            <div key={log.id}>
+              <p className="text-sm font-semibold text-[#282828]">{log.meal_name}</p>
+              <p className="text-xs text-gray-500">
+                {log.total_calories} kcal · {log.total_protein_g}g protein
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function WorkoutPanel({
   daily,
   exercises,
@@ -388,81 +579,89 @@ function WorkoutPanel({
   const plan = daily?.workout_plan;
   if (!plan) {
     return (
-      <SurfaceCard>
-        <p className="font-bold text-[#282828]">No workout plan yet</p>
-        <p className="text-sm text-slate-500 mt-2">Generate a workout plan. Tracking uses those exercises and sets.</p>
-        <Link
-          href="/workout"
-          className="mt-4 inline-flex w-full items-center justify-center py-3 rounded-2xl bg-[#282828] text-white font-semibold"
-        >
-          Create workout plan
+      <section className={CARD}>
+        <h2 className="text-lg font-semibold text-[#282828]">Today&apos;s workout</h2>
+        <p className="mt-1 text-sm text-gray-600">Make a workout plan first. Then tap each exercise to log sets.</p>
+        <Link href="/workout" className={`${PRIMARY_BTN} mt-4 inline-flex w-full items-center justify-center`}>
+          Make a workout plan
         </Link>
-      </SurfaceCard>
+      </section>
     );
   }
 
   const today = plan.today_workout;
   if (today.is_rest_day) {
     return (
-      <SurfaceCard>
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Today</p>
-        <p className="text-2xl font-bold text-[#282828] mt-1">Rest day</p>
-        <p className="text-sm text-slate-500 mt-2">Recover. Log something else if you still trained.</p>
-        <button type="button" onClick={onAi} className="mt-4 w-full py-3 rounded-2xl border-2 border-[#282828] font-semibold">
+      <section className={CARD}>
+        <h2 className="text-lg font-semibold text-[#282828]">Rest day</h2>
+        <p className="mt-1 text-sm text-gray-600">No session planned. Recover, or log something if you still trained.</p>
+        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-4 w-full`}>
           Log another workout
         </button>
-      </SurfaceCard>
+      </section>
     );
   }
 
   return (
     <div className="space-y-4">
-      <SurfaceCard>
-        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Today</p>
-        <p className="text-2xl font-bold text-[#282828] mt-1">{today.focus_area}</p>
-        <p className="text-sm text-slate-500 mt-1">
+      <section className={CARD}>
+        <h2 className="text-lg font-semibold text-[#282828]">{today.focus_area}</h2>
+        <p className="mt-1 text-sm text-gray-600">
           {today.estimated_duration_min} min · {today.estimated_calories} kcal · {today.exercises.length} exercises
         </p>
-        <button
-          type="button"
-          onClick={onComplete}
-          disabled={busy === "workout"}
-          className="w-full mt-4 py-3 rounded-2xl bg-[#282828] text-white font-semibold disabled:opacity-60"
-        >
+        <p className="mt-2 text-xs text-gray-500">Tap Workout complete when you finish. Tap again to undo.</p>
+        <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
           {daily?.actuals.workout_completed ? (
-            <span className="inline-flex items-center gap-2 justify-center">
+            <span className="inline-flex items-center justify-center gap-2">
               <Check size={16} /> Completed · tap to undo
             </span>
+          ) : busy === "workout" ? (
+            "Saving..."
           ) : (
             "Workout complete"
           )}
         </button>
-      </SurfaceCard>
+      </section>
 
-      <SurfaceCard>
-        <p className="text-sm font-semibold text-[#282828] mb-3">Exercises</p>
-        <div className="space-y-2">
+      <section className={CARD}>
+        <h2 className="text-lg font-semibold text-[#282828]">Exercises</h2>
+        <p className="mt-1 text-sm text-gray-600">Tap a row to log weight and reps for each set.</p>
+        <div className="mt-4 space-y-2">
           {exercises.map((exercise) => {
             const done = exercise.sets.filter((set) => set.kind !== "warmup" && set.reps > 0).length;
+            const pct = exercise.target_sets > 0 ? Math.min(100, Math.round((done / exercise.target_sets) * 100)) : 0;
             return (
               <button
                 key={exercise.exercise_id}
                 type="button"
                 onClick={() => onOpenExercise(exercise)}
-                className="w-full rounded-2xl border-2 border-[#282828]/15 px-4 py-3 text-left"
+                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left"
               >
-                <p className="font-semibold text-[#282828]">{exercise.exercise_name}</p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {done}/{exercise.target_sets} sets · {exercise.target_reps} reps
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#282828]">{exercise.exercise_name}</p>
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {done}/{exercise.target_sets} sets · {exercise.target_reps} reps
+                    </p>
+                  </div>
+                  <ChevronRight size={18} className="shrink-0 text-gray-400" />
+                </div>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
+                  <motion.div
+                    className="h-full rounded-full bg-[#282828]"
+                    initial={false}
+                    animate={{ width: `${pct}%` }}
+                    transition={{ type: "spring", stiffness: 260, damping: 22 }}
+                  />
+                </div>
               </button>
             );
           })}
         </div>
-        <button type="button" onClick={onAi} className="mt-4 w-full py-3 rounded-2xl border-2 border-[#282828] text-sm font-semibold">
+        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-4 w-full`}>
           Log another workout
         </button>
-      </SurfaceCard>
+      </section>
     </div>
   );
 }
