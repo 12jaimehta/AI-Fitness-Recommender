@@ -4,6 +4,8 @@ import { getOptionalUser } from "@backend/shared/api/supabase";
 import { setCurrentWorkout } from "@backend/features/plan-cache";
 import { workoutPlanSchema } from "@/shared/validation/workoutPlanSchema";
 
+export const maxDuration = 120;
+
 export async function POST(request: Request) {
   try {
     const body = await readJsonBody(request);
