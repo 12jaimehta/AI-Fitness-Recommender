@@ -7,7 +7,7 @@ import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { loadCurrentDietPlan, saveDietPlan } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { PlanResultSkeleton } from "@/components/ui/Skeleton";
 import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import { readGeneratedWorkoutPlan } from "@frontend/features/workout-plan";
 
@@ -220,7 +220,7 @@ export default function DietPlanResultPage() {
   }
 
   if (!plan) {
-    return <PageLoader title="Loading your meal plan..." />;
+    return <PlanResultSkeleton />;
   }
 
   return (

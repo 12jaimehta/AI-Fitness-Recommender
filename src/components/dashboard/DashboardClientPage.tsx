@@ -8,8 +8,7 @@ import { useUser } from "@/lib/hooks/use-user";
 import { getDailyProgress, getUserProfile, getCoachingAdvice } from "@/lib/service/progress-database";
 import { localIsoDate } from "@/shared/lib/plan-tracking";
 import type { DailyProgress, UserProfile, CoachingAdvice } from "@/shared/types";
-import PageLoader from "@/components/ui/PageLoader";
-import SectionLoader from "@/components/ui/SectionLoader";
+import { CoachSkeleton, DashboardSkeleton, FillBarsSkeleton } from "@/components/ui/Skeleton";
 
 function greetingName(userEmail?: string | null, profile?: UserProfile | null) {
   const fromProfile = profile?.full_name?.trim().split(" ")[0];
@@ -117,7 +116,7 @@ export default function DashboardClientPage() {
   }, [isSignedIn, isLoading]);
 
   if (isLoading || !pageReady) {
-    return <PageLoader title="Loading dashboard..." />;
+    return <DashboardSkeleton />;
   }
 
   const workout = daily?.workout_plan?.today_workout;
@@ -142,7 +141,7 @@ export default function DashboardClientPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <header className="mb-6">
+        <header className="my-6">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
             Hello, {greetingName(user?.email, profile)}
           </h1>
@@ -150,9 +149,7 @@ export default function DashboardClientPage() {
         </header>
 
         {!coachingReady ? (
-          <section className="mb-5 rounded-2xl border border-gray-200 bg-white">
-            <SectionLoader title="Loading coach..." />
-          </section>
+          <CoachSkeleton />
         ) : coaching ? (
           <section className="mb-5 rounded-2xl border border-gray-200 bg-white px-5 py-4">
             <div className="flex items-start justify-between gap-3">
@@ -185,7 +182,9 @@ export default function DashboardClientPage() {
               />
             </div>
           ) : (
-            <SectionLoader title="Loading today..." className="min-h-[8rem] py-6" />
+            <div className="mt-4">
+              <FillBarsSkeleton />
+            </div>
           )}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <Row

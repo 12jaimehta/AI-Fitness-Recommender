@@ -7,7 +7,7 @@ import { createBooking, getTrainer } from "@frontend/features/fyte-connect";
 import type { Trainer } from "@/shared/types";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { TrainerProfileSkeleton } from "@/components/ui/Skeleton";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 import RatingReview from "@/components/fyte-connect/RatingReview";
 
@@ -64,7 +64,7 @@ export default function TrainerProfileClientPage() {
   }
 
   if (!trainer) {
-    return <PageLoader title="Loading trainer..." />;
+    return <TrainerProfileSkeleton />;
   }
 
   return (

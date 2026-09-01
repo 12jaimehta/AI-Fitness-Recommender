@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getUserProfile, updateUserProfile } from "@/lib/service/progress-database";
 import { useUser } from "@/lib/hooks/use-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { ProfileSkeleton } from "@/components/ui/Skeleton";
 import OptionChipGrid from "@/components/shared/OptionChipGrid";
 import FormSelect from "@/components/shared/FormSelect";
 import { fitnessLevelOptions } from "@/lib/constant";
@@ -131,7 +131,7 @@ export default function ProfileClientPage() {
   };
 
   if (userLoading || loading) {
-    return <PageLoader />;
+    return <ProfileSkeleton />;
   }
 
   const inputClass =

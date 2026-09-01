@@ -13,12 +13,13 @@ import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
 import PageLoader from "@/components/ui/PageLoader";
+import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
 const WorkoutMultiStepForm = dynamic(
   () => import("@/components/workout").then((m) => ({ default: m.WorkoutMultiStepForm })),
   {
     ssr: false,
-    loading: () => <PageLoader />,
+    loading: () => <FormPageSkeleton />,
   }
 );
 

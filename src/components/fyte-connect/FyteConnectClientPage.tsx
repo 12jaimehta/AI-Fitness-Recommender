@@ -6,7 +6,7 @@ import { UserPlus, Users } from "lucide-react";
 import { getMarketplace } from "@frontend/features/fyte-connect";
 import type { Trainer } from "@/shared/types";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { TrainersSkeleton } from "@/components/ui/Skeleton";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 
 export default function FyteConnectClientPage() {
@@ -37,7 +37,7 @@ export default function FyteConnectClientPage() {
   }, [trainers, q]);
 
   if (loading) {
-    return <PageLoader title="Loading trainers..." />;
+    return <TrainersSkeleton />;
   }
 
   return (

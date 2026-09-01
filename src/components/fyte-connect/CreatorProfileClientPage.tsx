@@ -6,7 +6,7 @@ import Link from "next/link";
 import { getCreator } from "@frontend/features/fyte-connect";
 import type { Creator, CreatorPlan } from "@/shared/types";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { TrainerProfileSkeleton } from "@/components/ui/Skeleton";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 import RatingReview from "@/components/fyte-connect/RatingReview";
 
@@ -42,7 +42,7 @@ export default function CreatorProfileClientPage() {
   }
 
   if (!creator) {
-    return <PageLoader />;
+    return <TrainerProfileSkeleton />;
   }
 
   return (

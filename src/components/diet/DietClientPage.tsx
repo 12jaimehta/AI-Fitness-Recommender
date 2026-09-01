@@ -9,12 +9,13 @@ import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
 import PageLoader from "@/components/ui/PageLoader";
+import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
 const RefactoredMultiStepForm = dynamic(
   () => import("@/components/diet").then((m) => ({ default: m.RefactoredMultiStepForm })),
   {
     ssr: false,
-    loading: () => <PageLoader />,
+    loading: () => <FormPageSkeleton />,
   }
 );
 

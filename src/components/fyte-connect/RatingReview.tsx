@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createRating, listRatings } from "@frontend/features/fyte-connect";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import Link from "next/link";
-import SectionLoader from "@/components/ui/SectionLoader";
+import { ReviewsSkeleton } from "@/components/ui/Skeleton";
 
 type TargetType = "trainer" | "creator" | "plan";
 
@@ -73,7 +73,7 @@ export default function RatingReview({
   return (
     <section className="mt-10 rounded-2xl border border-gray-200 bg-white p-6">
       {!ready ? (
-        <SectionLoader title="Loading reviews..." className="min-h-[8rem] py-6" />
+        <ReviewsSkeleton />
       ) : (
         <>
           <div className="mb-4 flex items-start justify-between gap-4">

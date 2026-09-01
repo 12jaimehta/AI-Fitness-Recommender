@@ -2,6 +2,7 @@
 
 import { useState, useEffect, type ReactNode } from "react";
 import PageLoader from "@/components/ui/PageLoader";
+import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
 export default function PlanGeneratorClient<TForm, TPlan>({
   generate,
@@ -55,7 +56,7 @@ export default function PlanGeneratorClient<TForm, TPlan>({
   };
 
   if (!isClient) {
-    return <PageLoader />;
+    return <FormPageSkeleton />;
   }
 
   return (

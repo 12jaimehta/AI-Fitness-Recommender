@@ -28,7 +28,7 @@ import { PROGRAM_GOAL_OPTIONS, coerceProgramGoal } from "@/shared/lib/program-go
 import { readLastDietForm } from "@frontend/features/plan-pairing";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { getUserProfile } from "@/lib/service/progress-database";
-import PageLoader from "@/components/ui/PageLoader";
+import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
 interface WorkoutMultiStepFormProps {
   onSubmit: (data: WorkoutPlanFormData) => void;
@@ -141,7 +141,7 @@ export default function WorkoutMultiStepForm({
   };
 
   if (!ready) {
-    return <PageLoader title="Loading your details..." />;
+    return <FormPageSkeleton />;
   }
 
   return (

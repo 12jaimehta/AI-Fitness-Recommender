@@ -30,7 +30,7 @@ import type {
   WeeklyReview,
   CoachingAdvice,
 } from "@/shared/types";
-import PageLoader from "@/components/ui/PageLoader";
+import { ProgressSkeleton } from "@/components/ui/Skeleton";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import CoachingCard from "@/components/shared/CoachingCard";
 import TrendChart from "@/components/shared/TrendChart";
@@ -213,7 +213,7 @@ export default function ProgressClientPage() {
   };
 
   if (userLoading || loading) {
-    return <PageLoader title="Loading tracking..." />;
+    return <ProgressSkeleton />;
   }
 
   if (activeExercise) {

@@ -7,7 +7,7 @@ import type { WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
 import { loadCurrentWorkoutPlan, saveWorkoutPlan } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { PlanResultSkeleton } from "@/components/ui/Skeleton";
 import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
 
@@ -200,7 +200,7 @@ export default function WorkoutPlanResultPage() {
   }
 
   if (!plan) {
-    return <PageLoader title="Loading your workout plan..." />;
+    return <PlanResultSkeleton />;
   }
 
   const rest = isRestDay(currentWorkout);

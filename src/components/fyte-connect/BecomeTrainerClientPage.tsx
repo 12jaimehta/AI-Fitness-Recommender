@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { trainerSchema, type TrainerFormData } from "@/lib/validation/becometrainer";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
-import PageLoader from "@/components/ui/PageLoader";
+import { BecomeTrainerSkeleton } from "@/components/ui/Skeleton";
 import UploadImage from "@/components/ui/UploadImage";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 
@@ -104,7 +104,7 @@ export default function BecomeTrainerClientPage() {
   };
 
   if (userLoading || !ready) {
-    return <PageLoader title="Loading your trainer profile..." />;
+    return <BecomeTrainerSkeleton />;
   }
 
   return (
