@@ -3,7 +3,7 @@ import Redis from "ioredis";
 const TTL_SECONDS = 60 * 60 * 24 * 30;
 const CONNECT_MS = 200;
 const COMMAND_MS = 250;
-const DOWN_MS = 60_000;
+const DOWN_MS = 10_000;
 
 type RedisGlobal = {
   __fyteRedisFast?: Redis;
@@ -15,7 +15,13 @@ function redisUrl() {
 }
 
 function markRedisDown() {
-  (globalThis as RedisGlobal).__fyteRedisDownUntil = Date.now() + DOWN_MS;
+  const globalForRedis = globalThis as RedisGlobal;
+  globalForRedis.__fyteRedisDownUntil = Date.now() + DOWN_MS;
+  const redis = globalForRedis.__fyteRedisFast;
+  if (redis) {
+    globalForRedis.__fyteRedisFast = undefined;
+    redis.disconnect(false);
+  }
 }
 
 function redisIsSkipped() {
