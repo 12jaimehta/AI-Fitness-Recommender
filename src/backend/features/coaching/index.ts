@@ -1,18 +1,10 @@
 import { completeJson } from "@backend/shared/api/grok";
 import { requireUser } from "@backend/shared/api/supabase";
-import { cacheGet, cacheSet, userCacheKeys } from "@backend/shared/lib/redis";
 import type { CoachingAdvice, CoachingStatus, PlateauFlag } from "@/shared/types/progress-tracking";
 import { buildCoachingPrompt, coerceCalorieChange } from "@backend/ai/prompts/coaching";
 import { retrieveCoachingContext, type CoachingContext } from "./retrieve";
 import { fallbackCoachingAdvice } from "./fallback";
 import type { CoachingFacts, CoachingNote } from "./memory";
-
-const COACHING_TTL = 60 * 60 * 12;
-
-type CachedAdvice = {
-  fingerprint: string;
-  advice: CoachingAdvice;
-};
 
 function clampCalories(value: unknown, current: number | null) {
   const n = Number(value);
@@ -107,6 +99,7 @@ async function generateAdvice(ctx: CoachingContext): Promise<CoachingAdvice> {
       buildCoachingPrompt(ctx),
       {
         maxTokens: 700,
+        timeoutMs: 8000,
         system:
           "You are Fyte AI's coach. Reply with valid JSON only. No medical claims. Obey the plateau flags.",
       }
@@ -118,21 +111,13 @@ async function generateAdvice(ctx: CoachingContext): Promise<CoachingAdvice> {
 }
 
 export async function getCoachingAdvice(force = false): Promise<CoachingAdvice> {
-  const { user } = await requireUser();
   const ctx = await retrieveCoachingContext();
-  const key = userCacheKeys(user.id).coaching;
 
-  if (!force) {
-    const cached = await cacheGet<CachedAdvice>(key);
-    if (cached?.advice && cached.fingerprint === ctx.fingerprint) return cached.advice;
-    if (ctx.memory.last_advice && ctx.memory.fingerprint === ctx.fingerprint) {
-      await cacheSet(key, { fingerprint: ctx.fingerprint, advice: ctx.memory.last_advice }, COACHING_TTL);
-      return ctx.memory.last_advice;
-    }
+  if (!force && ctx.memory.last_advice && ctx.memory.fingerprint === ctx.fingerprint) {
+    return ctx.memory.last_advice;
   }
 
   const advice = await generateAdvice(ctx);
   await persistAdvice(ctx, advice);
-  await cacheSet(key, { fingerprint: ctx.fingerprint, advice }, COACHING_TTL);
   return advice;
 }

@@ -1,4 +1,3 @@
-import { completeJson } from "@backend/shared/api/grok";
 import { requireUser } from "@backend/shared/api/supabase";
 import { weekStartMonday } from "@/shared/lib/plan-tracking";
 import type { WeeklyReview } from "@/shared/types/progress-tracking";
@@ -28,39 +27,13 @@ export async function getWeeklyReview(): Promise<WeeklyReview> {
   const meals = mealsRes.data || [];
   const workouts = (workoutsRes.data || []).filter((row) => row.is_completed);
   const daysWithMeals = new Set(meals.map((row) => String(row.date).slice(0, 10))).size;
-  const protein = meals.reduce((sum, row) => sum + Number(row.total_protein_g || 0), 0);
-  const calories = meals.reduce((sum, row) => sum + Number(row.total_calories || 0), 0);
   const targetFreq = plans.workout_plan?.weekly_frequency || 4;
   const adherence = Math.round(
-    (((daysWithMeals / 7) + Math.min(workouts.length / Math.max(targetFreq, 1), 1)) / 2) * 100
+    ((daysWithMeals / 7 + Math.min(workouts.length / Math.max(targetFreq, 1), 1)) / 2) * 100
   );
 
-  const snapshot = {
-    week: `${from} to ${today}`,
-    meals_logged: meals.length,
-    days_with_meals: daysWithMeals,
-    calories,
-    protein,
-    workouts: workouts.length,
-    target_workouts: targetFreq,
-    diet_plan: plans.diet_plan?.plan_name,
-    workout_plan: plans.workout_plan?.split_name,
-  };
-
-  try {
-    const result = await completeJson<WeeklyReview>(
-      `You are Fyte AI's weekly coach. User snapshot: ${JSON.stringify(snapshot)}.
-Reply JSON: { "week_period": string, "adherence_score": number, "status": "on_track"|"slight_stall"|"needs_adjustment"|"surpassing_target", "ai_headline": string, "insights": string[], "recommendations_for_plans": { "diet_adjustment": string, "workout_adjustment": string } }
-Short, specific, no medical claims. 2 insights max.`,
-      { maxTokens: 400 }
-    );
-    if (result?.ai_headline) return { ...result, adherence_score: result.adherence_score || adherence };
-  } catch {
-    // fallback below
-  }
-
   return {
-    week_period: snapshot.week,
+    week_period: `${from} to ${today}`,
     adherence_score: adherence,
     status: adherence >= 80 ? "on_track" : adherence >= 50 ? "slight_stall" : "needs_adjustment",
     ai_headline:

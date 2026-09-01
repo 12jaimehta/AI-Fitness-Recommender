@@ -1,8 +1,10 @@
 import { requireUser } from "@backend/shared/api/supabase";
-import { getCurrentDiet, getCurrentWorkout } from "@backend/features/plan-cache";
 import { parseLeadingNumber } from "@/shared/lib/plan-tracking";
 import { coerceProgramGoal } from "@/shared/lib/program-goals";
 import { utcToday } from "@backend/features/progress/db";
+import type { DietPlanData, WorkoutPlanData } from "@/shared/types";
+import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
+import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import { detectPlateaus, type WeightPoint } from "./plateau";
 import { emptyFacts, parseMemory, type CoachingFacts, type CoachingMemoryRow } from "./memory";
 
@@ -70,22 +72,20 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
   from90.setUTCDate(from90.getUTCDate() - 90);
   const from90Iso = from90.toISOString().slice(0, 10);
 
-  const [diet, workout, profileRes, memoryRes, dietRowRes, workoutRowRes, vitalsRes, weightRes, mealsRes, workoutsRes, adviceRes] =
+  const [profileRes, memoryRes, dietRowRes, workoutRowRes, vitalsRes, weightRes, mealsRes, workoutsRes, adviceRes] =
     await Promise.all([
-      getCurrentDiet(user.id),
-      getCurrentWorkout(user.id),
       supabase.from("user_profiles").select("initial_weight, goals").eq("id", user.id).maybeSingle(),
       supabase.from("user_coaching_memory").select("*").eq("user_id", user.id).maybeSingle(),
       supabase
         .from("diet_plans")
-        .select("id, title, created_at")
+        .select("id, title, created_at, form_data, diet_plan")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
       supabase
         .from("workout_plans")
-        .select("id, title, created_at")
+        .select("id, title, created_at, form_data, workout_plan")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -139,16 +139,27 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
     .map(([date, kg]) => ({ date, kg }))
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const dietAgeDays = dietRowRes.data?.created_at
-    ? daysBetween(datePart(dietRowRes.data.created_at), today)
-    : null;
-  const workoutAgeDays = workoutRowRes.data?.created_at
-    ? daysBetween(datePart(workoutRowRes.data.created_at), today)
-    : null;
-  const frequency = parseLeadingNumber(workout?.formData.workoutFrequency, 4);
+  const dietRow = dietRowRes.data as {
+    id: string;
+    title: string;
+    created_at: string;
+    form_data: DietPlanFormData;
+    diet_plan: DietPlanData;
+  } | null;
+  const workoutRow = workoutRowRes.data as {
+    id: string;
+    title: string;
+    created_at: string;
+    form_data: WorkoutPlanFormData;
+    workout_plan: WorkoutPlanData;
+  } | null;
+
+  const dietAgeDays = dietRow?.created_at ? daysBetween(datePart(dietRow.created_at), today) : null;
+  const workoutAgeDays = workoutRow?.created_at ? daysBetween(datePart(workoutRow.created_at), today) : null;
+  const frequency = parseLeadingNumber(workoutRow?.form_data.workoutFrequency, 4);
   const sessionsLast42Days = (workoutsRes.data || []).length;
-  const calorieTarget = diet ? parseLeadingNumber(diet.plan.calorieTarget) : null;
-  const proteinTarget = diet ? parseLeadingNumber(diet.plan.proteinTarget) : null;
+  const calorieTarget = dietRow ? parseLeadingNumber(dietRow.diet_plan.calorieTarget) : null;
+  const proteinTarget = dietRow ? parseLeadingNumber(dietRow.diet_plan.proteinTarget) : null;
 
   const mealDays = new Map<string, { cal: number; protein: number }>();
   for (const row of mealsRes.data || []) {
@@ -180,7 +191,9 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
   const lastWeight = weights[weights.length - 1] || null;
   const lowest = weights.reduce((min, row) => (row.kg < min ? row.kg : min), lastWeight?.kg || startWeight || Infinity);
 
-  const goal = coerceProgramGoal(diet?.formData.goal || workout?.formData.goal || profile?.goals?.[0]);
+  const goal = coerceProgramGoal(
+    dietRow?.form_data.goal || workoutRow?.form_data.goal || (profile?.goals as string[] | null)?.[0]
+  );
   const plateau = detectPlateaus({
     startWeightKg: startWeight,
     weights,
@@ -198,13 +211,13 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
     last_weight_kg: lastWeight?.kg || null,
     last_weight_date: lastWeight?.date || null,
     lowest_weight_kg: Number.isFinite(lowest) && lowest !== Infinity ? lowest : startWeight,
-    diet_plan_id: diet?.id || dietRowRes.data?.id || null,
-    diet_plan_started_at: dietRowRes.data?.created_at ? datePart(dietRowRes.data.created_at) : null,
-    diet_goal: goal || diet?.formData.goal || null,
-    dietary_preference: diet?.formData.dietaryPreference || null,
+    diet_plan_id: dietRow?.id || null,
+    diet_plan_started_at: dietRow?.created_at ? datePart(dietRow.created_at) : null,
+    diet_goal: goal || dietRow?.form_data.goal || null,
+    dietary_preference: dietRow?.form_data.dietaryPreference || null,
     calorie_target: calorieTarget,
-    workout_plan_id: workout?.id || workoutRowRes.data?.id || null,
-    workout_plan_started_at: workoutRowRes.data?.created_at ? datePart(workoutRowRes.data.created_at) : null,
+    workout_plan_id: workoutRow?.id || null,
+    workout_plan_started_at: workoutRow?.created_at ? datePart(workoutRow.created_at) : null,
     workout_weeks: workoutAgeDays != null ? Math.round(workoutAgeDays / 7) : null,
     typical_calorie_adherence_pct: calorieAdherencePct,
     typical_protein_adherence_pct: proteinAdherencePct,
@@ -233,27 +246,27 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
     facts,
     flags: plateau.flags,
     reasons: plateau.reasons,
-    diet: diet
+    diet: dietRow
       ? {
-          id: diet.id || dietRowRes.data?.id || null,
-          title: diet.title || dietRowRes.data?.title || "Diet plan",
+          id: dietRow.id,
+          title: dietRow.title || "Diet plan",
           ageDays: dietAgeDays,
-          goal: goal || diet.formData.goal || null,
-          preference: diet.formData.dietaryPreference || null,
+          goal: goal || dietRow.form_data.goal || null,
+          preference: dietRow.form_data.dietaryPreference || null,
           calorieTarget,
           proteinTarget,
-          meals: mealSlots(diet.plan),
+          meals: mealSlots(dietRow.diet_plan),
         }
       : null,
-    workout: workout
+    workout: workoutRow
       ? {
-          id: workout.id || workoutRowRes.data?.id || null,
-          title: workout.title || workoutRowRes.data?.title || "Workout plan",
+          id: workoutRow.id,
+          title: workoutRow.title || "Workout plan",
           ageDays: workoutAgeDays,
-          goal: coerceProgramGoal(workout.formData.goal) || goal || null,
+          goal: coerceProgramGoal(workoutRow.form_data.goal) || goal || null,
           frequency,
-          duration: workout.formData.workoutDuration || null,
-          equipment: workout.formData.availableEquipment || null,
+          duration: workoutRow.form_data.workoutDuration || null,
+          equipment: workoutRow.form_data.availableEquipment || null,
         }
       : null,
     weights,
