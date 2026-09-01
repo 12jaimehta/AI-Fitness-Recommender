@@ -144,17 +144,27 @@ export type DailyProgress = {
   adherence_score_pct: number;
 };
 
+export type AnalyticsPoint = {
+  date: string;
+  label: string;
+  calories: number;
+  protein_g: number;
+  workouts: number;
+  workout_kcal: number;
+};
+
 export type ProgressAnalytics = {
   range: string;
   from: string;
   to: string;
+  bucket: "day" | "month";
   summary: {
     streak_days: number;
     avg_adherence_pct: number;
     total_workouts_completed: number;
     meals_logged: number;
   };
-  points: { label: string; calories: number; protein_g: number; workout: boolean }[];
+  points: AnalyticsPoint[];
 };
 
 export type WeeklyReview = {

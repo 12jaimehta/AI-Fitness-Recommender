@@ -61,6 +61,23 @@ export function localIsoDate(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+/** Civil-date arithmetic on YYYY-MM-DD (timezone-safe). */
+export function addDaysIso(iso: string, days: number) {
+  const [year, month, day] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days));
+  return date.toISOString().slice(0, 10);
+}
+
+export function eachIsoDate(from: string, to: string) {
+  const dates: string[] = [];
+  if (from > to) return dates;
+  for (let cur = from; cur <= to; cur = addDaysIso(cur, 1)) {
+    dates.push(cur);
+    if (dates.length > 400) break;
+  }
+  return dates;
+}
+
 export function parseIsoDate(value: string | null | undefined, fallback: string) {
   return value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : fallback;
 }

@@ -227,10 +227,6 @@ export default function ProgressClientPage() {
   }
 
   const periodLabel = RANGE_OPTIONS.find((option) => option.value === range)?.label || "This month";
-  const chartPoints =
-    track === "diet"
-      ? (analytics?.points || []).map((point) => ({ label: point.label, value: point.calories }))
-      : (analytics?.points || []).map((point) => ({ label: point.label, value: point.workout ? 1 : 0 }));
 
   const mealSlotLabel = daily?.diet_plan?.meals.find((meal) => meal.slot === aiSlot)?.meal_name || "Meal";
   const mealsLogged = daily?.actuals.meals_logged.filter((meal) => meal.source_type === "plan_checkoff").length || 0;
@@ -330,12 +326,12 @@ export default function ProgressClientPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-[#282828]">
-                {track === "diet" ? "Calories over time" : "Sessions over time"}
+                {track === "diet" ? "Calories and protein" : "Workouts"}
               </h2>
               <p className="mt-1 text-sm text-gray-600">
                 {track === "diet"
-                  ? "How much you ate versus the days in this range."
-                  : "Days you completed a workout in this range."}
+                  ? "Hover or tap a day for calories and protein. Use the legend to hide a line."
+                  : "Bars are completed workouts. Hover or tap a day for the count."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -381,7 +377,12 @@ export default function ProgressClientPage() {
           )}
 
           <div className="mt-4">
-            <TrendChart points={chartPoints} unit={track === "diet" ? "kcal" : "sessions"} />
+            <TrendChart
+              key={`${track}-${range}`}
+              kind={track}
+              points={analytics?.points || []}
+              bucket={analytics?.bucket || "day"}
+            />
           </div>
         </section>
 
