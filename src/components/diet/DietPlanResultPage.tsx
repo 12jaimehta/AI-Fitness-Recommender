@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { DailyMeals, DietPlanData, MealData } from "@/shared/types";
 import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
-import { loadCurrentDietPlan, saveDietPlan } from "@/lib/service/dietWorkoutplan";
+import { resolveDietPlan, saveDietPlan, beginDietPlanGeneration } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
 import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import { readGeneratedWorkoutPlan } from "@frontend/features/workout-plan";
+import { readPendingDietGeneration } from "@frontend/features/diet-plan";
 
 const MEAL_ORDER = [
   "breakfast",
@@ -153,24 +154,32 @@ export default function DietPlanResultPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [missing, setMissing] = useState(false);
   const [otherExists, setOtherExists] = useState(false);
+  const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     if (loading) return;
-    loadCurrentDietPlan().then((stored) => {
+    setError("");
+    setMissing(false);
+    resolveDietPlan(user?.id).then((result) => {
       if (cancelled) return;
-      if (!stored) {
-        setMissing(true);
+      if (result.status === "ready") {
+        setFormData(result.session.formData);
+        setPlan(result.session.plan);
+        setOtherExists(Boolean(readGeneratedWorkoutPlan()));
         return;
       }
-      setFormData(stored.formData);
-      setPlan(stored.plan);
-      setOtherExists(Boolean(readGeneratedWorkoutPlan()));
+      if (result.status === "error") {
+        setError(result.error);
+        return;
+      }
+      setMissing(true);
     });
     return () => {
       cancelled = true;
     };
-  }, [loading]);
+  }, [loading, user?.id, retryKey]);
 
   const showWeek = Boolean(plan && hasDifferentWeekDays(plan));
   const meals = useMemo(() => {
@@ -194,6 +203,44 @@ export default function DietPlanResultPage() {
       setSaving(false);
     }
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          <PageBreadcrumb
+            items={[
+              { label: "Home" },
+              { label: "Diet Plan", href: "/diet" },
+              { label: "Your meals" },
+            ]}
+          />
+          <h1 className="text-2xl font-bold text-gray-900">Could not make your meal plan</h1>
+          <p className="mt-2 text-gray-600">{error}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const pending = readPendingDietGeneration();
+                if (pending?.formData) beginDietPlanGeneration(pending.formData);
+                setError("");
+                setRetryKey((value) => value + 1);
+              }}
+              className="inline-flex rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white"
+            >
+              Try again
+            </button>
+            <Link
+              href="/diet"
+              className="inline-flex rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
+            >
+              Edit details
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (missing) {
     return (

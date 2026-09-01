@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { DailyWorkout, Exercise, WorkoutPlanData } from "@/shared/types";
 import type { WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
-import { loadCurrentWorkoutPlan, saveWorkoutPlan } from "@/lib/service/dietWorkoutplan";
+import { resolveWorkoutPlan, saveWorkoutPlan, beginWorkoutPlanGeneration } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
 import PlanPairingCard from "@/components/shared/PlanPairingCard";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
+import { readPendingWorkoutGeneration } from "@frontend/features/workout-plan";
 
 const WEEKDAYS = [
   "monday",
@@ -136,24 +137,32 @@ export default function WorkoutPlanResultPage() {
   const [saveMessage, setSaveMessage] = useState("");
   const [missing, setMissing] = useState(false);
   const [otherExists, setOtherExists] = useState(false);
+  const [error, setError] = useState("");
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     if (loading) return;
-    loadCurrentWorkoutPlan().then((stored) => {
+    setError("");
+    setMissing(false);
+    resolveWorkoutPlan(user?.id).then((result) => {
       if (cancelled) return;
-      if (!stored) {
-        setMissing(true);
+      if (result.status === "ready") {
+        setFormData(result.session.formData);
+        setPlan(result.session.plan);
+        setOtherExists(Boolean(readGeneratedDietPlan()));
         return;
       }
-      setFormData(stored.formData);
-      setPlan(stored.plan);
-      setOtherExists(Boolean(readGeneratedDietPlan()));
+      if (result.status === "error") {
+        setError(result.error);
+        return;
+      }
+      setMissing(true);
     });
     return () => {
       cancelled = true;
     };
-  }, [loading]);
+  }, [loading, user?.id, retryKey]);
 
   const showWeek = Boolean(plan?.weeklyPlan);
   const currentWorkout = useMemo(() => {
@@ -174,6 +183,44 @@ export default function WorkoutPlanResultPage() {
       setSaving(false);
     }
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+          <PageBreadcrumb
+            items={[
+              { label: "Home" },
+              { label: "Workout Plan", href: "/workout" },
+              { label: "Your workout" },
+            ]}
+          />
+          <h1 className="text-2xl font-bold text-gray-900">Could not make your workout plan</h1>
+          <p className="mt-2 text-gray-600">{error}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const pending = readPendingWorkoutGeneration();
+                if (pending?.formData) beginWorkoutPlanGeneration(pending.formData);
+                setError("");
+                setRetryKey((value) => value + 1);
+              }}
+              className="inline-flex rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white"
+            >
+              Try again
+            </button>
+            <Link
+              href="/workout"
+              className="inline-flex rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
+            >
+              Edit details
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (missing) {
     return (

@@ -3,12 +3,14 @@ import {
   applyGeneratedDietPlan,
   clearGeneratedDietPlan,
   readGeneratedDietPlan,
+  readPendingDietGeneration,
   type GeneratedDietSession,
 } from "@frontend/features/diet-plan/generated-session";
 import {
   applyGeneratedWorkoutPlan,
   clearGeneratedWorkoutPlan,
   readGeneratedWorkoutPlan,
+  readPendingWorkoutGeneration,
   type GeneratedWorkoutSession,
 } from "@frontend/features/workout-plan/generated-session";
 import { dropServerPlanCache, persistPlanCache, purgeLegacyPlanStorage } from "./storage";
@@ -40,8 +42,12 @@ export async function hydratePlanCache() {
         diet: GeneratedDietSession | null;
         workout: GeneratedWorkoutSession | null;
       }>("/api/cache");
-      if (result.diet && !readGeneratedDietPlan()) applyGeneratedDietPlan(result.diet);
-      if (result.workout && !readGeneratedWorkoutPlan()) applyGeneratedWorkoutPlan(result.workout);
+      if (result.diet && !readGeneratedDietPlan() && !readPendingDietGeneration()) {
+        applyGeneratedDietPlan(result.diet);
+      }
+      if (result.workout && !readGeneratedWorkoutPlan() && !readPendingWorkoutGeneration()) {
+        applyGeneratedWorkoutPlan(result.workout);
+      }
     } catch {
       /* guest or request failed — keep in-memory plans */
     }

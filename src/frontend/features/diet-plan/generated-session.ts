@@ -41,3 +41,58 @@ export function readGeneratedDietPlan(): GeneratedDietSession | null {
   if (hasPlanContent(memoryPlan?.plan)) return memoryPlan;
   return null;
 }
+
+const PENDING_KEY = "fyte.pending-diet-generation";
+
+export type PendingDietGeneration = {
+  formData: DietPlanFormData;
+  error?: string;
+};
+
+let pendingGeneration: PendingDietGeneration | null = null;
+
+function readPendingStorage(): PendingDietGeneration | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PendingDietGeneration;
+    if (!parsed?.formData) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writePendingStorage(value: PendingDietGeneration | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (!value) sessionStorage.removeItem(PENDING_KEY);
+    else sessionStorage.setItem(PENDING_KEY, JSON.stringify(value));
+  } catch {
+    /* private mode */
+  }
+}
+
+export function setPendingDietGeneration(formData: DietPlanFormData) {
+  pendingGeneration = { formData };
+  writePendingStorage(pendingGeneration);
+}
+
+export function setPendingDietError(message: string) {
+  const current = readPendingDietGeneration();
+  if (!current) return;
+  pendingGeneration = { ...current, error: message };
+  writePendingStorage(pendingGeneration);
+}
+
+export function clearPendingDietGeneration() {
+  pendingGeneration = null;
+  writePendingStorage(null);
+}
+
+export function readPendingDietGeneration(): PendingDietGeneration | null {
+  if (pendingGeneration?.formData) return pendingGeneration;
+  pendingGeneration = readPendingStorage();
+  return pendingGeneration;
+}

@@ -6,19 +6,35 @@ import {
   storeGeneratedWorkoutPlan,
   readGeneratedWorkoutPlan,
   clearGeneratedWorkoutPlan,
+  setPendingWorkoutGeneration,
+  setPendingWorkoutError,
+  clearPendingWorkoutGeneration,
+  readPendingWorkoutGeneration,
   type GeneratedWorkoutSession,
 } from "./generated-session";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 
 export type { WorkoutPlanData, DailyWorkout, Exercise } from "@/shared/types";
-export { storeGeneratedWorkoutPlan, readGeneratedWorkoutPlan, type GeneratedWorkoutSession };
+export {
+  storeGeneratedWorkoutPlan,
+  readGeneratedWorkoutPlan,
+  readPendingWorkoutGeneration,
+  type GeneratedWorkoutSession,
+};
 
 let inFlight: Promise<WorkoutPlanData> | null = null;
 let inFlightKey = "";
 
+function sameForm(a: WorkoutPlanFormData, b: WorkoutPlanFormData) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export async function generateAIWorkoutPlan(
   userData: WorkoutPlanFormData
 ): Promise<WorkoutPlanData> {
+  const existing = readGeneratedWorkoutPlan();
+  if (existing && sameForm(existing.formData, userData)) return existing.plan;
+
   const key = JSON.stringify(userData);
   if (inFlight && inFlightKey === key) return inFlight;
 
@@ -32,6 +48,57 @@ export async function generateAIWorkoutPlan(
   });
 
   return inFlight;
+}
+
+export function beginWorkoutPlanGeneration(formData: WorkoutPlanFormData) {
+  clearGeneratedWorkoutPlan();
+  setPendingWorkoutGeneration(formData);
+  void generateAIWorkoutPlan(formData)
+    .then((plan) => {
+      storeGeneratedWorkoutPlan({ formData, plan });
+      clearPendingWorkoutGeneration();
+    })
+    .catch((err) => {
+      setPendingWorkoutError(
+        err instanceof Error ? err.message : "Could not make your workout plan. Try again."
+      );
+    });
+}
+
+export type WorkoutPlanResolveResult =
+  | { status: "ready"; session: GeneratedWorkoutSession }
+  | { status: "missing" }
+  | { status: "error"; error: string };
+
+export async function resolveWorkoutPlan(userId?: string): Promise<WorkoutPlanResolveResult> {
+  const pending = readPendingWorkoutGeneration();
+  if (pending?.error) return { status: "error", error: pending.error };
+
+  if (pending?.formData) {
+    const already = readGeneratedWorkoutPlan();
+    if (already && sameForm(already.formData, pending.formData)) {
+      clearPendingWorkoutGeneration();
+      if (userId) void saveWorkoutPlan(userId, already.formData, already.plan).catch(() => {});
+      return { status: "ready", session: already };
+    }
+    try {
+      const plan = await generateAIWorkoutPlan(pending.formData);
+      const session = { formData: pending.formData, plan };
+      storeGeneratedWorkoutPlan(session);
+      clearPendingWorkoutGeneration();
+      if (userId) void saveWorkoutPlan(userId, pending.formData, plan).catch(() => {});
+      return { status: "ready", session };
+    } catch (err) {
+      const error =
+        err instanceof Error ? err.message : "Could not make your workout plan. Try again.";
+      setPendingWorkoutError(error);
+      return { status: "error", error };
+    }
+  }
+
+  const stored = await loadCurrentWorkoutPlan();
+  if (stored) return { status: "ready", session: stored };
+  return { status: "missing" };
 }
 
 export type SavedWorkoutPlan = {

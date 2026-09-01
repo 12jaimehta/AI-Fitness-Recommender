@@ -6,17 +6,33 @@ import {
   storeGeneratedDietPlan,
   readGeneratedDietPlan,
   clearGeneratedDietPlan,
+  setPendingDietGeneration,
+  setPendingDietError,
+  clearPendingDietGeneration,
+  readPendingDietGeneration,
   type GeneratedDietSession,
 } from "./generated-session";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 
 export type { DietPlanData, MealData, DailyMeals } from "@/shared/types";
-export { storeGeneratedDietPlan, readGeneratedDietPlan, type GeneratedDietSession };
+export {
+  storeGeneratedDietPlan,
+  readGeneratedDietPlan,
+  readPendingDietGeneration,
+  type GeneratedDietSession,
+};
 
 let inFlight: Promise<DietPlanData> | null = null;
 let inFlightKey = "";
 
+function sameForm(a: DietPlanFormData, b: DietPlanFormData) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export async function generateAIDietPlan(userData: DietPlanFormData): Promise<DietPlanData> {
+  const existing = readGeneratedDietPlan();
+  if (existing && sameForm(existing.formData, userData)) return existing.plan;
+
   const key = JSON.stringify(userData);
   if (inFlight && inFlightKey === key) return inFlight;
 
@@ -30,6 +46,54 @@ export async function generateAIDietPlan(userData: DietPlanFormData): Promise<Di
   });
 
   return inFlight;
+}
+
+export function beginDietPlanGeneration(formData: DietPlanFormData) {
+  clearGeneratedDietPlan();
+  setPendingDietGeneration(formData);
+  void generateAIDietPlan(formData)
+    .then((plan) => {
+      storeGeneratedDietPlan({ formData, plan });
+      clearPendingDietGeneration();
+    })
+    .catch((err) => {
+      setPendingDietError(err instanceof Error ? err.message : "Could not make your meal plan. Try again.");
+    });
+}
+
+export type DietPlanResolveResult =
+  | { status: "ready"; session: GeneratedDietSession }
+  | { status: "missing" }
+  | { status: "error"; error: string };
+
+export async function resolveDietPlan(userId?: string): Promise<DietPlanResolveResult> {
+  const pending = readPendingDietGeneration();
+  if (pending?.error) return { status: "error", error: pending.error };
+
+  if (pending?.formData) {
+    const already = readGeneratedDietPlan();
+    if (already && sameForm(already.formData, pending.formData)) {
+      clearPendingDietGeneration();
+      if (userId) void saveDietPlan(userId, already.formData, already.plan).catch(() => {});
+      return { status: "ready", session: already };
+    }
+    try {
+      const plan = await generateAIDietPlan(pending.formData);
+      const session = { formData: pending.formData, plan };
+      storeGeneratedDietPlan(session);
+      clearPendingDietGeneration();
+      if (userId) void saveDietPlan(userId, pending.formData, plan).catch(() => {});
+      return { status: "ready", session };
+    } catch (err) {
+      const error = err instanceof Error ? err.message : "Could not make your meal plan. Try again.";
+      setPendingDietError(error);
+      return { status: "error", error };
+    }
+  }
+
+  const stored = await loadCurrentDietPlan();
+  if (stored) return { status: "ready", session: stored };
+  return { status: "missing" };
 }
 
 export type SavedDietPlan = {

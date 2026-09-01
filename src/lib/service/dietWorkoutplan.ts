@@ -1,5 +1,7 @@
 export {
   generateAIDietPlan,
+  beginDietPlanGeneration,
+  resolveDietPlan,
   saveDietPlan,
   getUserDietPlans,
   deleteDietPlan,
@@ -15,6 +17,8 @@ export {
 
 export {
   generateAIWorkoutPlan,
+  beginWorkoutPlanGeneration,
+  resolveWorkoutPlan,
   saveWorkoutPlan,
   getUserWorkoutPlans,
   deleteWorkoutPlan,
