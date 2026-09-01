@@ -21,9 +21,9 @@ export default function CoachingCard({ advice }: { advice: CoachingAdvice }) {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Coach</p>
           <h2 className="mt-1 text-lg font-semibold text-[#282828]">{advice.headline}</h2>
         </div>
-        <span className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-[#282828]">
+        {/* <span className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-[#282828]">
           {statusLabel(advice)}
-        </span>
+        </span> */}
       </div>
 
       {advice.remembered ? (

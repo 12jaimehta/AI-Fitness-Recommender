@@ -2,66 +2,80 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Apple, Dumbbell, Activity, Users } from "lucide-react";
+import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
 import { useUser } from "@/lib/hooks/use-user";
 import { getDailyProgress, getUserProfile, getCoachingAdvice } from "@/lib/service/progress-database";
+import { localIsoDate } from "@/shared/lib/plan-tracking";
 import type { DailyProgress, UserProfile, CoachingAdvice } from "@/shared/types";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import PageLoader from "@/components/ui/PageLoader";
-import CoachingCard from "@/components/shared/CoachingCard";
-
-const PRIMARY = [
-  {
-    href: "/workout",
-    title: "Workout plan",
-    text: "Set training first (Hyrox, Ironman, bodybuilding). Then match food to it.",
-    action: "Make a workout plan",
-    icon: Dumbbell,
-  },
-  {
-    href: "/diet",
-    title: "Diet plan",
-    text: "Fuel the workout. Calories follow how you train.",
-    action: "Make a diet plan",
-    icon: Apple,
-  },
-  {
-    href: "/progress",
-    title: "Progress",
-    text: "Log meals, workouts, weight, water, and sleep.",
-    action: "Open progress",
-    icon: Activity,
-  },
-  {
-    href: "/fyte-connect",
-    title: "Trainers",
-    text: "Hire a trainer or become one.",
-    action: "Open trainers",
-    icon: Users,
-  },
-] as const;
-
-const ACCOUNT_LINKS = [
-  { href: "/workout/plan", title: "Current workout plan", detail: "See the sessions you just generated." },
-  { href: "/diet/plan", title: "Current diet plan", detail: "See the meal plan you just generated." },
-  { href: "/my-profile", title: "My profile", detail: "Your name, age, and fitness details." },
-  { href: "/fyte-connect/become-trainer", title: "Become a trainer", detail: "List yourself so people can hire you." },
-];
-
-const HELP_LINKS = [
-  { href: "/help", title: "Help center" },
-  { href: "/help/getting-started", title: "Getting started" },
-  { href: "/help/faqs", title: "FAQs" },
-  { href: "/help/contact", title: "Contact" },
-  { href: "/about", title: "About" },
-  { href: "/privacy", title: "Privacy" },
-  { href: "/terms", title: "Terms" },
-];
 
 function greetingName(userEmail?: string | null, profile?: UserProfile | null) {
   const fromProfile = profile?.full_name?.trim().split(" ")[0];
   if (fromProfile) return fromProfile;
   return userEmail?.split("@")[0] || "there";
+}
+
+function coachStatus(advice: CoachingAdvice) {
+  if (advice.plateau || advice.status === "needs_new_plan") return "Change the plan";
+  if (advice.status === "watch") return "Watch";
+  if (advice.status === "learning") return "Learning you";
+  return "On track";
+}
+
+function FillBar({
+  label,
+  value,
+  target,
+  unit,
+}: {
+  label: string;
+  value: number;
+  target: number;
+  unit: string;
+}) {
+  const pct = target > 0 ? Math.min(100, Math.round((value / target) * 100)) : 0;
+  return (
+    <div>
+      <div className="flex justify-between gap-3 text-sm">
+        <span className="font-semibold text-[#282828]">{label}</span>
+        <span className="text-[#282828]">
+          {Math.round(value)} / {target || 0} {unit}
+        </span>
+      </div>
+      <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-gray-100">
+        <motion.div
+          className="h-full rounded-full bg-[#282828]"
+          initial={false}
+          animate={{ width: `${pct}%` }}
+          transition={{ type: "spring", stiffness: 260, damping: 22 }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Row({
+  href,
+  label,
+  value,
+}: {
+  href: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 transition hover:border-[#282828]"
+    >
+      <span>
+        <span className="block text-xs text-gray-500">{label}</span>
+        <span className="mt-0.5 block font-semibold text-[#282828]">{value}</span>
+      </span>
+      <ChevronRight size={18} className="shrink-0 text-gray-400" />
+    </Link>
+  );
 }
 
 export default function DashboardClientPage() {
@@ -93,134 +107,93 @@ export default function DashboardClientPage() {
   }
 
   const workout = daily?.workout_plan?.today_workout;
-  const workoutLabel = !daily?.workout_plan
-    ? "No plan yet"
+  const mealsLogged =
+    daily?.actuals.meals_logged.filter((meal) => meal.source_type === "plan_checkoff").length || 0;
+  const mealsTotal = daily?.diet_plan?.meals.length || 0;
+  const dateIso = daily?.date || localIsoDate();
+  const dateLabel = new Date(`${dateIso}T12:00:00`).toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
+  const workoutValue = !daily?.workout_plan
+    ? "Make a plan"
     : workout?.is_rest_day
       ? "Rest day"
       : daily.actuals.workout_completed
         ? "Done"
-        : "Not logged";
+        : workout?.focus_area || "Not logged";
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb items={[{ label: "Home /" }]} />
-
-        <header className="mb-10 border-b border-gray-200 pb-6">
+        <header className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
             Hello, {greetingName(user?.email, profile)}
           </h1>
-          <p className="mt-2 text-gray-600">Your plans, progress, and pages in one place.</p>
+          <p className="mt-1 text-sm text-gray-500">{dateLabel}</p>
         </header>
 
         {coaching ? (
-          <div className="mb-10">
-            <CoachingCard advice={coaching} />
-          </div>
-        ) : null}
-
-        {daily ? (
-          <section className="mb-10">
-            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-              <h2 className="text-lg font-semibold text-[#282828]">Today</h2>
-              <Link
-                href="/progress"
-                className="inline-flex items-center rounded-xl border-2 border-[#282828] bg-white px-5 py-2.5 text-sm font-semibold text-[#282828] transition hover:bg-[#282828] hover:text-white"
-              >
-                Open progress
-              </Link>
+          <section className="mb-5 rounded-2xl border border-gray-200 bg-white px-5 py-4">
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-semibold text-[#282828]">{coaching.headline}</p>
+              {/* <span className="shrink-0 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-semibold text-[#282828]">
+                {coachStatus(coaching)}
+              </span> */}
             </div>
-            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                <dt className="text-sm text-gray-500">Calories</dt>
-                <dd className="mt-1 text-xl font-semibold text-[#282828]">
-                  {daily.actuals.total_calories} / {daily.targets.calories || "-"}
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                <dt className="text-sm text-gray-500">Protein</dt>
-                <dd className="mt-1 text-xl font-semibold text-[#282828]">
-                  {daily.actuals.total_protein_g} / {daily.targets.protein_g || "-"} g
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                <dt className="text-sm text-gray-500">Water</dt>
-                <dd className="mt-1 text-xl font-semibold text-[#282828]">
-                  {daily.actuals.water_intake_ml} ml
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-4">
-                <dt className="text-sm text-gray-500">Workout</dt>
-                <dd className="mt-1 text-xl font-semibold text-[#282828]">{workoutLabel}</dd>
-              </div>
-            </dl>
-            {!daily.diet_plan ? (
-              <p className="mt-3 text-sm text-gray-500">
-                No saved diet plan yet. Make one, then save it to track meals here.
-              </p>
-            ) : null}
           </section>
         ) : null}
 
-        <section className="mb-10">
-          <h2 className="mb-4 text-lg font-semibold text-[#282828]">Plans</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {PRIMARY.map((item) => (
-              <article
-                key={item.href}
-                className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6"
-              >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#282828] text-white">
-                  <item.icon size={20} />
-                </div>
-                <h3 className="text-lg font-semibold text-[#282828]">{item.title}</h3>
-                <p className="mt-2 flex-1 text-sm leading-6 text-gray-600">{item.text}</p>
-                {/* <p className="mt-3 text-xs text-gray-400">{item.href}</p> */}
-                <Link
-                  href={item.href}
-                  className="mt-5 inline-flex w-fit items-center justify-center rounded-xl bg-[#282828] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#454545]"
-                >
-                  {item.action}
-                </Link>
-              </article>
-            ))}
+        <section className="mb-5 rounded-2xl border border-gray-200 bg-white p-5">
+          <h2 className="text-sm font-semibold text-[#282828]">Today</h2>
+          {daily ? (
+            <div className="mt-4 space-y-3">
+              <FillBar
+                label="Calories"
+                value={daily.actuals.total_calories}
+                target={daily.targets.calories}
+                unit="kcal"
+              />
+              <FillBar
+                label="Protein"
+                value={daily.actuals.total_protein_g}
+                target={daily.targets.protein_g}
+                unit="g"
+              />
+              <FillBar
+                label="Water"
+                value={daily.actuals.water_intake_ml}
+                target={daily.targets.water_ml || 3000}
+                unit="ml"
+              />
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-gray-500">Loading…</p>
+          )}
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            <Row
+              href="/progress"
+              label="Meals"
+              value={daily?.diet_plan ? `${mealsLogged}/${mealsTotal}` : "Make a plan"}
+            />
+            <Row href="/progress" label="Workout" value={workoutValue} />
           </div>
         </section>
 
-        <section className="mb-10">
-          <h2 className="mb-4 text-lg font-semibold text-[#282828]">Account</h2>
-          <div className="space-y-3">
-            {ACCOUNT_LINKS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="flex flex-col rounded-2xl border border-gray-200 bg-white px-5 py-4 transition hover:border-[#282828] sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span>
-                  <span className="block font-semibold text-[#282828]">{item.title}</span>
-                  <span className="mt-1 block text-sm text-gray-600">{item.detail}</span>
-                </span>
-                {/* <span className="mt-2 text-sm text-gray-400 sm:mt-0">{item.href}</span> */}
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-lg font-semibold text-[#282828]">Help</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {HELP_LINKS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-2xl border border-gray-200 bg-white px-5 py-4 transition hover:border-[#282828]"
-              >
-                <span className="block font-semibold text-[#282828]">{item.title}</span>
-                {/* <span className="mt-1 block text-sm text-gray-400">{item.href}</span> */}
-              </Link>
-            ))}
-          </div>
-        </section>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Row
+            href={daily?.workout_plan ? "/workout/plan" : "/workout"}
+            label="Workout plan"
+            value={daily?.workout_plan?.split_name || "Make a plan"}
+          />
+          <Row
+            href={daily?.diet_plan ? "/diet/plan" : "/diet"}
+            label="Diet plan"
+            value={daily?.diet_plan?.plan_name || "Make a plan"}
+          />
+        </div>
       </div>
     </div>
   );
