@@ -168,3 +168,33 @@ export type WeeklyReview = {
     workout_adjustment: string;
   };
 };
+
+export type PlateauFlag =
+  | "weight_loss_plateau"
+  | "stale_diet"
+  | "stale_workout"
+  | "training_stagnation";
+
+export type CoachingStatus = "learning" | "on_track" | "watch" | "plateau" | "needs_new_plan";
+
+export type CoachingAdvice = {
+  headline: string;
+  status: CoachingStatus;
+  plateau: boolean;
+  flags: PlateauFlag[];
+  reasons: string[];
+  remembered: string;
+  diet: {
+    should_change: boolean;
+    summary: string;
+    calorie_change: "increase" | "decrease" | "hold";
+    suggested_calories: number | null;
+    protein_note: string;
+    meal_tweaks: string[];
+  };
+  workout: {
+    should_change: boolean;
+    summary: string;
+    action: string;
+  };
+};

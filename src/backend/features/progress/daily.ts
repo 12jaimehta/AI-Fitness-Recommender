@@ -6,6 +6,7 @@ import { getCurrentPlans } from "./current-plans";
 import { listMealLogs } from "./meals";
 import { getWorkoutLog } from "./workouts-log";
 import { throwIfSchemaMissing, utcToday } from "./db";
+import { dropCoachingCache } from "@backend/shared/lib/redis";
 
 export async function getVitals(date: string): Promise<DailyVitals> {
   const { supabase, user } = await requireUser();
@@ -60,6 +61,7 @@ export async function upsertVitals(input: {
     .single();
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
+  if (input.weight_kg != null) await dropCoachingCache(user.id);
   return data;
 }
 

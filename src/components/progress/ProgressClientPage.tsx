@@ -10,6 +10,7 @@ import {
   getDailyProgress,
   getProgressAnalytics,
   getWeeklyReview,
+  getCoachingAdvice,
   quickCheckMeal,
   quickCheckWorkout,
   saveVitals,
@@ -24,10 +25,12 @@ import type {
   ProgressAnalytics,
   TrackKind,
   WeeklyReview,
+  CoachingAdvice,
 } from "@/shared/types";
 import PageLoader from "@/components/ui/PageLoader";
 import FormSelect from "@/components/shared/FormSelect";
 import SurfaceCard from "@/components/shared/SurfaceCard";
+import CoachingCard from "@/components/shared/CoachingCard";
 import TrendChart from "@/components/shared/TrendChart";
 import MacroRings from "@/components/progress/MacroRings";
 import QuickVitals from "@/components/progress/QuickVitals";
@@ -71,6 +74,7 @@ export default function ProgressClientPage() {
   const [daily, setDaily] = useState<DailyProgress | null>(null);
   const [analytics, setAnalytics] = useState<ProgressAnalytics | null>(null);
   const [review, setReview] = useState<WeeklyReview | null>(null);
+  const [coaching, setCoaching] = useState<CoachingAdvice | null>(null);
   const [aiSlot, setAiSlot] = useState<string | null>(null);
   const [aiWorkout, setAiWorkout] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
@@ -79,14 +83,16 @@ export default function ProgressClientPage() {
     if (!silent) setLoading(true);
     setError("");
     try {
-      const [dailyData, analyticsData, reviewData] = await Promise.all([
+      const [dailyData, analyticsData, reviewData, coachingData] = await Promise.all([
         getDailyProgress(date),
         getProgressAnalytics(range),
         getWeeklyReview().catch(() => null),
+        getCoachingAdvice().catch(() => null),
       ]);
       setDaily(dailyData);
       setAnalytics(analyticsData);
       setReview(reviewData);
+      setCoaching(coachingData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load tracking.");
     } finally {
@@ -203,6 +209,12 @@ export default function ProgressClientPage() {
         {error && (
           <p className="mb-4 text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl px-4 py-3">{error}</p>
         )}
+
+        {coaching ? (
+          <div className="mb-6">
+            <CoachingCard advice={coaching} />
+          </div>
+        ) : null}
 
         <QuickVitals
           weight={daily?.actuals.weight_kg ?? null}

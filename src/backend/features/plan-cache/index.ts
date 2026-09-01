@@ -1,7 +1,7 @@
 import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
 import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import type { DietPlanData, WorkoutPlanData } from "@/shared/types";
-import { cacheDel, cacheGet, cacheSet, clearUserCache, userCacheKeys } from "@backend/shared/lib/redis";
+import { cacheDel, cacheGet, cacheSet, clearUserCache, dropCoachingCache, userCacheKeys } from "@backend/shared/lib/redis";
 import { getLatestDietPlan, getLatestWorkoutPlan } from "@backend/features/progress/plans";
 
 export type CachedDietSession = {
@@ -22,10 +22,12 @@ export { clearUserCache };
 
 export async function setCurrentDiet(userId: string, session: CachedDietSession) {
   await cacheSet(userCacheKeys(userId).diet, session);
+  await dropCoachingCache(userId);
 }
 
 export async function setCurrentWorkout(userId: string, session: CachedWorkoutSession) {
   await cacheSet(userCacheKeys(userId).workout, session);
+  await dropCoachingCache(userId);
 }
 
 export async function getCurrentDiet(userId: string): Promise<CachedDietSession | null> {

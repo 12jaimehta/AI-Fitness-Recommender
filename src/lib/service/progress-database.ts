@@ -13,6 +13,7 @@ export {
   saveVitals,
   getProgressAnalytics,
   getWeeklyReview,
+  getCoachingAdvice,
   type UserProfile,
   type DailyProgress,
   type ExerciseLogEntry,

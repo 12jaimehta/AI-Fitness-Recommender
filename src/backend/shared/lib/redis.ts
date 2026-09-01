@@ -28,6 +28,7 @@ export function userCacheKeys(userId: string) {
   return {
     diet: `fyte:${userId}:diet:current`,
     workout: `fyte:${userId}:workout:current`,
+    coaching: `fyte:${userId}:coaching:advice`,
   };
 }
 
@@ -65,5 +66,9 @@ export async function cacheDel(...keys: string[]) {
 
 export async function clearUserCache(userId: string) {
   const keys = userCacheKeys(userId);
-  await cacheDel(keys.diet, keys.workout);
+  await cacheDel(keys.diet, keys.workout, keys.coaching);
+}
+
+export async function dropCoachingCache(userId: string) {
+  await cacheDel(userCacheKeys(userId).coaching);
 }

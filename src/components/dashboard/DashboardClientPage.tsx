@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Apple, Dumbbell, Activity, Users } from "lucide-react";
 import { useUser } from "@/lib/hooks/use-user";
-import { getDailyProgress, getUserProfile } from "@/lib/service/progress-database";
-import type { DailyProgress, UserProfile } from "@/shared/types";
+import { getDailyProgress, getUserProfile, getCoachingAdvice } from "@/lib/service/progress-database";
+import type { DailyProgress, UserProfile, CoachingAdvice } from "@/shared/types";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import PageLoader from "@/components/ui/PageLoader";
+import CoachingCard from "@/components/shared/CoachingCard";
 
 const PRIMARY = [
   {
@@ -67,6 +68,7 @@ export default function DashboardClientPage() {
   const { user, isSignedIn, isLoading } = useUser();
   const [daily, setDaily] = useState<DailyProgress | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [coaching, setCoaching] = useState<CoachingAdvice | null>(null);
 
   useEffect(() => {
     if (!isSignedIn) return;
@@ -76,6 +78,11 @@ export default function DashboardClientPage() {
       if (dailyResult.status === "fulfilled") setDaily(dailyResult.value);
       if (profileResult.status === "fulfilled") setProfile(profileResult.value);
     });
+    getCoachingAdvice()
+      .then((advice) => {
+        if (!cancelled) setCoaching(advice);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -105,6 +112,12 @@ export default function DashboardClientPage() {
           </h1>
           <p className="mt-2 text-gray-600">Your plans, progress, and pages in one place.</p>
         </header>
+
+        {coaching ? (
+          <div className="mb-10">
+            <CoachingCard advice={coaching} />
+          </div>
+        ) : null}
 
         {daily ? (
           <section className="mb-10">

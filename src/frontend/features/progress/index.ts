@@ -7,6 +7,7 @@ import type {
   ProgressAnalytics,
   UserProfile,
   WeeklyReview,
+  CoachingAdvice,
 } from "@/shared/types";
 
 export type {
@@ -21,6 +22,7 @@ export type {
   WorkoutSetEntry,
   ProgressAnalytics,
   WeeklyReview,
+  CoachingAdvice,
 } from "@/shared/types";
 
 export async function getUserProfile() {
@@ -126,6 +128,13 @@ export async function getWeeklyReview() {
     method: "POST",
     body: JSON.stringify({}),
   });
+  return data;
+}
+
+export async function getCoachingAdvice(refresh = false) {
+  const { data } = await api<{ data: CoachingAdvice }>(
+    refresh ? "/api/coaching?refresh=1" : "/api/coaching"
+  );
   return data;
 }
 

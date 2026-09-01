@@ -17,6 +17,7 @@ Each file is safe to re-run (`IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `DROP 
 | [`schema/06_storage.sql`](schema/06_storage.sql) | Storage buckets | Photos / trainer avatars |
 | [`schema/07_fyte_connect_instagram.sql`](schema/07_fyte_connect_instagram.sql) | Instagram handle on trainers + creators | Trainer Instagram buttons |
 | [`schema/08_trainer_profile_columns.sql`](schema/08_trainer_profile_columns.sql) | Missing trainer columns (`avatar_url`, etc.) | Paste if Become a trainer save fails |
+| [`schema/09_user_coaching.sql`](schema/09_user_coaching.sql) | Coaching memory + advice history | Dashboard / progress coach (plateau + diet changes) |
 
 ## Already pasted old SQL?
 
@@ -29,9 +30,12 @@ If you already ran the “Personal Fitness Data Schema” or “User Profiles & 
 5. Run **05** and **06** only if you use Trainers / photos.
 6. Run **07** if you already ran **05** before Instagram was added.
 7. Run **08** if Become a trainer fails with a missing `avatar_url` (or similar) column.
+8. Run **09** so the coach can remember weight, plans, and plateaus.
 
 Do **not** drop tables. These files only add.
 
 ## New empty project
 
-Paste 00 → 08 in order. That is the full app schema.
+Paste 00 → 09 in order. That is the full app schema.
+
+If the app was already set up, paste **09** once so the coach can remember your logs.
