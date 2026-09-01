@@ -65,7 +65,7 @@ export default function WorkoutClientPage() {
           subtitle="This can take one to two minutes. Please wait."
         />
       ) : null}
-      <div className="space-y-10 text-center">
+      <div className="space-y-10">
         {error ? (
           <p className="mx-auto max-w-xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}

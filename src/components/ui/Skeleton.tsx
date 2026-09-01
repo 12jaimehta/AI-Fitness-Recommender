@@ -204,55 +204,65 @@ export function TrainerProfileSkeleton() {
 
 export function FormPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-left">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-10 w-40 rounded-xl" />
         </div>
-        <Card className="mb-6">
+        <aside className="mb-6 rounded-2xl border border-gray-200 bg-white p-5">
           <Skeleton className="h-5 w-48" />
-          <Skeleton className="mt-3 h-4 w-full max-w-xl" />
-          <Skeleton className="mt-2 h-4 w-2/3 max-w-lg" />
-        </Card>
+          <Skeleton className="mt-2 h-4 w-full max-w-xl" />
+          <Skeleton className="mt-2 h-4 w-4/5 max-w-lg" />
+        </aside>
         <div className="flex flex-col lg:flex-row lg:gap-16">
           <aside className="hidden lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-gray-200 lg:pr-10">
-            <Skeleton className="mb-12 h-8 w-56 border-b border-gray-200 pb-4" />
-            <div className="space-y-8 pt-12">
+            <div className="mb-12 border-b border-gray-200 pb-4">
+              <Skeleton className="h-8 w-56" />
+            </div>
+            <div className="space-y-8 pt-20">
               {Array.from({ length: 4 }, (_, i) => (
                 <div key={i} className="flex items-start gap-4">
                   <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
-                  <div className="min-w-0 flex-1 pt-0.5">
+                  <div className="min-w-0 flex-1">
                     <Skeleton className="h-4 w-36" />
-                    <Skeleton className="mt-2 h-3 w-28" />
+                    <Skeleton className="mt-1.5 h-3.5 w-28" />
                   </div>
                 </div>
               ))}
             </div>
           </aside>
           <main className="flex-1 lg:pt-4">
-            <div className="mb-8 flex items-center gap-6 overflow-hidden border-b border-gray-200 pb-3 lg:hidden">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div key={i} className="flex shrink-0 items-center gap-2">
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              ))}
+            <div className="-mx-4 mb-8 border-b border-gray-200 bg-white pb-3 shadow-sm lg:hidden sm:mx-0">
+              <div className="flex items-center gap-6 overflow-hidden px-6 py-2">
+                {Array.from({ length: 4 }, (_, i) => (
+                  <div key={i} className="flex shrink-0 items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="mb-8 flex flex-col items-center gap-2">
+            <header className="mb-8 flex flex-col items-center gap-2">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="mt-1 h-8 w-64 max-w-full" />
+              <Skeleton className="mt-1 h-8 w-64 max-w-full sm:h-9" />
               <Skeleton className="mt-2 h-4 w-72 max-w-full" />
+            </header>
+            <div className="space-y-6">
+              <div>
+                <Skeleton className="mb-2.5 h-4 w-24" />
+                <Skeleton className="h-14 w-full rounded-2xl" />
+              </div>
+              <div>
+                <Skeleton className="mb-3 h-4 w-40" />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Skeleton className="h-40 w-full rounded-xl" />
+                  <Skeleton className="h-40 w-full rounded-xl" />
+                </div>
+              </div>
             </div>
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="mt-2 h-12 w-full rounded-xl" />
-            <Skeleton className="mt-8 h-4 w-40" />
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <Skeleton className="h-36 w-full rounded-2xl" />
-              <Skeleton className="h-36 w-full rounded-2xl" />
-            </div>
-            <div className="mt-10 flex justify-end">
-              <Skeleton className="h-11 w-28 rounded-xl" />
+            <div className="mt-10">
+              <Skeleton className="h-12 w-full rounded-xl" />
             </div>
           </main>
         </div>
@@ -317,13 +327,15 @@ export function BecomeTrainerSkeleton() {
 function PlanItemCardSkeleton() {
   return (
     <article className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-      <Skeleton className="h-5 w-32" />
+      <Skeleton className="h-6 w-32" />
       <Skeleton className="mt-2 h-4 w-56 max-w-full" />
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Skeleton className="h-14 w-full rounded-xl" />
-        <Skeleton className="h-14 w-full rounded-xl" />
-        <Skeleton className="h-14 w-full rounded-xl" />
-        <Skeleton className="h-14 w-full rounded-xl" />
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+            <Skeleton className="h-3 w-14" />
+            <Skeleton className="mt-1 h-4 w-10" />
+          </div>
+        ))}
       </div>
       <Skeleton className="mt-4 h-4 w-28" />
       <Skeleton className="mt-2 h-4 w-full" />
@@ -338,41 +350,39 @@ export function PlanResultSkeleton() {
       <Skeleton className="mb-8 h-4 w-48" />
       <header className="mb-8 border-b border-gray-200 pb-6">
         <Skeleton className="h-8 w-52 sm:h-9" />
-        <Skeleton className="mt-3 h-4 w-80 max-w-full" />
+        <Skeleton className="mt-2 h-4 w-80 max-w-full" />
       </header>
-      <Card className="mb-8">
+      <aside className="mb-8 rounded-2xl border border-gray-200 bg-white p-5">
         <Skeleton className="h-5 w-48" />
-        <Skeleton className="mt-3 h-4 w-full max-w-xl" />
+        <Skeleton className="mt-2 h-4 w-full max-w-xl" />
         <Skeleton className="mt-2 h-4 w-2/3 max-w-lg" />
         <Skeleton className="mt-4 h-10 w-44 rounded-xl" />
-      </Card>
+      </aside>
       <section className="mb-8">
-        <Skeleton className="mb-4 h-5 w-40" />
+        <Skeleton className="mb-4 h-6 w-40" />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="mt-2 h-6 w-20" />
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="mt-2 h-6 w-20" />
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="mt-2 h-6 w-20" />
-          </div>
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
-            <Skeleton className="h-4 w-16" />
-            <Skeleton className="mt-2 h-6 w-20" />
-          </div>
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="rounded-2xl border border-gray-200 bg-white p-4">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="mt-1 h-7 w-20" />
+            </div>
+          ))}
         </div>
       </section>
       <section className="mb-8">
-        <Skeleton className="mb-4 h-5 w-32" />
+        <Skeleton className="mb-4 h-6 w-32" />
         <div className="space-y-4">
           <PlanItemCardSkeleton />
           <PlanItemCardSkeleton />
           <PlanItemCardSkeleton />
+        </div>
+      </section>
+      <section className="mb-8">
+        <Skeleton className="mb-4 h-6 w-16" />
+        <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-2/3" />
         </div>
       </section>
       <div className="flex flex-wrap items-center gap-3 border-t border-gray-200 pt-6">
