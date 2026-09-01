@@ -9,6 +9,7 @@ import { getDailyProgress, getUserProfile, getCoachingAdvice } from "@/lib/servi
 import { localIsoDate } from "@/shared/lib/plan-tracking";
 import type { DailyProgress, UserProfile, CoachingAdvice } from "@/shared/types";
 import PageLoader from "@/components/ui/PageLoader";
+import SectionLoader from "@/components/ui/SectionLoader";
 
 function greetingName(userEmail?: string | null, profile?: UserProfile | null) {
   const fromProfile = profile?.full_name?.trim().split(" ")[0];
@@ -83,27 +84,40 @@ export default function DashboardClientPage() {
   const [daily, setDaily] = useState<DailyProgress | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [coaching, setCoaching] = useState<CoachingAdvice | null>(null);
+  const [pageReady, setPageReady] = useState(false);
+  const [coachingReady, setCoachingReady] = useState(false);
 
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (isLoading) return;
+    if (!isSignedIn) {
+      setPageReady(true);
+      setCoachingReady(true);
+      return;
+    }
     let cancelled = false;
+    setPageReady(false);
+    setCoachingReady(false);
     Promise.allSettled([getDailyProgress(), getUserProfile()]).then(([dailyResult, profileResult]) => {
       if (cancelled) return;
       if (dailyResult.status === "fulfilled") setDaily(dailyResult.value);
       if (profileResult.status === "fulfilled") setProfile(profileResult.value);
+      setPageReady(true);
     });
     getCoachingAdvice()
       .then((advice) => {
         if (!cancelled) setCoaching(advice);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setCoachingReady(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [isSignedIn]);
+  }, [isSignedIn, isLoading]);
 
-  if (isLoading) {
-    return <PageLoader />;
+  if (isLoading || !pageReady) {
+    return <PageLoader title="Loading dashboard..." />;
   }
 
   const workout = daily?.workout_plan?.today_workout;
@@ -135,7 +149,11 @@ export default function DashboardClientPage() {
           <p className="mt-1 text-sm text-gray-500">{dateLabel}</p>
         </header>
 
-        {coaching ? (
+        {!coachingReady ? (
+          <section className="mb-5 rounded-2xl border border-gray-200 bg-white">
+            <SectionLoader title="Loading coach..." />
+          </section>
+        ) : coaching ? (
           <section className="mb-5 rounded-2xl border border-gray-200 bg-white px-5 py-4">
             <div className="flex items-start justify-between gap-3">
               <p className="font-semibold text-[#282828]">{coaching.headline}</p>
@@ -167,7 +185,7 @@ export default function DashboardClientPage() {
               />
             </div>
           ) : (
-            <p className="mt-3 text-sm text-gray-500">Loading…</p>
+            <SectionLoader title="Loading today..." className="min-h-[8rem] py-6" />
           )}
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             <Row

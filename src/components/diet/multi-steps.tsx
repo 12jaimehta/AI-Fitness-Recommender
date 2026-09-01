@@ -29,12 +29,14 @@ import { PROGRAM_GOAL_OPTIONS, coerceProgramGoal, dietActivityFromWorkoutDays, d
 import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { getUserProfile } from "@/lib/service/progress-database";
+import PageLoader from "@/components/ui/PageLoader";
 
 export default function RefactoredMultiStepForm({
   onSubmit,
   loading,
 }: RefactoredMultiStepFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [ready, setReady] = useState(false);
   const [workoutForm, setWorkoutForm] = useState<ReturnType<typeof readLastWorkoutForm>>(null);
 
   const {
@@ -71,21 +73,23 @@ export default function RefactoredMultiStepForm({
 
   useEffect(() => {
     let cancelled = false;
-    void hydratePlanCache().then(() => {
-      if (cancelled) return;
-      const workout = readLastWorkoutForm();
-      setWorkoutForm(workout);
-      if (workout?.goal) {
-        setValue("goal", coerceProgramGoal(workout.goal) || (workout.goal as DietPlanFormData["goal"]));
-      }
-      if (workout?.workoutFrequency) {
-        setValue("workoutFrequency", dietFrequencyFromWorkoutDays(workout.workoutFrequency));
-        setValue("activityLevel", dietActivityFromWorkoutDays(workout.workoutFrequency));
-      }
-      if (workout?.medicalConditions) setValue("medicalConditions", workout.medicalConditions);
+    void (async () => {
+      try {
+        await hydratePlanCache();
+        if (cancelled) return;
+        const workout = readLastWorkoutForm();
+        setWorkoutForm(workout);
+        if (workout?.goal) {
+          setValue("goal", coerceProgramGoal(workout.goal) || (workout.goal as DietPlanFormData["goal"]));
+        }
+        if (workout?.workoutFrequency) {
+          setValue("workoutFrequency", dietFrequencyFromWorkoutDays(workout.workoutFrequency));
+          setValue("activityLevel", dietActivityFromWorkoutDays(workout.workoutFrequency));
+        }
+        if (workout?.medicalConditions) setValue("medicalConditions", workout.medicalConditions);
 
-      getUserProfile()
-        .then((profile) => {
+        try {
+          const profile = await getUserProfile();
           if (!profile || cancelled) return;
           if (profile.age) setValue("age", String(profile.age));
           if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
@@ -93,9 +97,13 @@ export default function RefactoredMultiStepForm({
           if (profile.initial_weight) setValue("weight", String(profile.initial_weight));
           const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
           if (profileGoal && !workout?.goal) setValue("goal", profileGoal);
-        })
-        .catch(() => {});
-    });
+        } catch {
+          /* form stays on defaults */
+        }
+      } finally {
+        if (!cancelled) setReady(true);
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -141,6 +149,10 @@ export default function RefactoredMultiStepForm({
         return [];
     }
   };
+
+  if (!ready) {
+    return <PageLoader title="Loading your details..." />;
+  }
 
   return (
     <FormTwoColumnLayout

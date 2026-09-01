@@ -212,7 +212,7 @@ export default function ProgressClientPage() {
     setActiveExerciseId(id);
   };
 
-  if (userLoading || (loading && !daily)) {
+  if (userLoading || loading) {
     return <PageLoader title="Loading tracking..." />;
   }
 
@@ -297,7 +297,7 @@ export default function ProgressClientPage() {
                   : "border-gray-200 bg-white text-[#282828]"
               }`}
             >
-              <Apple size={22} />
+              {/* <Apple size={22} /> */}
               <p className="mt-3 text-sm font-medium opacity-80">Meals</p>
               <p className="mt-1 text-2xl font-bold">
                 {daily?.diet_plan
@@ -317,7 +317,7 @@ export default function ProgressClientPage() {
                   : "border-gray-200 bg-white text-[#282828]"
               }`}
             >
-              <Dumbbell size={22} />
+              {/* <Dumbbell size={22} /> */}
               <p className="mt-3 text-sm font-medium opacity-80">Workout</p>
               <p className="mt-1 text-2xl font-bold">
                 {daily?.actuals.workout_completed
@@ -576,18 +576,18 @@ function DietMealsPanel({
         <FillBar label="Protein" help="For this date." value={protein} target={proteinTarget} unit="g" />
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-10 grid grid-cols-1 gap-3 lg:grid-cols-2">
         {plan.meals.map((meal) => {
           const checked = logs.some((log) => log.meal_slot === meal.slot && log.source_type === "plan_checkoff");
           const item = meal.items[0];
           const saving = busy === meal.slot;
           return (
-            <div key={meal.meal_id} className="overflow-hidden rounded-2xl border border-gray-200">
+            <div key={meal.meal_id} className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200">
               <button
                 type="button"
                 onClick={() => onCheck(meal.slot)}
                 disabled={saving}
-                className={`w-full px-4 py-3 text-left transition disabled:opacity-60 ${
+                className={`flex-1 px-4 py-3 text-left transition disabled:opacity-60 ${
                   checked ? "bg-[#282828] text-white" : "bg-white text-[#282828]"
                 }`}
               >
@@ -602,11 +602,11 @@ function DietMealsPanel({
                     </p>
                   </div>
                   {checked ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold">
+                    <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold">
                       <Check size={16} /> Ate it
                     </span>
                   ) : (
-                    <span className="text-xs font-semibold">{saving ? "Saving..." : "Tap to log"}</span>
+                    <span className="shrink-0 text-xs font-semibold">{saving ? "Saving..." : "Tap to log"}</span>
                   )}
                 </div>
               </button>
@@ -721,7 +721,7 @@ function WorkoutPanel({
       <section className={CARD}>
         <h2 className="text-lg font-semibold text-[#282828]">Exercises</h2>
         <p className="mt-1 text-sm text-gray-600">Tap a row to log weight and reps for each set.</p>
-        <div className="mt-4 space-y-2">
+        <div className="mt-10 grid grid-cols-1 gap-3 lg:grid-cols-2">
           {exercises.map((exercise) => {
             const done = exercise.sets.filter((set) => set.kind !== "warmup" && set.reps > 0).length;
             const pct = exercise.target_sets > 0 ? Math.min(100, Math.round((done / exercise.target_sets) * 100)) : 0;
@@ -730,11 +730,11 @@ function WorkoutPanel({
                 key={exercise.exercise_id}
                 type="button"
                 onClick={() => onOpenExercise(exercise)}
-                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left"
+                className="flex h-full w-full flex-col rounded-2xl border border-gray-200 bg-white px-4 py-3 text-left"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-semibold text-[#282828]">{exercise.exercise_name}</p>
+                    <p className="truncate font-semibold text-[#282828]">{exercise.exercise_name}</p>
                     <p className="mt-0.5 text-xs text-gray-500">
                       {done}/{exercise.target_sets} sets · {exercise.target_reps} reps
                     </p>

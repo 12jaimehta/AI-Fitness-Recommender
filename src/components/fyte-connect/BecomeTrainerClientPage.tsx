@@ -8,14 +8,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { trainerSchema, type TrainerFormData } from "@/lib/validation/becometrainer";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageLoader from "@/components/ui/PageLoader";
 import UploadImage from "@/components/ui/UploadImage";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 
 export default function BecomeTrainerClientPage() {
   const router = useRouter();
-  const { user } = useCurrentUser();
+  const { user, loading: userLoading } = useCurrentUser();
   const [tagDraft, setTagDraft] = useState("");
   const [submitError, setSubmitError] = useState("");
+  const [ready, setReady] = useState(false);
 
   const form = useForm<TrainerFormData>({
     resolver: zodResolver(trainerSchema) as never,
@@ -43,22 +45,35 @@ export default function BecomeTrainerClientPage() {
   const instagramHandle = watch("instagram_handle");
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (userLoading) return;
+    if (!user?.id) {
+      setReady(true);
+      return;
+    }
 
+    let cancelled = false;
+    setReady(false);
     const loadProfile = async () => {
-      const data = await getOwnTrainerProfile();
-      if (!data) return;
-      setValue("full_name", data.full_name || "");
-      setValue("bio", data.bio || "");
-      setValue("expertise", data.expertise || []);
-      setValue("experience_years", (data.experience_years ?? null) as TrainerFormData["experience_years"]);
-      setValue("hourly_rate", (data.hourly_rate ?? null) as TrainerFormData["hourly_rate"]);
-      setValue("avatar_url", data.avatar_url || null);
-      setValue("instagram_handle", data.instagram_handle || "");
+      try {
+        const data = await getOwnTrainerProfile();
+        if (cancelled || !data) return;
+        setValue("full_name", data.full_name || "");
+        setValue("bio", data.bio || "");
+        setValue("expertise", data.expertise || []);
+        setValue("experience_years", (data.experience_years ?? null) as TrainerFormData["experience_years"]);
+        setValue("hourly_rate", (data.hourly_rate ?? null) as TrainerFormData["hourly_rate"]);
+        setValue("avatar_url", data.avatar_url || null);
+        setValue("instagram_handle", data.instagram_handle || "");
+      } finally {
+        if (!cancelled) setReady(true);
+      }
     };
 
-    loadProfile();
-  }, [user?.id, setValue]);
+    void loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, userLoading, setValue]);
 
   const addExpertise = (tag: string) => {
     const next = tag.trim();
@@ -87,6 +102,10 @@ export default function BecomeTrainerClientPage() {
       setSubmitError(error instanceof Error ? error.message : "Could not save your trainer profile.");
     }
   };
+
+  if (userLoading || !ready) {
+    return <PageLoader title="Loading your trainer profile..." />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
