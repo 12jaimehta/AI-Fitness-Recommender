@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   dietPlanSchema,
@@ -31,6 +31,17 @@ import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
+const DIET_STEP_FIELDS = [
+  ["age", "gender"],
+  ["weight", "weightUnit", "height", "heightUnit", "feet", "inches", "activityLevel"],
+  ["dietaryPreference", "goal", "workoutFrequency", "mealsPerDay"],
+  ["allergies", "medicalConditions", "favoriteFoods"],
+] as const satisfies ReadonlyArray<ReadonlyArray<keyof DietPlanFormData>>;
+
+function firstStepWithErrors(formErrors: FieldErrors<DietPlanFormData>) {
+  return DIET_STEP_FIELDS.findIndex((fields) => fields.some((field) => formErrors[field]));
+}
+
 export default function RefactoredMultiStepForm({
   onSubmit,
   loading,
@@ -48,6 +59,9 @@ export default function RefactoredMultiStepForm({
     formState: { errors },
   } = useForm<DietPlanFormData>({
     resolver: zodResolver(dietPlanSchema) as never,
+    mode: "onTouched",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
     defaultValues: {
       weight: "",
       weightUnit: "kg",
@@ -110,8 +124,8 @@ export default function RefactoredMultiStepForm({
   }, [setValue]);
 
   const nextStep = async () => {
-    const fields = getFields(currentStep);
-    const ok = await trigger(fields as any);
+    const fields = [...(DIET_STEP_FIELDS[currentStep] ?? DIET_STEP_FIELDS[0])];
+    const ok = await trigger(fields, { shouldFocus: true });
 
     if (ok && currentStep < steps.length - 1) {
       setCurrentStep((s) => s + 1);
@@ -122,33 +136,10 @@ export default function RefactoredMultiStepForm({
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   };
 
-  const getFields = (step: number) => {
-    switch (step) {
-      case 0:
-        return ["age", "gender"];
-      case 1:
-        return [
-          "weight",
-          "weightUnit",
-          "height",
-          "heightUnit",
-          "feet",
-          "inches",
-          "activityLevel",
-        ];
-      case 2:
-        return [
-          "dietaryPreference",
-          "goal",
-          "workoutFrequency",
-          "mealsPerDay",
-        ];
-      case 3:
-        return ["allergies", "medicalConditions", "favoriteFoods"];
-      default:
-        return [];
-    }
-  };
+  const submitPlan = handleSubmit(onSubmit, (formErrors) => {
+    const step = firstStepWithErrors(formErrors);
+    if (step >= 0) setCurrentStep(step);
+  });
 
   if (!ready) {
     return <FormPageSkeleton />;
@@ -198,7 +189,7 @@ export default function RefactoredMultiStepForm({
           totalSteps={steps.length}
           onPrevious={prevStep}
           onNext={nextStep}
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={submitPlan}
           loading={loading}
           isLastStep={currentStep === steps.length - 1}
           submitLabel="Make my meal plan"
@@ -224,6 +215,7 @@ export default function RefactoredMultiStepForm({
                   placeholder="Enter your age"
                   value={field.value}
                   onChange={field.onChange}
+                  onBlur={field.onBlur}
                   error={errors.age?.message}
                   required
                 />
@@ -231,8 +223,8 @@ export default function RefactoredMultiStepForm({
             />
 
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-3">
-                Select Your Gender
+              <label className="mb-3 block text-sm font-semibold text-slate-900">
+                Select Your Gender <span className="text-[#282828]">*</span>
               </label>
 
               <Controller
@@ -253,16 +245,19 @@ export default function RefactoredMultiStepForm({
                       },
                     ]}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      void trigger("gender");
+                    }}
                   />
                 )}
               />
 
-              {errors.gender?.message && (
-                <p className="mt-2 text-sm text-red-500">
+              {errors.gender?.message ? (
+                <p className="mt-2 text-sm font-medium text-red-600" role="alert">
                   {errors.gender.message}
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
         );
@@ -296,6 +291,7 @@ export default function RefactoredMultiStepForm({
                     placeholder="Enter weight"
                     value={field.value}
                     onChange={field.onChange}
+                    onBlur={field.onBlur}
                     error={errors.weight?.message}
                     required
                   />
@@ -313,7 +309,7 @@ export default function RefactoredMultiStepForm({
                     value={field.value}
                     onChange={(v: string) => {
                       const unit = v as DietPlanFormData["heightUnit"];
-                      setValue("heightUnit", unit);
+                      setValue("heightUnit", unit, { shouldValidate: true, shouldTouch: true });
 
                       if (unit === "cm") {
                         setValue("feet", "");
@@ -323,6 +319,7 @@ export default function RefactoredMultiStepForm({
                       }
 
                       field.onChange(unit);
+                      void trigger(["height", "feet", "inches"]);
                     }}
                     options={[
                       { value: "cm", label: "Centimeters" },
@@ -338,14 +335,32 @@ export default function RefactoredMultiStepForm({
                     name="feet"
                     control={control}
                     render={({ field }) => (
-                      <FormInput label="Feet" type="number" {...field} />
+                      <FormInput
+                        label="Feet"
+                        type="number"
+                        placeholder="e.g. 5"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        error={errors.feet?.message}
+                        required
+                      />
                     )}
                   />
                   <Controller
                     name="inches"
                     control={control}
                     render={({ field }) => (
-                      <FormInput label="Inches" type="number" {...field} />
+                      <FormInput
+                        label="Inches"
+                        type="number"
+                        placeholder="e.g. 10"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        error={errors.inches?.message}
+                        required
+                      />
                     )}
                   />
                 </div>
@@ -360,7 +375,9 @@ export default function RefactoredMultiStepForm({
                       placeholder="Enter height in cm"
                       value={field.value}
                       onChange={field.onChange}
+                      onBlur={field.onBlur}
                       error={errors.height?.message}
+                      required
                     />
                   )}
                 />
@@ -377,6 +394,7 @@ export default function RefactoredMultiStepForm({
                   onChange={(v) => field.onChange(v)}
                   options={activityOptions}
                   error={errors.activityLevel?.message}
+                  required
                   variant="dropdown"
                 />
               )}
@@ -397,6 +415,8 @@ export default function RefactoredMultiStepForm({
                     value={field.value}
                     onChange={(v) => field.onChange(v)}
                     options={dietaryOptions}
+                    error={errors.dietaryPreference?.message}
+                    required
                     variant="dropdown"
                   />
                 )}
@@ -410,6 +430,7 @@ export default function RefactoredMultiStepForm({
               selected={watched.goal ? [watched.goal] : []}
               onToggle={(value) => setValue("goal", value as DietPlanFormData["goal"], { shouldValidate: true })}
               error={errors.goal?.message}
+              required
             />
 
             <SectionGrid cols={2}>
@@ -427,6 +448,8 @@ export default function RefactoredMultiStepForm({
                       { value: "5", label: "5 Meals" },
                       { value: "6", label: "6 Meals" },
                     ]}
+                    error={errors.mealsPerDay?.message}
+                    required
                   />
                 )}
               />
@@ -439,6 +462,8 @@ export default function RefactoredMultiStepForm({
                     value={field.value}
                     onChange={(v) => field.onChange(v)}
                     options={workoutOptions}
+                    error={errors.workoutFrequency?.message}
+                    required
                   />
                 )}
               />
@@ -456,7 +481,9 @@ export default function RefactoredMultiStepForm({
                 <FormInput
                   label="Allergies (Optional)"
                   placeholder="e.g., nuts, dairy"
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                 />
               )}
             />
@@ -468,7 +495,9 @@ export default function RefactoredMultiStepForm({
                 <FormInput
                   label="Medical Conditions (Optional)"
                   placeholder="e.g., diabetes"
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                 />
               )}
             />
@@ -480,7 +509,9 @@ export default function RefactoredMultiStepForm({
                 <FormInput
                   label="Favorite Foods (Optional)"
                   placeholder="e.g., avocado, paneer"
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                 />
               )}
             />

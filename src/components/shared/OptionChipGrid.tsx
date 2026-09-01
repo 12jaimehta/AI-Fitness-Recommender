@@ -13,6 +13,7 @@ export default function OptionChipGrid({
   onToggle,
   error,
   hint,
+  required = false,
   variant = "chips",
 }: {
   label: string;
@@ -21,11 +22,15 @@ export default function OptionChipGrid({
   onToggle: (value: string) => void;
   error?: string;
   hint?: string;
+  required?: boolean;
   variant?: "chips" | "dropdown";
 }) {
   return (
     <div className="font-['Montserrat',sans-serif]">
-      <label className="mb-3 block text-sm font-semibold text-[#282828]">{label}</label>
+      <label className="mb-3 block text-sm font-semibold text-[#282828]">
+        {label}
+        {required ? <span> *</span> : null}
+      </label>
       {hint ? <p className="mb-3 text-sm text-gray-500">{hint}</p> : null}
 
       {variant === "dropdown" ? (
@@ -60,7 +65,11 @@ export default function OptionChipGrid({
           })}
         </div>
       )}
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p className="mt-2 text-sm font-medium text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

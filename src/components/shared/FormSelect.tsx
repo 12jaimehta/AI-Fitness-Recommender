@@ -76,7 +76,9 @@ export default function FormSelect({
                   compact ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm",
                   active
                     ? "border-[#282828] bg-[#282828] text-white"
-                    : "border-gray-200 bg-white text-[#282828] hover:border-[#282828]",
+                    : error
+                      ? "border-red-300 bg-white text-[#282828] hover:border-[#282828]"
+                      : "border-gray-200 bg-white text-[#282828] hover:border-[#282828]",
                   option.disabled && "cursor-not-allowed opacity-50"
                 )}
               >
@@ -86,7 +88,11 @@ export default function FormSelect({
           })}
         </div>
       )}
-      {error ? <p className="mt-2 text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p className="mt-2 text-sm font-medium text-red-600" role="alert">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

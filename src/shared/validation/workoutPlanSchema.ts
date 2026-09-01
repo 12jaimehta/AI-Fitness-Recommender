@@ -7,10 +7,16 @@ const programGoalSchema = z.preprocess(
 );
 
 export const workoutPlanSchema = z.object({
-  age: z.string().min(1, "Please enter your age").refine((val) => {
-    const age = parseInt(val);
-    return !isNaN(age) && age > 0 && age <= 120;
-  }, "Age must be between 1 and 120 years"),
+  age: z.string().superRefine((val, ctx) => {
+    if (!String(val).trim()) {
+      ctx.addIssue({ code: "custom", message: "Please enter your age" });
+      return;
+    }
+    const age = Number(val);
+    if (!Number.isInteger(age) || age < 1 || age > 120) {
+      ctx.addIssue({ code: "custom", message: "Age must be between 1 and 120 years" });
+    }
+  }),
 
   gender: z.enum(["male", "female"], { message: "Please select your gender" }),
 

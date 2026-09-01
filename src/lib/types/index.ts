@@ -7,6 +7,7 @@ export interface FormInputProps {
   placeholder?: string;
   value?: string | number | undefined;
   onChange?: (value: string) => void;
+  onBlur?: () => void;
   error?: string;
   required?: boolean;
   disabled?: boolean;

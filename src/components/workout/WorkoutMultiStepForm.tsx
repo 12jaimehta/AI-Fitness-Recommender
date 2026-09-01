@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { workoutPlanSchema, type WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
 import FormInput from "@/components/shared/FormInput";
@@ -30,6 +30,17 @@ import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
+const WORKOUT_STEP_FIELDS = [
+  ["age", "gender"],
+  ["fitnessLevel", "goal"],
+  ["workoutDuration", "workoutFrequency", "availableEquipment"],
+  ["preferredWorkoutTime", "targetMuscles", "injuries", "medicalConditions"],
+] as const satisfies ReadonlyArray<ReadonlyArray<keyof WorkoutPlanFormData>>;
+
+function firstStepWithErrors(formErrors: FieldErrors<WorkoutPlanFormData>) {
+  return WORKOUT_STEP_FIELDS.findIndex((fields) => fields.some((field) => formErrors[field]));
+}
+
 interface WorkoutMultiStepFormProps {
   onSubmit: (data: WorkoutPlanFormData) => void;
   loading: boolean;
@@ -52,6 +63,9 @@ export default function WorkoutMultiStepForm({
     formState: { errors },
   } = useForm<WorkoutPlanFormData>({
     resolver: zodResolver(workoutPlanSchema) as never,
+    mode: "onTouched",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
     defaultValues: {
       age: "",
       gender: undefined,
@@ -107,8 +121,8 @@ export default function WorkoutMultiStepForm({
   }, [setValue]);
 
   const nextStep = async () => {
-    const fields = getFields(currentStep);
-    const ok = await trigger(fields as never);
+    const fields = [...(WORKOUT_STEP_FIELDS[currentStep] ?? WORKOUT_STEP_FIELDS[0])];
+    const ok = await trigger(fields, { shouldFocus: true });
     if (ok && currentStep < workoutSteps.length - 1) {
       setCurrentStep((s) => s + 1);
     }
@@ -118,18 +132,10 @@ export default function WorkoutMultiStepForm({
     if (currentStep > 0) setCurrentStep((s) => s - 1);
   };
 
-  const getFields = (step: number) => {
-    switch (step) {
-      case 0:
-        return ["age", "gender"];
-      case 1:
-        return ["fitnessLevel", "goal"];
-      case 2:
-        return ["workoutDuration", "workoutFrequency", "availableEquipment"];
-      default:
-        return [];
-    }
-  };
+  const submitPlan = handleSubmit(onSubmit, (formErrors) => {
+    const step = firstStepWithErrors(formErrors);
+    if (step >= 0) setCurrentStep(step);
+  });
 
   const toggleMuscleGroup = (muscle: string) => {
     const currentMuscles = watched.targetMuscles || [];
@@ -185,7 +191,7 @@ export default function WorkoutMultiStepForm({
           totalSteps={workoutSteps.length}
           onPrevious={prevStep}
           onNext={nextStep}
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={submitPlan}
           loading={loading}
           isLastStep={currentStep === workoutSteps.length - 1}
           submitLabel="Generate AI Workout Plan"
@@ -209,6 +215,7 @@ export default function WorkoutMultiStepForm({
                   placeholder="Enter your age"
                   value={field.value}
                   onChange={field.onChange}
+                  onBlur={field.onBlur}
                   error={errors.age?.message}
                   required
                 />
@@ -216,8 +223,8 @@ export default function WorkoutMultiStepForm({
             />
 
             <div>
-              <label className="block text-sm font-semibold text-slate-900 mb-3">
-                Select Your Gender
+              <label className="mb-3 block text-sm font-semibold text-slate-900">
+                Select Your Gender <span className="text-[#282828]">*</span>
               </label>
               <Controller
                 name="gender"
@@ -229,11 +236,18 @@ export default function WorkoutMultiStepForm({
                       { value: "female", icon: <FemaleImage className="w-16 h-16" />, label: "Female" },
                     ]}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      void trigger("gender");
+                    }}
                   />
                 )}
               />
-              {errors.gender?.message ? <p className="mt-2 text-sm text-red-500">{errors.gender.message}</p> : null}
+              {errors.gender?.message ? (
+                <p className="mt-2 text-sm font-medium text-red-600" role="alert">
+                  {errors.gender.message}
+                </p>
+              ) : null}
             </div>
           </div>
         );
@@ -262,6 +276,7 @@ export default function WorkoutMultiStepForm({
               selected={watched.goal ? [watched.goal] : []}
               onToggle={(value) => setValue("goal", value as WorkoutPlanFormData["goal"], { shouldValidate: true })}
               error={errors.goal?.message}
+              required
             />
           </div>
         );
@@ -349,7 +364,9 @@ export default function WorkoutMultiStepForm({
                 <FormInput
                   label="Current Injuries (Optional)"
                   placeholder="List any current injuries or physical limitations"
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                 />
               )}
             />
@@ -360,7 +377,9 @@ export default function WorkoutMultiStepForm({
                 <FormInput
                   label="Medical Conditions (Optional)"
                   placeholder="e.g., asthma, hypertension"
-                  {...field}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                 />
               )}
             />
