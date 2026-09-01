@@ -1,5 +1,5 @@
 import type { AnalyticsPoint, ExerciseLogEntry, ProgressAnalytics, TrackRange, WorkoutSetEntry } from "@/shared/types";
-import { eachIsoDate, localIsoDate, parseIsoDate } from "@/shared/lib/plan-tracking";
+import { addDaysIso, eachIsoDate, localIsoDate, parseIsoDate, weekStartMonday } from "@/shared/lib/plan-tracking";
 import { trackDaysFromLogs } from "@/shared/lib/daily-track";
 import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
@@ -14,6 +14,14 @@ function pad(n: number) {
 function dayLabel(iso: string) {
   const [, month, day] = iso.split("-").map(Number);
   return `${day} ${MONTHS[month - 1]}`;
+}
+
+function weekDayLabel(iso: string) {
+  const [year, month, day] = iso.split("-").map(Number);
+  const weekday = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+    new Date(Date.UTC(year, month - 1, day)).getUTCDay()
+  ];
+  return `${weekday} ${day}`;
 }
 
 function monthLabel(yearMonth: string) {
@@ -45,6 +53,16 @@ export function analyticsWindow(range: TrackRange | string, anchor?: string) {
   const asOf = date > today ? date : today;
   const year = date.slice(0, 4);
   const month = date.slice(0, 7);
+
+  if (range === "week") {
+    const from = weekStartMonday(date);
+    const end = addDaysIso(from, 6);
+    return {
+      from,
+      to: asOf < end ? asOf : end,
+      bucket: "day" as const,
+    };
+  }
 
   if (range === "year") {
     const end = `${year}-12-31`;
@@ -135,7 +153,7 @@ export async function getProgressAnalytics(range: string, date?: string): Promis
           const day = days.get(iso);
           return {
             date: iso,
-            label: dayLabel(iso),
+            label: range === "week" ? weekDayLabel(iso) : dayLabel(iso),
             calories: day?.calories || 0,
             protein_g: day?.protein_g || 0,
             workouts: day?.workouts || 0,

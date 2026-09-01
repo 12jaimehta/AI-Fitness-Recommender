@@ -6,11 +6,13 @@ export function buildProgressInsightsPrompt(
   tracking: TrackingContext
 ) {
   const period =
-    snapshot.range === "month"
-      ? "this month"
-      : snapshot.range === "year"
-        ? "this year"
-        : "last year";
+    snapshot.range === "week"
+      ? "this week"
+      : snapshot.range === "month"
+        ? "this month"
+        : snapshot.range === "year"
+          ? "this year"
+          : "last year";
 
   if (track === "diet") {
     const diet = snapshot as DietTrack;

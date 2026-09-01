@@ -221,7 +221,7 @@ export type TrackingContext = {
   workout: TrackingWorkout;
 };
 
-export type TrackRange = "month" | "year" | "last_year";
+export type TrackRange = "week" | "month" | "year" | "last_year";
 export type TrackKind = "diet" | "workout";
 
 export type ChartPoint = {

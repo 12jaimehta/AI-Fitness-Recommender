@@ -40,6 +40,7 @@ import AIWorkoutLogModal from "@/components/progress/AIWorkoutLogModal";
 import ExerciseSetLogger from "@/components/progress/ExerciseSetLogger";
 
 const RANGE_OPTIONS = [
+  { value: "week", label: "This week" },
   { value: "month", label: "This month" },
   { value: "year", label: "This year" },
 ];
@@ -335,7 +336,9 @@ export default function ProgressClientPage() {
               <p className="mt-1 text-sm text-gray-600">
                 {range === "year"
                   ? "Your daily logs for this year, added up by month."
-                  : "Your daily logs for this month, one point per day."}
+                  : range === "week"
+                    ? "Your daily logs for this week, one point per day."
+                    : "Your daily logs for this month, one point per day."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

@@ -43,7 +43,7 @@ function datePart(value: string) {
 }
 
 export function parseTrackRange(value: string | null): TrackRange {
-  if (value === "year" || value === "last_year" || value === "month") return value;
+  if (value === "week" || value === "year" || value === "last_year" || value === "month") return value;
   return "month";
 }
 
@@ -53,6 +53,15 @@ function rangeWindow(range: TrackRange) {
   const month = now.getUTCMonth();
   const today = todayIso();
 
+  if (range === "week") {
+    return {
+      from: weekStartMonday(today),
+      to: today,
+      bucket: "day" as const,
+      year,
+      month,
+    };
+  }
   if (range === "month") {
     return {
       from: `${year}-${pad(month + 1)}-01`,
