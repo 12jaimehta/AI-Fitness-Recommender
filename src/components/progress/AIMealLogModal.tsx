@@ -36,7 +36,11 @@ export default function AIMealLogModal({
   };
 
   return (
-    <AppModal isOpen={isOpen} onClose={onClose} title={`Something else · ${slotLabel}`}>
+    <AppModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={slotLabel === "this date" ? "Log a meal" : `Something else · ${slotLabel}`}
+    >
       <p className="text-sm text-slate-500 mb-4 text-left">
         Type what you ate. AI estimates calories and protein.
       </p>

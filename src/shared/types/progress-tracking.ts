@@ -151,6 +151,8 @@ export type AnalyticsPoint = {
   protein_g: number;
   workouts: number;
   workout_kcal: number;
+  diet_days: number;
+  workout_days: number;
 };
 
 export type ProgressAnalytics = {
@@ -163,6 +165,12 @@ export type ProgressAnalytics = {
     avg_adherence_pct: number;
     total_workouts_completed: number;
     meals_logged: number;
+    diet_days: number;
+    plan_days: number;
+    workout_days: number;
+    days_in_range: number;
+    total_calories: number;
+    total_protein_g: number;
   };
   points: AnalyticsPoint[];
 };

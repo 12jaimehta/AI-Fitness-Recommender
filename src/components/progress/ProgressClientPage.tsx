@@ -42,7 +42,6 @@ import ExerciseSetLogger from "@/components/progress/ExerciseSetLogger";
 const RANGE_OPTIONS = [
   { value: "month", label: "This month" },
   { value: "year", label: "This year" },
-  { value: "last_year", label: "Last year" },
 ];
 
 const CARD = "rounded-2xl border border-gray-200 bg-white p-5 sm:p-6";
@@ -127,7 +126,7 @@ export default function ProgressClientPage() {
     try {
       const [dailyData, analyticsData, reviewData, coachingData] = await Promise.all([
         getDailyProgress(date),
-        getProgressAnalytics(range),
+        getProgressAnalytics(range, date),
         getWeeklyReview().catch(() => null),
         getCoachingAdvice().catch(() => null),
       ]);
@@ -159,7 +158,6 @@ export default function ProgressClientPage() {
       date,
       exercises_completed: next,
       title: daily?.workout_plan?.today_workout.focus_area,
-      is_completed: daily?.actuals.workout_completed,
     });
     await load(true);
   };
@@ -226,9 +224,9 @@ export default function ProgressClientPage() {
     );
   }
 
-  const periodLabel = RANGE_OPTIONS.find((option) => option.value === range)?.label || "This month";
-
-  const mealSlotLabel = daily?.diet_plan?.meals.find((meal) => meal.slot === aiSlot)?.meal_name || "Meal";
+  const mealSlotLabel =
+    daily?.diet_plan?.meals.find((meal) => meal.slot === aiSlot)?.meal_name ||
+    (aiSlot === "other" ? "this date" : "Meal");
   const mealsLogged = daily?.actuals.meals_logged.filter((meal) => meal.source_type === "plan_checkoff").length || 0;
   const mealsTotal = daily?.diet_plan?.meals.length || 0;
   const dateLabel = new Date(`${date}T12:00:00`).toLocaleDateString("en-IN", {
@@ -296,8 +294,14 @@ export default function ProgressClientPage() {
             >
               <Apple size={22} />
               <p className="mt-3 text-sm font-medium opacity-80">Meals</p>
-              <p className="mt-1 text-2xl font-bold">{daily?.diet_plan ? `${mealsLogged}/${mealsTotal}` : "—"}</p>
-              <p className="mt-1 text-xs opacity-70">logged today</p>
+              <p className="mt-1 text-2xl font-bold">
+                {daily?.diet_plan
+                  ? `${mealsLogged}/${mealsTotal}`
+                  : daily?.actuals.meals_logged.length
+                    ? String(daily.actuals.meals_logged.length)
+                    : "—"}
+              </p>
+              <p className="mt-1 text-xs opacity-70">this day</p>
             </button>
             <button
               type="button"
@@ -311,13 +315,13 @@ export default function ProgressClientPage() {
               <Dumbbell size={22} />
               <p className="mt-3 text-sm font-medium opacity-80">Workout</p>
               <p className="mt-1 text-2xl font-bold">
-                {daily?.workout_plan?.today_workout.is_rest_day
-                  ? "Rest"
-                  : daily?.actuals.workout_completed
-                    ? "Done"
+                {daily?.actuals.workout_completed
+                  ? "Done"
+                  : daily?.workout_plan?.today_workout.is_rest_day
+                    ? "Rest"
                     : daily?.targets.workout_focus || "—"}
               </p>
-              <p className="mt-1 text-xs opacity-70">today</p>
+              <p className="mt-1 text-xs opacity-70">this day</p>
             </button>
           </div>
         </section>
@@ -329,9 +333,9 @@ export default function ProgressClientPage() {
                 {track === "diet" ? "Calories and protein" : "Workouts"}
               </h2>
               <p className="mt-1 text-sm text-gray-600">
-                {track === "diet"
-                  ? "Hover or tap a day for calories and protein. Use the legend to hide a line."
-                  : "Bars are completed workouts. Hover or tap a day for the count."}
+                {range === "year"
+                  ? "Your daily logs for this year, added up by month."
+                  : "Your daily logs for this month, one point per day."}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -352,29 +356,55 @@ export default function ProgressClientPage() {
             </div>
           </div>
 
-          {track === "diet" ? (
-            <div className="mt-5 space-y-4">
-              <FillBar
-                label="Calories"
-                help="Filled from meals you log today."
-                value={daily?.actuals.total_calories || 0}
-                target={daily?.targets.calories || 0}
-                unit="kcal"
-              />
-              <FillBar
-                label="Protein"
-                help="Filled from meals you log today."
-                value={daily?.actuals.total_protein_g || 0}
-                target={daily?.targets.protein_g || 0}
-                unit="g"
-              />
-            </div>
-          ) : (
-            <p className="mt-5 text-3xl font-bold text-[#282828]">
-              {analytics?.summary.total_workouts_completed ?? 0}
-              <span className="ml-2 text-sm font-medium text-gray-500">{periodLabel.toLowerCase()}</span>
-            </p>
-          )}
+          <div className={`mt-5 grid grid-cols-2 gap-3 ${track === "diet" ? "sm:grid-cols-4" : "sm:grid-cols-2"}`}>
+            {track === "diet" ? (
+              <>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-2xl font-bold text-[#282828]">
+                    {Math.round(analytics?.summary.total_calories ?? 0)}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">kcal logged</p>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-2xl font-bold text-[#282828]">
+                    {Math.round(analytics?.summary.total_protein_g ?? 0)}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">g protein</p>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-2xl font-bold text-[#282828]">
+                    {analytics?.summary.diet_days ?? 0}
+                    <span className="text-sm font-medium text-gray-500">
+                      /{analytics?.summary.days_in_range ?? 0}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">days with meals</p>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-2xl font-bold text-[#282828]">{analytics?.summary.meals_logged ?? 0}</p>
+                  <p className="mt-1 text-xs text-gray-500">meals logged</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-2xl font-bold text-[#282828]">
+                    {analytics?.summary.workout_days ?? 0}
+                    <span className="text-sm font-medium text-gray-500">
+                      /{analytics?.summary.days_in_range ?? 0}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">days trained</p>
+                </div>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+                  <p className="text-2xl font-bold text-[#282828]">
+                    {analytics?.summary.total_workouts_completed ?? 0}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-500">sessions</p>
+                </div>
+              </>
+            )}
+          </div>
 
           <div className="mt-4">
             <TrendChart
@@ -382,6 +412,7 @@ export default function ProgressClientPage() {
               kind={track}
               points={analytics?.points || []}
               bucket={analytics?.bucket || "day"}
+              metric="macros"
             />
           </div>
         </section>
@@ -391,6 +422,10 @@ export default function ProgressClientPage() {
             <DietMealsPanel
               plan={daily?.diet_plan || null}
               logs={daily?.actuals.meals_logged || []}
+              calories={daily?.actuals.total_calories || 0}
+              calorieTarget={daily?.targets.calories || 0}
+              protein={daily?.actuals.total_protein_g || 0}
+              proteinTarget={daily?.targets.protein_g || 0}
               busy={busy}
               onCheck={async (slot) => {
                 setBusy(slot);
@@ -461,12 +496,20 @@ export default function ProgressClientPage() {
 function DietMealsPanel({
   plan,
   logs,
+  calories,
+  calorieTarget,
+  protein,
+  proteinTarget,
   busy,
   onCheck,
   onAiLog,
 }: {
   plan: CurrentDietPlan | null;
   logs: MealLogRow[];
+  calories: number;
+  calorieTarget: number;
+  protein: number;
+  proteinTarget: number;
   busy: string;
   onCheck: (slot: string) => void;
   onAiLog: (slot: string) => void;
@@ -474,9 +517,29 @@ function DietMealsPanel({
   if (!plan) {
     return (
       <section className={CARD}>
-        <h2 className="text-lg font-semibold text-[#282828]">Today&apos;s meals</h2>
-        <p className="mt-1 text-sm text-gray-600">Make a diet plan first. Then you can tap each meal as you eat it.</p>
-        <Link href="/diet" className={`${PRIMARY_BTN} mt-4 inline-flex w-full items-center justify-center`}>
+        <h2 className="text-lg font-semibold text-[#282828]">Meals</h2>
+        <p className="mt-1 text-sm text-gray-600">
+          Log what you ate for this date. Make a diet plan if you want tap-to-log slots.
+        </p>
+        {logs.length > 0 ? (
+          <div className="mt-4 space-y-2">
+            {logs.map((log) => (
+              <div key={log.id}>
+                <p className="text-sm font-semibold text-[#282828]">{log.meal_name}</p>
+                <p className="text-xs text-gray-500">
+                  {log.total_calories} kcal · {log.total_protein_g}g protein
+                </p>
+              </div>
+            ))}
+            <p className="pt-1 text-sm font-semibold text-[#282828]">
+              {Math.round(calories)} kcal · {Math.round(protein)}g protein
+            </p>
+          </div>
+        ) : null}
+        <button type="button" onClick={() => onAiLog("other")} className={`${PRIMARY_BTN} mt-4 w-full`}>
+          Log a meal
+        </button>
+        <Link href="/diet" className={`${SECONDARY_BTN} mt-2 inline-flex w-full items-center justify-center`}>
           Make a diet plan
         </Link>
       </section>
@@ -490,7 +553,7 @@ function DietMealsPanel({
     <section className={CARD}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-[#282828]">Today&apos;s meals</h2>
+          <h2 className="text-lg font-semibold text-[#282828]">Meals</h2>
           <p className="mt-1 text-sm text-gray-600">Tap a meal when you eat it. Tap Something else if you swapped it.</p>
         </div>
         <p className="shrink-0 text-sm font-semibold text-[#282828]">
@@ -498,6 +561,11 @@ function DietMealsPanel({
         </p>
       </div>
       <p className="mt-1 text-xs text-gray-500">{plan.plan_name}</p>
+
+      <div className="mt-4 space-y-3">
+        <FillBar label="Calories" help="For this date." value={calories} target={calorieTarget} unit="kcal" />
+        <FillBar label="Protein" help="For this date." value={protein} target={proteinTarget} unit="g" />
+      </div>
 
       <div className="mt-5 space-y-3">
         {plan.meals.map((meal) => {
@@ -581,9 +649,15 @@ function WorkoutPanel({
   if (!plan) {
     return (
       <section className={CARD}>
-        <h2 className="text-lg font-semibold text-[#282828]">Today&apos;s workout</h2>
-        <p className="mt-1 text-sm text-gray-600">Make a workout plan first. Then tap each exercise to log sets.</p>
-        <Link href="/workout" className={`${PRIMARY_BTN} mt-4 inline-flex w-full items-center justify-center`}>
+        <h2 className="text-lg font-semibold text-[#282828]">Workout</h2>
+        <p className="mt-1 text-sm text-gray-600">Tap Mark trained after you train. Or make a plan for set logging.</p>
+        <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
+          {daily?.actuals.workout_completed ? "Trained · tap to undo" : "Mark trained"}
+        </button>
+        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-2 w-full`}>
+          Log with text
+        </button>
+        <Link href="/workout" className={`${SECONDARY_BTN} mt-2 inline-flex w-full items-center justify-center`}>
           Make a workout plan
         </Link>
       </section>
@@ -595,9 +669,12 @@ function WorkoutPanel({
     return (
       <section className={CARD}>
         <h2 className="text-lg font-semibold text-[#282828]">Rest day</h2>
-        <p className="mt-1 text-sm text-gray-600">No session planned. Recover, or log something if you still trained.</p>
-        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-4 w-full`}>
-          Log another workout
+        <p className="mt-1 text-sm text-gray-600">No session planned. Tap Mark trained if you still trained.</p>
+        <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
+          {daily?.actuals.workout_completed ? "Trained · tap to undo" : "Mark trained"}
+        </button>
+        <button type="button" onClick={onAi} className={`${SECONDARY_BTN} mt-2 w-full`}>
+          Log with text
         </button>
       </section>
     );
@@ -610,16 +687,18 @@ function WorkoutPanel({
         <p className="mt-1 text-sm text-gray-600">
           {today.estimated_duration_min} min · {today.estimated_calories} kcal · {today.exercises.length} exercises
         </p>
-        <p className="mt-2 text-xs text-gray-500">Tap Workout complete when you finish. Tap again to undo.</p>
+        <p className="mt-2 text-xs text-gray-500">
+          Logging a set counts as trained. Tap Mark trained if you skipped set logging. Tap again to undo.
+        </p>
         <button type="button" onClick={onComplete} disabled={busy === "workout"} className={`${PRIMARY_BTN} mt-4 w-full`}>
           {daily?.actuals.workout_completed ? (
             <span className="inline-flex items-center justify-center gap-2">
-              <Check size={16} /> Completed · tap to undo
+              <Check size={16} /> Trained · tap to undo
             </span>
           ) : busy === "workout" ? (
             "Saving..."
           ) : (
-            "Workout complete"
+            "Mark trained"
           )}
         </button>
       </section>

@@ -117,12 +117,12 @@ export default function DashboardClientPage() {
     month: "short",
   });
 
-  const workoutValue = !daily?.workout_plan
-    ? "Make a plan"
-    : workout?.is_rest_day
-      ? "Rest day"
-      : daily.actuals.workout_completed
-        ? "Done"
+  const workoutValue = daily?.actuals.workout_completed
+    ? "Done"
+    : !daily?.workout_plan
+      ? "Make a plan"
+      : workout?.is_rest_day
+        ? "Rest day"
         : workout?.focus_area || "Not logged";
 
   return (
@@ -139,9 +139,6 @@ export default function DashboardClientPage() {
           <section className="mb-5 rounded-2xl border border-gray-200 bg-white px-5 py-4">
             <div className="flex items-start justify-between gap-3">
               <p className="font-semibold text-[#282828]">{coaching.headline}</p>
-              {/* <span className="shrink-0 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-semibold text-[#282828]">
-                {coachStatus(coaching)}
-              </span> */}
             </div>
           </section>
         ) : null}
@@ -176,7 +173,13 @@ export default function DashboardClientPage() {
             <Row
               href="/progress"
               label="Meals"
-              value={daily?.diet_plan ? `${mealsLogged}/${mealsTotal}` : "Make a plan"}
+              value={
+                daily?.diet_plan
+                  ? `${mealsLogged}/${mealsTotal}`
+                  : daily?.actuals.meals_logged.length
+                    ? `${daily.actuals.meals_logged.length} logged`
+                    : "Make a plan"
+              }
             />
             <Row href="/progress" label="Workout" value={workoutValue} />
           </div>

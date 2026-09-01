@@ -4,13 +4,14 @@ import { requireUser } from "@backend/shared/api/supabase";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import type { MealLogRow, MealSourceType, PlannedFoodItem } from "@/shared/types/progress-tracking";
 import { getCurrentPlans } from "./current-plans";
-import { throwIfSchemaMissing, utcToday } from "./db";
+import { civilDate, throwIfSchemaMissing, utcToday } from "./db";
+import { rebuildDailyTrackDay } from "./track-day";
 import { buildMealLogPrompt } from "@backend/ai/prompts/meal-log";
 
 function asMealLog(row: Record<string, unknown>): MealLogRow {
   return {
     id: String(row.id),
-    date: String(row.date).slice(0, 10),
+    date: civilDate(row.date),
     meal_slot: String(row.meal_slot),
     source_type: row.source_type as MealSourceType,
     meal_name: String(row.meal_name),
@@ -60,6 +61,7 @@ export async function quickCheckMeal(input: { date?: string; meal_slot?: string 
   if (existing?.id) {
     const { error: delError } = await supabase.from("meal_logs").delete().eq("id", existing.id).eq("user_id", user.id);
     if (delError) throw new ApiError(delError.message, 400);
+    await rebuildDailyTrackDay(date);
     return { removed: true, data: null };
   }
 
@@ -82,7 +84,9 @@ export async function quickCheckMeal(input: { date?: string; meal_slot?: string 
     .single();
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
-  return { removed: false, data: asMealLog(data as Record<string, unknown>) };
+  const logged = asMealLog(data as Record<string, unknown>);
+  await rebuildDailyTrackDay(date);
+  return { removed: false, data: logged };
 }
 
 type ParsedMeal = {
@@ -161,5 +165,7 @@ export async function aiLogMeal(input: {
     .single();
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
-  return asMealLog(data as Record<string, unknown>);
+  const logged = asMealLog(data as Record<string, unknown>);
+  await rebuildDailyTrackDay(date);
+  return logged;
 }

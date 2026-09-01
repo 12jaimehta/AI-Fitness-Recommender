@@ -2,6 +2,7 @@ import type { DailyProgress, DailyVitals } from "@/shared/types/progress-trackin
 import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
+import { summarizeTrackDay, workoutTrained } from "@/shared/lib/daily-track";
 import { getCurrentPlans } from "./current-plans";
 import { listMealLogs } from "./meals";
 import { getWorkoutLog } from "./workouts-log";
@@ -74,27 +75,13 @@ export async function getDailyProgress(dateInput?: string | null): Promise<Daily
     getVitals(date),
   ]);
 
-  const totals = meals.reduce(
-    (sum, meal) => ({
-      calories: sum.calories + meal.total_calories,
-      protein: sum.protein + Number(meal.total_protein_g),
-      carbs: sum.carbs + Number(meal.total_carbs_g),
-      fat: sum.fat + Number(meal.total_fat_g),
-    }),
-    { calories: 0, protein: 0, carbs: 0, fat: 0 }
-  );
-
-  const targetCalories = plans.diet_plan?.target_calories || 0;
+  const totals = summarizeTrackDay(meals, workout);
   const mealSlots = plans.diet_plan?.meals.length || 0;
-  const checked = mealSlots
-    ? meals.filter((meal) => meal.source_type === "plan_checkoff").length / mealSlots
+  const checked = mealSlots ? totals.plan_meals_count / mealSlots : 0;
+  const calorieRatio = plans.diet_plan?.target_calories
+    ? Math.min(totals.calories / plans.diet_plan.target_calories, 1)
     : 0;
-  const calorieRatio = targetCalories ? Math.min(totals.calories / targetCalories, 1) : 0;
-  const workoutScore = plans.workout_plan?.today_workout.is_rest_day
-    ? 1
-    : workout?.is_completed
-      ? 1
-      : 0;
+  const workoutScore = plans.workout_plan?.today_workout.is_rest_day || totals.workout_logged ? 1 : 0;
   const adherence = Math.round(((checked + calorieRatio + workoutScore) / 3) * 100);
 
   return {
@@ -110,14 +97,14 @@ export async function getDailyProgress(dateInput?: string | null): Promise<Daily
     },
     actuals: {
       total_calories: totals.calories,
-      total_protein_g: totals.protein,
-      total_carbs_g: totals.carbs,
-      total_fat_g: totals.fat,
+      total_protein_g: totals.protein_g,
+      total_carbs_g: meals.reduce((sum, meal) => sum + Number(meal.total_carbs_g || 0), 0),
+      total_fat_g: meals.reduce((sum, meal) => sum + Number(meal.total_fat_g || 0), 0),
       water_intake_ml: vitals.water_intake_ml,
       weight_kg: vitals.weight_kg,
       sleep_hours: vitals.sleep_hours,
       energy_rating: vitals.energy_rating,
-      workout_completed: Boolean(workout?.is_completed),
+      workout_completed: workoutTrained(workout),
       meals_logged: meals,
       workout_log: workout,
     },

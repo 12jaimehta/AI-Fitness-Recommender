@@ -118,8 +118,10 @@ export async function saveVitals(payload: {
   });
 }
 
-export async function getProgressAnalytics(range: string) {
-  const { data } = await api<{ data: ProgressAnalytics }>(`/api/progress/analytics?range=${range}`);
+export async function getProgressAnalytics(range: string, date = localIsoDate()) {
+  const { data } = await api<{ data: ProgressAnalytics }>(
+    `/api/progress/analytics?range=${range}&date=${date}`
+  );
   return data;
 }
 

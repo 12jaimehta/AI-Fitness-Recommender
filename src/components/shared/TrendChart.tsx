@@ -56,10 +56,12 @@ export default function TrendChart({
   kind,
   points,
   bucket = "day",
+  metric = "macros",
 }: {
   kind: "diet" | "workout";
   points: AnalyticsPoint[];
   bucket?: "day" | "month";
+  metric?: "macros" | "consistency";
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -72,10 +74,11 @@ export default function TrendChart({
     chartRef.current?.destroy();
 
     const labels = points.map((point) => point.label);
+    const consistency = metric === "consistency";
     const maxWorkouts = Math.max(0, ...points.map((point) => point.workouts));
-    const hasBurn = points.some((point) => point.workout_kcal > 0);
+    const maxDays = Math.max(0, ...points.map((point) => point.diet_days));
 
-    const dietDatasets: ChartConfiguration["data"]["datasets"] = [
+    const dietMacroDatasets: ChartConfiguration["data"]["datasets"] = [
       {
         type: "line",
         label: "Calories",
@@ -104,38 +107,46 @@ export default function TrendChart({
       },
     ];
 
+    const dietDayDatasets: ChartConfiguration["data"]["datasets"] = [
+      {
+        type: "bar",
+        label: "Days with meals",
+        data: points.map((point) => point.diet_days),
+        backgroundColor: "#282828",
+        borderRadius: 6,
+        maxBarThickness: 36,
+        yAxisID: "y",
+      },
+      {
+        type: "bar",
+        label: "Days trained",
+        data: points.map((point) => point.workout_days),
+        backgroundColor: "#9ca3af",
+        borderRadius: 6,
+        maxBarThickness: 36,
+        yAxisID: "y",
+      },
+    ];
+
     const workoutDatasets: ChartConfiguration["data"]["datasets"] = [
       {
         type: "bar",
-        label: "Workouts",
-        data: points.map((point) => point.workouts),
+        label: consistency ? "Days trained" : "Workouts",
+        data: points.map((point) => (consistency ? point.workout_days : point.workouts)),
         backgroundColor: "#282828",
         borderRadius: 6,
         maxBarThickness: bucket === "day" ? 18 : 36,
         yAxisID: "y",
       },
     ];
-    if (hasBurn) {
-      workoutDatasets.push({
-        type: "line",
-        label: "Burn (kcal)",
-        data: points.map((point) => point.workout_kcal),
-        borderColor: "#6b7280",
-        backgroundColor: "transparent",
-        tension: 0.3,
-        pointRadius: 3,
-        pointHoverRadius: 6,
-        yAxisID: "y1",
-      });
-    }
 
-    const showRightAxis = kind === "diet" || hasBurn;
-
+    const showProteinAxis = kind === "diet" && !consistency;
     const config: ChartConfiguration = {
-      type: kind === "workout" ? "bar" : "line",
+      type: kind === "diet" && !consistency ? "line" : "bar",
       data: {
         labels,
-        datasets: kind === "diet" ? dietDatasets : workoutDatasets,
+        datasets:
+          kind === "workout" ? workoutDatasets : consistency ? dietDayDatasets : dietMacroDatasets,
       },
       options: {
         responsive: true,
@@ -143,7 +154,7 @@ export default function TrendChart({
         interaction: { mode: "index", intersect: false },
         plugins: {
           legend: {
-            display: kind === "diet" || hasBurn,
+            display: kind === "diet",
             position: "bottom",
             labels: { usePointStyle: true, boxWidth: 8, padding: 16 },
           },
@@ -154,6 +165,25 @@ export default function TrendChart({
             padding: 10,
             callbacks: {
               title: (items) => tooltipTitle(points, bucket, items[0]?.dataIndex ?? 0),
+              label: (item) => {
+                const point = points[item.dataIndex];
+                if (!point) return "";
+                if (kind === "workout") {
+                  const period = bucket === "month" ? " this month" : "";
+                  return consistency
+                    ? `${point.workout_days} days trained · ${point.workouts} sessions`
+                    : `${point.workouts} session${point.workouts === 1 ? "" : "s"}${period}`;
+                }
+                if (consistency) {
+                  return item.datasetIndex === 0
+                    ? `${point.diet_days} days with meals`
+                    : `${point.workout_days} days trained`;
+                }
+                const period = bucket === "month" ? " this month" : "";
+                return item.datasetIndex === 0
+                  ? `${Math.round(point.calories)} kcal${period}`
+                  : `${Math.round(point.protein_g)} g protein${period}`;
+              },
             },
           },
         },
@@ -172,17 +202,18 @@ export default function TrendChart({
             ticks: {
               precision: 0,
               ...(kind === "workout" && maxWorkouts <= 8 ? { stepSize: 1 } : {}),
+              ...(consistency && maxDays <= 12 ? { stepSize: 1 } : {}),
             },
             grid: { color: "#f3f4f6" },
             title: {
               display: true,
-              text: kind === "diet" ? "kcal" : "sessions",
+              text: consistency ? "days" : kind === "diet" ? "kcal" : "sessions",
               color: "#9ca3af",
               font: { size: 11 },
             },
           },
           y1: {
-            display: showRightAxis,
+            display: showProteinAxis,
             beginAtZero: true,
             grace: "8%",
             position: "right",
@@ -190,7 +221,7 @@ export default function TrendChart({
             ticks: { precision: 0 },
             title: {
               display: true,
-              text: kind === "diet" ? "protein g" : "kcal",
+              text: "protein g",
               color: "#9ca3af",
               font: { size: 11 },
             },
@@ -205,7 +236,7 @@ export default function TrendChart({
       chartRef.current?.destroy();
       chartRef.current = null;
     };
-  }, [kind, bucket, points]);
+  }, [kind, bucket, metric, points]);
 
   if (!points.length) {
     return (
@@ -218,7 +249,13 @@ export default function TrendChart({
       <canvas
         ref={canvasRef}
         role="img"
-        aria-label={kind === "diet" ? "Calories and protein over time" : "Workouts over time"}
+        aria-label={
+          metric === "consistency"
+            ? "Days you followed diet and training"
+            : kind === "diet"
+              ? "Calories and protein over time"
+              : "Workouts over time"
+        }
       />
     </div>
   );

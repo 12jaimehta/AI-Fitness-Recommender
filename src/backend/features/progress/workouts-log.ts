@@ -9,8 +9,10 @@ import type {
   WorkoutSetEntry,
   WorkoutSourceType,
 } from "@/shared/types/progress-tracking";
+import { workingSetsDone } from "@/shared/lib/daily-track";
 import { getCurrentPlans } from "./current-plans";
-import { throwIfSchemaMissing, utcToday } from "./db";
+import { civilDate, throwIfSchemaMissing, utcToday } from "./db";
+import { rebuildDailyTrackDay } from "./track-day";
 import { buildWorkoutLogPrompt } from "@backend/ai/prompts/workout-log";
 
 function asSets(value: unknown): WorkoutSetEntry[] {
@@ -36,17 +38,18 @@ function asExercises(value: unknown): ExerciseLogEntry[] {
 }
 
 function asWorkoutLog(row: Record<string, unknown>): WorkoutLogRow {
+  const exercises = asExercises(row.exercises_completed);
   return {
     id: String(row.id),
-    date: String(row.date).slice(0, 10),
+    date: civilDate(row.date),
     workout_plan_id: row.workout_plan_id ? String(row.workout_plan_id) : null,
     source_type: row.source_type as WorkoutSourceType,
     title: String(row.title),
     duration_minutes: Number(row.duration_minutes || 0),
     rpe_rating: row.rpe_rating == null ? null : Number(row.rpe_rating),
     calories_burned_estimated: row.calories_burned_estimated == null ? null : Number(row.calories_burned_estimated),
-    exercises_completed: asExercises(row.exercises_completed),
-    is_completed: Boolean(row.is_completed),
+    exercises_completed: exercises,
+    is_completed: Boolean(row.is_completed) || workingSetsDone(exercises) > 0,
     notes: row.notes ? String(row.notes) : null,
   };
 }
@@ -81,7 +84,9 @@ async function upsertWorkout(payload: Record<string, unknown>) {
       .single();
     throwIfSchemaMissing(error);
     if (error) throw new ApiError(error.message, 400);
-    return asWorkoutLog(data as Record<string, unknown>);
+    const updated = asWorkoutLog(data as Record<string, unknown>);
+    await rebuildDailyTrackDay(date);
+    return updated;
   }
 
   const { data, error } = await supabase
@@ -91,7 +96,9 @@ async function upsertWorkout(payload: Record<string, unknown>) {
     .single();
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
-  return asWorkoutLog(data as Record<string, unknown>);
+  const created = asWorkoutLog(data as Record<string, unknown>);
+  await rebuildDailyTrackDay(date);
+  return created;
 }
 
 export async function quickCheckWorkout(input: {
@@ -103,23 +110,20 @@ export async function quickCheckWorkout(input: {
   const date = parseIsoDate(input.date, utcToday());
   const plans = await getCurrentPlans(date);
   const today = plans.workout_plan?.today_workout;
-  if (!plans.workout_plan || !today) {
-    throw new ApiError("Save a workout plan first, then log today's session.", 400);
-  }
-  if (today.is_rest_day) throw new ApiError("Today is a rest day on your plan.", 400);
-
   const existing = await getWorkoutLog(date);
-  if (existing?.is_completed && !input.duration_minutes) {
+
+  if (existing && (existing.is_completed || workingSetsDone(existing.exercises_completed) > 0) && !input.duration_minutes) {
     const { supabase, user } = await requireUser();
     const { error } = await supabase.from("workout_logs").delete().eq("id", existing.id).eq("user_id", user.id);
     if (error) throw new ApiError(error.message, 400);
+    await rebuildDailyTrackDay(date);
     return { removed: true, data: null };
   }
 
   const exercises =
     existing?.exercises_completed?.length
       ? existing.exercises_completed
-      : today.exercises.map((exercise) => ({
+      : (today?.exercises || []).map((exercise) => ({
           exercise_id: exercise.exercise_id,
           exercise_name: exercise.name,
           target_sets: exercise.target_sets,
@@ -130,12 +134,14 @@ export async function quickCheckWorkout(input: {
 
   const data = await upsertWorkout({
     date,
-    workout_plan_id: plans.workout_plan.id,
-    source_type: "plan_checkoff",
-    title: today.focus_area,
-    duration_minutes: Number(input.duration_minutes || today.estimated_duration_min || 45),
+    workout_plan_id: plans.workout_plan?.id || existing?.workout_plan_id || null,
+    source_type: today && !today.is_rest_day ? "plan_checkoff" : existing?.source_type || "manual",
+    title: (today && !today.is_rest_day ? today.focus_area : null) || existing?.title || "Workout",
+    duration_minutes: Number(
+      input.duration_minutes || existing?.duration_minutes || today?.estimated_duration_min || 45
+    ),
     rpe_rating: input.rpe_rating ?? existing?.rpe_rating ?? 7,
-    calories_burned_estimated: today.estimated_calories,
+    calories_burned_estimated: today?.estimated_calories ?? existing?.calories_burned_estimated ?? 0,
     exercises_completed: exercises,
     is_completed: true,
     notes: input.notes || existing?.notes || null,
@@ -156,6 +162,8 @@ export async function saveWorkoutLog(input: {
   const plans = await getCurrentPlans(date);
   const today = plans.workout_plan?.today_workout;
   const existing = await getWorkoutLog(date);
+  const exercises = input.exercises_completed ?? existing?.exercises_completed ?? [];
+  const trained = workingSetsDone(exercises) > 0;
 
   return upsertWorkout({
     date,
@@ -165,8 +173,8 @@ export async function saveWorkoutLog(input: {
     duration_minutes: Number(input.duration_minutes ?? existing?.duration_minutes ?? today?.estimated_duration_min ?? 45),
     rpe_rating: input.rpe_rating ?? existing?.rpe_rating ?? null,
     calories_burned_estimated: existing?.calories_burned_estimated ?? today?.estimated_calories ?? null,
-    exercises_completed: input.exercises_completed ?? existing?.exercises_completed ?? [],
-    is_completed: input.is_completed ?? existing?.is_completed ?? false,
+    exercises_completed: exercises,
+    is_completed: Boolean(input.is_completed) || trained || Boolean(existing?.is_completed),
     notes: input.notes ?? existing?.notes ?? null,
   });
 }

@@ -2,7 +2,9 @@ import { requireUser } from "@backend/shared/api/supabase";
 import { parseLeadingNumber } from "@/shared/lib/plan-tracking";
 import { coerceProgramGoal } from "@/shared/lib/program-goals";
 import { utcToday } from "@backend/features/progress/db";
+import { workoutTrained } from "@/shared/lib/daily-track";
 import type { DietPlanData, WorkoutPlanData } from "@/shared/types";
+import type { ExerciseLogEntry } from "@/shared/types/progress-tracking";
 import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
 import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import { detectPlateaus, type WeightPoint } from "./plateau";
@@ -111,9 +113,8 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
         .lte("date", today),
       supabase
         .from("workout_logs")
-        .select("date, is_completed")
+        .select("date, is_completed, exercises_completed")
         .eq("user_id", user.id)
-        .eq("is_completed", true)
         .gte("date", from42Iso)
         .lte("date", today),
       supabase
@@ -157,7 +158,19 @@ export async function retrieveCoachingContext(): Promise<CoachingContext> {
   const dietAgeDays = dietRow?.created_at ? daysBetween(datePart(dietRow.created_at), today) : null;
   const workoutAgeDays = workoutRow?.created_at ? daysBetween(datePart(workoutRow.created_at), today) : null;
   const frequency = parseLeadingNumber(workoutRow?.form_data.workoutFrequency, 4);
-  const sessionsLast42Days = (workoutsRes.data || []).length;
+  const trainedDates = new Set<string>();
+  for (const row of workoutsRes.data || []) {
+    const trained = workoutTrained({
+      is_completed: Boolean(row.is_completed),
+      exercises_completed: Array.isArray(row.exercises_completed)
+        ? (row.exercises_completed as ExerciseLogEntry[])
+        : [],
+      duration_minutes: 0,
+      calories_burned_estimated: null,
+    });
+    if (trained) trainedDates.add(datePart(String(row.date)));
+  }
+  const sessionsLast42Days = trainedDates.size;
   const calorieTarget = dietRow ? parseLeadingNumber(dietRow.diet_plan.calorieTarget) : null;
   const proteinTarget = dietRow ? parseLeadingNumber(dietRow.diet_plan.proteinTarget) : null;
 
