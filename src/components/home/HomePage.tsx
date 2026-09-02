@@ -15,78 +15,7 @@ import { menuItems, slides } from "@/lib/constant";
 import { useCurrentUser, signOutAndClearCache } from "@frontend/features/auth";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
-
-function HeroVideo({ src, active }: { src: string; active: boolean }) {
-    const videoRef = useRef<HTMLVideoElement>(null);
-
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        video.defaultMuted = true;
-        video.muted = true;
-        video.playsInline = true;
-        video.setAttribute("webkit-playsinline", "true");
-
-        let retryTimer: number | undefined;
-
-        const playIfActive = () => {
-            if (!active || document.visibilityState !== "visible") return;
-            video.muted = true;
-            const attempt = video.play();
-            if (attempt) attempt.catch(() => {});
-        };
-
-        if (active) {
-            playIfActive();
-            retryTimer = window.setTimeout(playIfActive, 850);
-        } else {
-            video.pause();
-        }
-
-        const onPause = () => {
-            if (!active || document.visibilityState !== "visible") return;
-            window.setTimeout(playIfActive, 80);
-        };
-
-        const onVisibility = () => {
-            if (document.visibilityState === "visible") playIfActive();
-        };
-
-        video.addEventListener("pause", onPause);
-        video.addEventListener("loadeddata", playIfActive);
-        video.addEventListener("canplay", playIfActive);
-        document.addEventListener("visibilitychange", onVisibility);
-        document.addEventListener("touchstart", playIfActive, { passive: true });
-        document.addEventListener("click", playIfActive);
-
-        return () => {
-            if (retryTimer) window.clearTimeout(retryTimer);
-            video.removeEventListener("pause", onPause);
-            video.removeEventListener("loadeddata", playIfActive);
-            video.removeEventListener("canplay", playIfActive);
-            document.removeEventListener("visibilitychange", onVisibility);
-            document.removeEventListener("touchstart", playIfActive);
-            document.removeEventListener("click", playIfActive);
-        };
-    }, [active]);
-
-    return (
-        <video
-            ref={videoRef}
-            muted
-            loop
-            playsInline
-            autoPlay={active}
-            preload={active ? "auto" : "metadata"}
-            disablePictureInPicture
-            disableRemotePlayback
-            className="pointer-events-none h-full w-full object-cover"
-        >
-            <source src={src} type="video/mp4" />
-        </video>
-    );
-}
+import HeroVideo from "@/components/home/HeroVideo";
 
 export default function HomePage() {
     const [currentSlide, setCurrentSlide] = useState(0);
