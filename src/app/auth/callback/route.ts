@@ -31,7 +31,9 @@ export async function GET(request: Request) {
     if (!isProfileComplete(profile)) {
       return NextResponse.redirect(`${requestUrl.origin}/my-profile`);
     }
+
+    return NextResponse.redirect(`${requestUrl.origin}/progress`);
   }
 
-  return NextResponse.redirect(`${requestUrl.origin}/dashboard`);
+  return NextResponse.redirect(`${requestUrl.origin}/sign-in`);
 }

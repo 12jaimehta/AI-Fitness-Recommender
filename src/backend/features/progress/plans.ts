@@ -19,6 +19,7 @@ import {
   weekStartMonday,
   weekdayFromIsoDate,
 } from "@/shared/lib/plan-tracking";
+import { parseLogDate } from "./db";
 
 type DietPlanRow = {
   id: string;
@@ -158,7 +159,7 @@ export async function logDietMeal(input: { slot?: string; date?: string; logged?
   if (!slot) throw new ApiError("Choose a meal from your diet plan.", 400);
 
   const { supabase, user } = await requireUser();
-  const date = parseIsoDate(input.date, todayIso());
+  const date = parseLogDate(input.date);
   const plan = await getLatestDietPlan();
   if (!plan?.diet_plan) throw new ApiError("Save a diet plan first, then track those meals.", 400);
 
@@ -209,7 +210,7 @@ export async function logPlanWorkout(input: { dayKey?: string; date?: string; lo
   if (!dayKey) throw new ApiError("Choose a workout from your plan.", 400);
 
   const { supabase, user } = await requireUser();
-  const date = parseIsoDate(input.date, todayIso());
+  const date = parseLogDate(input.date);
   const plan = await getLatestWorkoutPlan();
   if (!plan?.workout_plan) throw new ApiError("Save a workout plan first, then track those sessions.", 400);
 

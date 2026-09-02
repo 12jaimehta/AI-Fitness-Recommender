@@ -2,7 +2,7 @@ import { dietPlanSchema, type DietPlanFormData } from "@/shared/validation/dietP
 import type { DailyMeals, DietPlanData } from "@/shared/types";
 import { completeJson } from "@backend/shared/api/grok";
 import { ApiError, isRateLimitError } from "@backend/shared/lib/errors";
-import { calculateNutritionTargets } from "@backend/ai/nutrition";
+import { applyCalorieOverride, calculateNutritionTargets, type NutritionTargets } from "@backend/ai/nutrition";
 import { buildDietPrompt } from "@backend/ai/prompts/diet";
 import { generateFallbackPlan } from "@backend/ai/fallbacks/diet";
 
@@ -15,6 +15,12 @@ const WEEKDAYS = [
   "saturday",
   "sunday",
 ] as const;
+
+export type DietGenerateOptions = {
+  nutrition?: NutritionTargets;
+  calorieOverride?: number;
+  logNotes?: string;
+};
 
 function hasCoreMeals(meals?: DailyMeals | null): meals is DailyMeals {
   return Boolean(meals?.breakfast?.name && meals.lunch?.name && meals.dinner?.name);
@@ -35,18 +41,21 @@ function fillWeeklyPlan(plan: DietPlanData): DietPlanData {
   return { ...plan, weeklyPlan: weekly };
 }
 
-export async function generateDietPlan(input: unknown): Promise<DietPlanData> {
+export async function generateDietPlan(input: unknown, options?: DietGenerateOptions): Promise<DietPlanData> {
   const parsed = dietPlanSchema.safeParse(input);
   if (!parsed.success) {
     throw new ApiError("Invalid request body", 400, parsed.error.flatten());
   }
 
   const userData = parsed.data as DietPlanFormData;
-  const nutrition = calculateNutritionTargets(userData);
-  const prompt = buildDietPrompt(userData, nutrition);
+  let nutrition = options?.nutrition || calculateNutritionTargets(userData);
+  if (options?.calorieOverride != null) {
+    nutrition = applyCalorieOverride(nutrition, options.calorieOverride);
+  }
+  const prompt = buildDietPrompt(userData, nutrition, options?.logNotes);
+  const weekly = userData.planType === "weekly";
 
   try {
-    const weekly = userData.planType === "weekly";
     const plan = await completeJson<DietPlanData>(prompt, {
       maxTokens: weekly ? 16000 : 4000,
       system:
@@ -54,13 +63,14 @@ export async function generateDietPlan(input: unknown): Promise<DietPlanData> {
     });
 
     if (!isValidDietPlan(plan, weekly)) {
-      return generateFallbackPlan(
+      const fallback = generateFallbackPlan(
         userData,
         nutrition.calories,
         nutrition.protein,
         nutrition.carbs,
         nutrition.fat
       );
+      return weekly ? fillWeeklyPlan(fallback) : fallback;
     }
 
     return fillWeeklyPlan(plan);
@@ -72,12 +82,13 @@ export async function generateDietPlan(input: unknown): Promise<DietPlanData> {
         "Grok API rate limit reached. Please try again later."
       );
     }
-    return generateFallbackPlan(
+    const fallback = generateFallbackPlan(
       userData,
       nutrition.calories,
       nutrition.protein,
       nutrition.carbs,
       nutrition.fat
     );
+    return weekly ? fillWeeklyPlan(fallback) : fallback;
   }
 }

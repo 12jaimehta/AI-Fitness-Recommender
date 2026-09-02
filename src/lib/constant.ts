@@ -14,7 +14,6 @@ import {
   User,
   Activity,
   Target,
-  Users
 } from "lucide-react";
 import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
 
@@ -54,7 +53,8 @@ export const navItems = [
   { name: "Diet Plan", href: "/diet" },
   { name: "Workout Plan", href: "/workout" },
   { name: "Progress", href: "/progress" },
-  { name: "Trainers", href: "/fyte-connect" },
+  // Marketplace paused — restore when checkout works.
+  // { name: "Trainers", href: "/fyte-connect" },
 ];
 export const menuItems = [
   { label: "Help", path: "/help" },
@@ -69,9 +69,11 @@ export const footerSections = [
   {
     title: "Features",
     items: [
-      { name: "AI Diet Plans", icon: Apple, href: "/diet" },
-      { name: "Workout Routines", icon: Dumbbell, href: "/workout" },
-      { name: "Trainers", icon: Users, href: "/fyte-connect" },
+      { name: "Diet Plan", icon: Apple, href: "/diet" },
+      { name: "Workout Plan", icon: Dumbbell, href: "/workout" },
+      { name: "Track", icon: Activity, href: "/progress" },
+      // Marketplace paused — restore when checkout works.
+      // { name: "Trainers", icon: Users, href: "/fyte-connect" },
     ],
   },
   {
@@ -92,9 +94,9 @@ export const footerSections = [
   },
 ];
 export const socialLinks = [
-  { name: "Twitter", icon: Twitter, href: "#" },
-  { name: "Instagram", icon: Instagram, href: "#" },
-  { name: "GitHub", icon: Github, href: "#" },
+  // { name: "Twitter", icon: Twitter, href: "#" },
+  { name: "Instagram", icon: Instagram, href: "https://www.instagram.com/mhtjai" },
+  // { name: "GitHub", icon: Github, href: "#" },
 ];
 
 export const steps = [

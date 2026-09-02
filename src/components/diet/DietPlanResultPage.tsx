@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DailyMeals, DietPlanData, MealData } from "@/shared/types";
 import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
-import { resolveDietPlan, saveDietPlan, beginDietPlanGeneration } from "@/lib/service/dietWorkoutplan";
+import { resolveDietPlan, saveDietPlan, beginDietPlanGeneration, beginDietFromLogs } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
@@ -222,7 +222,8 @@ export default function DietPlanResultPage() {
               type="button"
               onClick={() => {
                 const pending = readPendingDietGeneration();
-                if (pending?.formData) beginDietPlanGeneration(pending.formData);
+                if (pending?.fromLogs) beginDietFromLogs();
+                else if (pending?.formData) beginDietPlanGeneration(pending.formData);
                 setError("");
                 setRetryKey((value) => value + 1);
               }}
@@ -231,10 +232,10 @@ export default function DietPlanResultPage() {
               Try again
             </button>
             <Link
-              href="/diet"
+              href={readPendingDietGeneration()?.fromLogs ? "/progress" : "/diet"}
               className="inline-flex rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
             >
-              Edit details
+              {readPendingDietGeneration()?.fromLogs ? "Back to tracking" : "Edit details"}
             </Link>
           </div>
         </div>

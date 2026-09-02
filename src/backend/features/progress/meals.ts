@@ -1,10 +1,9 @@
 import { completeJson } from "@backend/shared/api/grok";
 import { ApiError } from "@backend/shared/lib/errors";
 import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
-import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import type { MealLogRow, MealSourceType, PlannedFoodItem } from "@/shared/types/progress-tracking";
 import { getCurrentPlans } from "./current-plans";
-import { civilDate, throwIfSchemaMissing, utcToday } from "./db";
+import { civilDate, parseLogDate, throwIfSchemaMissing } from "./db";
 import { rebuildDailyTrackDay } from "./track-day";
 import { buildMealLogPrompt } from "@backend/ai/prompts/meal-log";
 
@@ -44,7 +43,7 @@ export async function quickCheckMeal(input: { date?: string; meal_slot?: string 
 
   const resolved = await resolveAuth();
   const { supabase, user } = resolved;
-  const date = parseIsoDate(input.date, utcToday());
+  const date = parseLogDate(input.date);
   const plans = await getCurrentPlans(date, resolved);
   const meal = plans.diet_plan?.meals.find((item) => item.slot === slot || item.meal_id === slot);
   if (!meal) throw new ApiError("That meal is not in today's diet plan. Save a diet plan first.", 400);
@@ -112,7 +111,7 @@ export async function aiLogMeal(input: {
 
   const resolved = await resolveAuth();
   const { supabase, user } = resolved;
-  const date = parseIsoDate(input.date, utcToday());
+  const date = parseLogDate(input.date);
   const slot = String(input.meal_slot || "other").trim() || "other";
 
   let parsed: ParsedMeal;

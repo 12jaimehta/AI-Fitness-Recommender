@@ -31,7 +31,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (!authLoading && isSignedIn) {
-      router.replace("/dashboard");
+      router.replace("/progress");
     }
   }, [authLoading, isSignedIn, router]);
 
@@ -58,7 +58,7 @@ export default function SignInPage() {
     });
     setLoading(false);
     if (error) setMessage(error.message);
-    else router.push("/dashboard");
+    else router.push("/progress");
   };
 
   const inputClass =

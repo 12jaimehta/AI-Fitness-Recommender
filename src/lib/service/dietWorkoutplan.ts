@@ -1,6 +1,7 @@
 export {
   generateAIDietPlan,
   beginDietPlanGeneration,
+  beginDietFromLogs,
   resolveDietPlan,
   saveDietPlan,
   getUserDietPlans,
@@ -18,6 +19,7 @@ export {
 export {
   generateAIWorkoutPlan,
   beginWorkoutPlanGeneration,
+  beginWorkoutFromLogs,
   resolveWorkoutPlan,
   saveWorkoutPlan,
   getUserWorkoutPlans,

@@ -7,6 +7,7 @@ import {
   readGeneratedWorkoutPlan,
   clearGeneratedWorkoutPlan,
   setPendingWorkoutGeneration,
+  setPendingWorkoutFromLogs,
   setPendingWorkoutError,
   clearPendingWorkoutGeneration,
   readPendingWorkoutGeneration,
@@ -65,6 +66,40 @@ export function beginWorkoutPlanGeneration(formData: WorkoutPlanFormData) {
     });
 }
 
+export type AdvanceWorkoutResult = {
+  formData: WorkoutPlanFormData;
+  plan: WorkoutPlanData;
+};
+
+let fromLogsInFlight: Promise<AdvanceWorkoutResult> | null = null;
+
+export async function generateWorkoutFromLogs(): Promise<AdvanceWorkoutResult> {
+  if (fromLogsInFlight) return fromLogsInFlight;
+  fromLogsInFlight = api<AdvanceWorkoutResult>("/api/generate-workout/from-logs", {
+    method: "POST",
+  }).finally(() => {
+    fromLogsInFlight = null;
+  });
+  return fromLogsInFlight;
+}
+
+export function beginWorkoutFromLogs() {
+  clearGeneratedWorkoutPlan();
+  setPendingWorkoutFromLogs();
+  void generateWorkoutFromLogs()
+    .then((result) => {
+      storeGeneratedWorkoutPlan({ formData: result.formData, plan: result.plan });
+      clearPendingWorkoutGeneration();
+    })
+    .catch((err) => {
+      setPendingWorkoutError(
+        err instanceof Error
+          ? err.message
+          : "Could not build next week's workout from your logs. Try again."
+      );
+    });
+}
+
 export type WorkoutPlanResolveResult =
   | { status: "ready"; session: GeneratedWorkoutSession }
   | { status: "missing" }
@@ -73,6 +108,23 @@ export type WorkoutPlanResolveResult =
 export async function resolveWorkoutPlan(userId?: string): Promise<WorkoutPlanResolveResult> {
   const pending = readPendingWorkoutGeneration();
   if (pending?.error) return { status: "error", error: pending.error };
+
+  if (pending?.fromLogs) {
+    try {
+      const result = await generateWorkoutFromLogs();
+      const session = { formData: result.formData, plan: result.plan };
+      storeGeneratedWorkoutPlan(session);
+      clearPendingWorkoutGeneration();
+      return { status: "ready", session };
+    } catch (err) {
+      const error =
+        err instanceof Error
+          ? err.message
+          : "Could not build next week's workout from your logs. Try again.";
+      setPendingWorkoutError(error);
+      return { status: "error", error };
+    }
+  }
 
   if (pending?.formData) {
     const already = readGeneratedWorkoutPlan();

@@ -9,6 +9,7 @@ function firstMeal(ctx: CoachingContext, slot: string) {
 export function fallbackCoachingAdvice(ctx: CoachingContext): CoachingAdvice {
   const goal = coerceProgramGoal(ctx.facts.diet_goal);
   const plateau = ctx.flags.includes("weight_loss_plateau");
+  const stall = ctx.flags.includes("calorie_stall_14d");
   const staleDiet = ctx.flags.includes("stale_diet");
   const staleWorkout = ctx.flags.includes("stale_workout") || ctx.flags.includes("training_stagnation");
   const sportFuel = goal === "hyrox" || goal === "ironman" || goal === "running";
@@ -73,12 +74,23 @@ export function fallbackCoachingAdvice(ctx: CoachingContext): CoachingAdvice {
   }
 
   const bump = sportFuel || plateau || staleDiet;
-  const suggested = bump ? Math.round(currentCals * (sportFuel ? 1.08 : 1.1)) : currentCals;
-  const shouldChangeDiet = plateau || staleDiet;
-  const status = plateau || staleDiet || staleWorkout ? (shouldChangeDiet ? "needs_new_plan" : "plateau") : "on_track";
+  const stallCut = stall && !sportFuel;
+  const suggested = stallCut
+    ? Math.max(1400, currentCals - 200)
+    : bump
+      ? Math.round(currentCals * (sportFuel ? 1.08 : 1.1))
+      : currentCals;
+  const shouldChangeDiet = plateau || staleDiet || stallCut;
+  const status = plateau || staleDiet || staleWorkout || stall
+    ? shouldChangeDiet
+      ? "needs_new_plan"
+      : "plateau"
+    : "on_track";
 
   return {
-    headline: plateau
+    headline: stallCut
+      ? "Your weight has been still. We'll adjust calories on the next plan."
+      : plateau
       ? "Progress has stalled. Change the diet, don't just repeat the same calories."
       : staleWorkout
         ? "The workout has been the same too long. Progress the training."
@@ -86,18 +98,20 @@ export function fallbackCoachingAdvice(ctx: CoachingContext): CoachingAdvice {
           ? "This diet has been running long enough. Refresh it to match where you are now."
           : "You are still moving. Stay on the current plan and keep logging.",
     status: ctx.flags.length ? status : "on_track",
-    plateau,
+    plateau: plateau || stall,
     flags: ctx.flags,
     reasons: ctx.reasons,
     remembered: `Goal ${programGoalLabel(goal)}, ${preference}, last weight ${ctx.facts.last_weight_kg ?? "unknown"} kg.`,
     diet: {
       should_change: shouldChangeDiet,
-      summary: shouldChangeDiet
+      summary: stallCut
+        ? `We adjust calories when your weight stalls for 14 days. Aim about ${suggested} kcal on the next plan.`
+        : shouldChangeDiet
         ? sportFuel
           ? `Fuel ${programGoalLabel(goal)}. Raise food slightly instead of cutting more.`
           : `Raise calories about 10% from ${currentCals} kcal and keep ${preference} meals.`
         : `Hold ${currentCals} kcal on ${ctx.diet?.title || "the current diet"}.`,
-      calorie_change: bump && shouldChangeDiet ? "increase" : "hold",
+      calorie_change: stallCut ? "decrease" : bump && shouldChangeDiet ? "increase" : "hold",
       suggested_calories: shouldChangeDiet ? suggested : currentCals,
       protein_note: ctx.diet?.proteinTarget
         ? `Keep protein at ${ctx.diet.proteinTarget} g even if calories move.`

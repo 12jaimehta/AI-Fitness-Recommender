@@ -32,6 +32,14 @@ export function isApiPath(pathname: string) {
   return pathname === "/api" || pathname.startsWith("/api/");
 }
 
+export function isConnectPath(pathname: string) {
+  return pathname === "/fyte-connect" || pathname.startsWith("/fyte-connect/");
+}
+
+export function isDashboardPath(pathname: string) {
+  return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+}
+
 export function isKnownAppPath(pathname: string) {
   const path = pathname.replace(/\/+$/, "") || "/";
   if (EXACT_PATHS.has(path)) return true;

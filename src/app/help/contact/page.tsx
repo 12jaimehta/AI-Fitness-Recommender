@@ -55,23 +55,23 @@ export default function ContactUs() {
       icon: Mail,
       title: "Email Support",
       description: "Send us an email and we'll respond within 24 hours",
-      contact: "jai.fyteAI@gmail.com",
-      action: "mailto:jai.fyteAI@gmail.com"
+      contact: "jaimehtaalerts@gmail.com",
+      action: "mailto:jaimehtaalerts@gmail.com"
     },
-    {
-      icon: Phone,
-      title: "Phone Support",
-      description: "Call us Monday-Friday, 9AM-6PM EST",
-      contact: "1-800-DIET-PLAN",
-      action: "tel:18003487752"
-    },
-    {
-      icon: MessageCircle,
-      title: "Live Chat",
-      description: "Chat with our support team in real-time",
-      contact: "Available 24/7",
-      action: "#"
-    }
+    // {
+    //   icon: Phone,
+    //   title: "Phone Support",
+    //   description: "Call us Monday-Friday, 9AM-6PM EST",
+    //   contact: "1-800-DIET-PLAN",
+    //   action: "tel:18003487752"
+    // },
+    // {
+    //   icon: MessageCircle,
+    //   title: "Live Chat",
+    //   description: "Chat with our support team in real-time",
+    //   contact: "Available 24/7",
+    //   action: "#"
+    // }
   ];
 
   const faqItems = [
@@ -271,7 +271,7 @@ export default function ContactUs() {
           </motion.div>
 
           {/* Contact Form */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
@@ -473,7 +473,7 @@ export default function ContactUs() {
                 </form>
               )}
             </div>
-          </motion.div>
+          </motion.div> */}
         </div>
 
         {/* Quick FAQ */}

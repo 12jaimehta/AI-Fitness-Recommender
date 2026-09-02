@@ -189,6 +189,7 @@ export type WeeklyReview = {
 
 export type PlateauFlag =
   | "weight_loss_plateau"
+  | "calorie_stall_14d"
   | "stale_diet"
   | "stale_workout"
   | "training_stagnation";

@@ -386,7 +386,7 @@ export default function TermsOfService() {
             gap: '20px',
             flexWrap: 'wrap'
           }}>
-            <a href="mailto:legal@dietplan.com" style={{
+            <a href="mailto:jaimehtaalerts@gmail.com" style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
@@ -400,7 +400,7 @@ export default function TermsOfService() {
               transition: 'all 0.3s ease'
             }}>
               <FileText size={18} />
-              legal@dietplan.com
+              jaimehtaalerts@gmail.com
             </a>
           </div>
         </motion.div>

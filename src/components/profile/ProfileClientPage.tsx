@@ -122,7 +122,7 @@ export default function ProfileClientPage() {
       setProfile(saved);
       setForm(fromProfile(saved, ""));
       setEditing(false);
-      router.push("/dashboard");
+      router.push("/progress");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save your profile.");
     } finally {
@@ -147,7 +147,7 @@ export default function ProfileClientPage() {
           <p className="mt-2 text-gray-600">
             {complete
               ? "Your details for diet, workout, and progress."
-              : "Add these details to use diet, workout, progress, and trainers."}
+              : "Add these details to use diet, workout, and tracking."}
           </p>
         </header>
 

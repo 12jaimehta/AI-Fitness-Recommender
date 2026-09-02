@@ -58,6 +58,13 @@ export function calculateNutritionTargets(userData: DietPlanFormData): Nutrition
   return { calories, protein, carbs, fat, weightKg, heightCm };
 }
 
+export function applyCalorieOverride(targets: NutritionTargets, calories: number): NutritionTargets {
+  const next = Math.min(4500, Math.max(1400, Math.round(calories)));
+  const fat = Math.round((next * 0.25) / 9);
+  const carbs = Math.round((next - targets.protein * 4 - fat * 9) / 4);
+  return { ...targets, calories: next, fat, carbs: Math.max(0, carbs) };
+}
+
 export function mealSlotGuide(mealsPerDay: DietPlanFormData["mealsPerDay"], calories: number) {
   switch (mealsPerDay) {
     case "3":

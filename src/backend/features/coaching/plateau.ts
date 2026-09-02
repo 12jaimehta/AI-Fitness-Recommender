@@ -1,5 +1,6 @@
 import type { PlateauFlag } from "@/shared/types/progress-tracking";
 import { coerceProgramGoal } from "@/shared/lib/program-goals";
+import { detectCalorieStall } from "@/shared/lib/calorie-stall";
 
 export type WeightPoint = { date: string; kg: number };
 
@@ -46,6 +47,12 @@ export function detectPlateaus(input: PlateauInput): PlateauResult {
         `Weight dropped ${lostKg.toFixed(1)} kg from ${start.toFixed(1)} kg, then stayed within 0.6 kg for ${spanDays} days.`
       );
     }
+  }
+
+  const stall = detectCalorieStall(sorted, goal, null);
+  if (stall.stalled) {
+    flags.push("calorie_stall_14d");
+    reasons.push(stall.reason);
   }
 
   if (input.dietAgeDays != null && input.dietAgeDays >= 28) {

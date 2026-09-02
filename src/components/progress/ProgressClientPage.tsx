@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Apple, Check, ChevronRight, Dumbbell } from "lucide-react";
 import { useUser } from "@/lib/hooks/use-user";
@@ -20,7 +21,8 @@ import {
   seedProgressAnalytics,
 } from "@/lib/service/progress-database";
 import { emptySetsForExercise } from "@/shared/lib/current-plans";
-import { localIsoDate } from "@/shared/lib/plan-tracking";
+import { clampIsoDateToToday, localIsoDate } from "@/shared/lib/plan-tracking";
+import { beginDietFromLogs, beginWorkoutFromLogs } from "@/lib/service/dietWorkoutplan";
 import type {
   CurrentDietPlan,
   CurrentPlanExercise,
@@ -35,6 +37,8 @@ import type {
 import { ProgressSkeleton, CoachSkeleton } from "@/components/ui/Skeleton";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import CoachingCard from "@/components/shared/CoachingCard";
+import NextWeekCard from "@/components/progress/NextWeekCard";
+import DayCalendar from "@/components/progress/DayCalendar";
 import TrendChart from "@/components/shared/TrendChart";
 import QuickVitals from "@/components/progress/QuickVitals";
 import AIMealLogModal from "@/components/progress/AIMealLogModal";
@@ -119,7 +123,9 @@ export default function ProgressClientPage({
   initialAnalytics?: ProgressAnalytics | null;
 }) {
   const { user, isSignedIn, isLoading: userLoading } = useUser();
-  const [date, setDate] = useState(initialDaily?.date || localIsoDate());
+  const router = useRouter();
+  const today = localIsoDate();
+  const [date, setDate] = useState(() => clampIsoDateToToday(initialDaily?.date || today, today));
   const [track, setTrack] = useState<TrackKind>("diet");
   const [range, setRange] = useState("month");
   const [loading, setLoading] = useState(!initialDaily);
@@ -133,6 +139,7 @@ export default function ProgressClientPage({
   const [aiSlot, setAiSlot] = useState<string | null>(null);
   const [aiWorkout, setAiWorkout] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
+  const [advancing, setAdvancing] = useState<"diet" | "workout" | "">("");
 
   const loadCore = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -161,6 +168,10 @@ export default function ProgressClientPage({
       .catch(() => setCoaching(null))
       .finally(() => setCoachingReady(true));
   };
+
+  useEffect(() => {
+    if (date > today) setDate(today);
+  }, [date, today]);
 
   useEffect(() => {
     if (initialDaily) seedDailyProgress(initialDaily.date, initialDaily);
@@ -269,26 +280,41 @@ export default function ProgressClientPage({
 
         <header className="mb-8 border-b border-gray-200 pb-6">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Tracking</h1>
-          <p className="mt-2 text-gray-600">Check in, then tap meals or workout for this day.</p>
+          <p className="mt-2 text-gray-600">Log the day. We keep the plan honest.</p>
         </header>
 
         {error ? (
           <p className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-500">{error}</p>
         ) : null}
 
+        <NextWeekCard
+          hasDietPlan={Boolean(daily?.diet_plan)}
+          hasWorkoutPlan={Boolean(daily?.workout_plan)}
+          coaching={coaching}
+          busy={advancing}
+          onDietFromLogs={() => {
+            setAdvancing("diet");
+            beginDietFromLogs();
+            router.push("/diet/plan");
+          }}
+          onWorkoutFromLogs={() => {
+            setAdvancing("workout");
+            beginWorkoutFromLogs();
+            router.push("/workout/plan");
+          }}
+        />
+
         <section className={`${CARD} mb-6`}>
           <h2 className="text-lg font-semibold text-[#282828]">Which day?</h2>
-          <p className="mt-1 text-sm text-gray-600">Change the date to log another day. Today is the default.</p>
-          <label className="mt-4 block max-w-sm">
-            <span className="mb-2 block text-sm font-semibold text-[#282828]">Date</span>
-            <input
-              type="date"
+          <p className="mt-1 text-sm text-gray-600">Pick a day you already lived.</p>
+          <div className="mt-4">
+            <DayCalendar
               value={date}
-              onChange={(event) => setDate(event.target.value)}
-              className="w-full rounded-xl border-2 border-[#282828] bg-white px-4 py-3 text-base font-semibold text-[#282828] outline-none"
+              max={today}
+              onChange={(next) => setDate(clampIsoDateToToday(next, today))}
             />
-          </label>
-          <p className="mt-2 text-xs text-gray-500">{dateLabel}</p>
+          </div>
+          <p className="mt-4 text-sm font-semibold text-[#282828]">{dateLabel}</p>
         </section>
 
         {!coachingReady ? (
@@ -297,7 +323,11 @@ export default function ProgressClientPage({
           </div>
         ) : coaching ? (
           <div className="mb-6">
-            <CoachingCard advice={coaching} />
+            <CoachingCard
+              advice={coaching}
+              hasDietPlan={Boolean(daily?.diet_plan)}
+              hasWorkoutPlan={Boolean(daily?.workout_plan)}
+            />
           </div>
         ) : null}
 

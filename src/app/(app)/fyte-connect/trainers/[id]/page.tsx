@@ -1,5 +1,6 @@
-import TrainerProfileClientPage from "@/components/fyte-connect/TrainerProfileClientPage";
+import { redirect } from "next/navigation";
+import { SIGNED_IN_HOME } from "@/shared/lib/app-home";
 
-export default function TrainerPage() {
-  return <TrainerProfileClientPage />;
+export default function TrainerProfilePage() {
+  redirect(SIGNED_IN_HOME);
 }

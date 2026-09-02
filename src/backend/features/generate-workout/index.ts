@@ -6,12 +6,19 @@ import { calculateWorkoutMetrics } from "@backend/ai/workout-metrics";
 import { buildWorkoutPrompt } from "@backend/ai/prompts/workout";
 import { generateFallbackWorkoutPlan } from "@backend/ai/fallbacks/workout";
 
+export type WorkoutGenerateOptions = {
+  logNotes?: string;
+};
+
 function isValidWorkoutPlan(plan: WorkoutPlanData | null, weekly: boolean) {
   if (!plan?.workoutTips) return false;
   return weekly ? Boolean(plan.weeklyPlan) : Boolean(plan.singleWorkout);
 }
 
-export async function generateWorkoutPlan(input: unknown): Promise<WorkoutPlanData> {
+export async function generateWorkoutPlan(
+  input: unknown,
+  options?: WorkoutGenerateOptions
+): Promise<WorkoutPlanData> {
   const parsed = workoutPlanSchema.safeParse(input);
   if (!parsed.success) {
     throw new ApiError("Invalid request body", 400, parsed.error.flatten());
@@ -19,7 +26,7 @@ export async function generateWorkoutPlan(input: unknown): Promise<WorkoutPlanDa
 
   const userData = parsed.data as WorkoutPlanFormData;
   const metrics = calculateWorkoutMetrics(userData);
-  const prompt = buildWorkoutPrompt(userData, metrics);
+  const prompt = buildWorkoutPrompt(userData, metrics, options?.logNotes);
 
   try {
     const plan = await completeJson<WorkoutPlanData>(prompt, {

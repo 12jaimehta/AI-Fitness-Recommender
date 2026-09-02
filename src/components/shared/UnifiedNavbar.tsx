@@ -6,6 +6,7 @@ import { useUser, signOutAndClearCache } from "@frontend/features/auth";
 import { navItems } from "@/lib/constant";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
+import { signedInHomeHref } from "@/shared/lib/app-home";
 
 export default function Navbar() {
   const { user, isSignedIn, isLoading } = useUser();
@@ -16,16 +17,17 @@ export default function Navbar() {
   const [profileComplete, setProfileComplete] = useState(true);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const homeHref = isSignedIn ? (profileComplete ? "/dashboard" : "/") : "/";
+  const homeHref = isSignedIn ? signedInHomeHref(profileComplete) : "/";
   const isHomePage = pathname === "/";
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account";
 
-  const navLinks = navItems.map((item) =>
-    item.name === "Home" ? { ...item, href: homeHref } : item
-  );
+  const navLinks = navItems
+    .filter((item) => item.name !== "Trainers")
+    .filter((item) => !(isSignedIn && profileComplete && item.name === "Progress"))
+    .map((item) => (item.name === "Home" ? { ...item, href: homeHref } : item));
 
   const isNavActive = (href: string) => {
-    if (href === "/" || href === "/dashboard") return pathname === href;
+    if (href === "/" || href === "/progress") return pathname === href;
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 

@@ -16,6 +16,15 @@ export function utcToday() {
   return localIsoDate();
 }
 
+export function parseLogDate(value?: string | null) {
+  const today = utcToday();
+  const date = parseIsoDate(value, today);
+  if (date > today) {
+    throw new ApiError("You can only log today or past days.", 400);
+  }
+  return date;
+}
+
 /** YYYY-MM-DD from a DATE or timestamptz value. */
 export function civilDate(value: unknown, fallback = "") {
   return parseIsoDate(String(value ?? ""), fallback);

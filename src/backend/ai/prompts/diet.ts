@@ -7,7 +7,11 @@ const MEAL_SHAPE =
 const WEEKLY_MEAL_SHAPE =
   '{ "name": string, "calories": number, "protein": number, "carbs": number, "fat": number, "ingredientBreakdown": string, "alternatives": [{ "name": string, "calories": number, "description": string }] }';
 
-export function buildDietPrompt(userData: DietPlanFormData, nutrition: NutritionTargets) {
+export function buildDietPrompt(
+  userData: DietPlanFormData,
+  nutrition: NutritionTargets,
+  logNotes?: string
+) {
   const height =
     userData.heightUnit === "ftin"
       ? `${userData.feet}'${userData.inches}"`
@@ -64,6 +68,16 @@ Calorie Target: ${nutrition.calories} calories per day
 Protein Target: ${nutrition.protein}g per day
 Carb Target: ${nutrition.carbs}g per day
 Fat Target: ${nutrition.fat}g per day
+${
+  logNotes
+    ? `
+THIS WEEK'S LOGS (build next week from these — do not invent a new questionnaire):
+${logNotes}
+
+Hit calorieTarget ${nutrition.calories} in the JSON. Keep the same dietary preference and favorite foods. Change portions and meal names only as the logs require.
+`
+    : ""
+}
 ---
 
 ${

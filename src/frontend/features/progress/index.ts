@@ -1,5 +1,5 @@
 import { api } from "@frontend/shared/api/http";
-import { localIsoDate } from "@/shared/lib/plan-tracking";
+import { clampIsoDateToToday, isFutureIsoDate, localIsoDate } from "@/shared/lib/plan-tracking";
 import { cachedQuery, invalidateQueryCache, setQueryCache } from "@frontend/shared/lib/query-cache";
 import type {
   CurrentPlans,
@@ -31,6 +31,14 @@ function bustLogs(date?: string) {
   invalidateQueryCache(`daily:${day}`);
   invalidateQueryCache("analytics:");
   invalidateQueryCache("weekly-review");
+}
+
+function requireLoggableDate(date?: string) {
+  const day = date || localIsoDate();
+  if (isFutureIsoDate(day)) {
+    throw new Error("You can only log today or past days.");
+  }
+  return day;
 }
 
 export function seedDailyProgress(date: string, data: DailyProgress) {
@@ -76,27 +84,30 @@ export async function getCurrentPlans(date = localIsoDate()) {
 }
 
 export async function getDailyProgress(date = localIsoDate()) {
-  return cachedQuery(`daily:${date}`, async () => {
-    const { data } = await api<{ data: DailyProgress }>(`/api/progress/daily?date=${date}`);
+  const day = clampIsoDateToToday(date);
+  return cachedQuery(`daily:${day}`, async () => {
+    const { data } = await api<{ data: DailyProgress }>(`/api/progress/daily?date=${day}`);
     return data;
   });
 }
 
 export async function quickCheckMeal(meal_slot: string, date = localIsoDate()) {
+  const day = requireLoggableDate(date);
   const result = await api("/api/progress/meals/quick-check", {
     method: "POST",
-    body: JSON.stringify({ date, meal_slot }),
+    body: JSON.stringify({ date: day, meal_slot }),
   });
-  bustLogs(date);
+  bustLogs(day);
   return result;
 }
 
 export async function aiLogMeal(text_prompt: string, meal_slot: string, date = localIsoDate()) {
+  const day = requireLoggableDate(date);
   const { data } = await api<{ data: unknown }>("/api/progress/meals/ai-log", {
     method: "POST",
-    body: JSON.stringify({ date, meal_slot, input_type: "text", text_prompt }),
+    body: JSON.stringify({ date: day, meal_slot, input_type: "text", text_prompt }),
   });
-  bustLogs(date);
+  bustLogs(day);
   return data;
 }
 
@@ -104,20 +115,22 @@ export async function quickCheckWorkout(
   extra: { rpe_rating?: number; duration_minutes?: number; notes?: string } = {},
   date = localIsoDate()
 ) {
+  const day = requireLoggableDate(date);
   const result = await api("/api/progress/workouts/quick-check", {
     method: "POST",
-    body: JSON.stringify({ date, ...extra }),
+    body: JSON.stringify({ date: day, ...extra }),
   });
-  bustLogs(date);
+  bustLogs(day);
   return result;
 }
 
 export async function aiLogWorkout(text_prompt: string, date = localIsoDate()) {
+  const day = requireLoggableDate(date);
   const { data } = await api<{ data: unknown }>("/api/progress/workouts/ai-log", {
     method: "POST",
-    body: JSON.stringify({ date, text_prompt }),
+    body: JSON.stringify({ date: day, text_prompt }),
   });
-  bustLogs(date);
+  bustLogs(day);
   return data;
 }
 
@@ -130,7 +143,7 @@ export async function saveWorkoutLog(payload: {
   notes?: string;
   title?: string;
 }) {
-  const date = payload.date || localIsoDate();
+  const date = requireLoggableDate(payload.date);
   const { data } = await api<{ data: unknown }>("/api/progress/workouts/log", {
     method: "POST",
     body: JSON.stringify({ date, ...payload }),
@@ -146,7 +159,7 @@ export async function saveVitals(payload: {
   sleep_hours?: number | null;
   energy_rating?: number | null;
 }) {
-  const date = payload.date || localIsoDate();
+  const date = requireLoggableDate(payload.date);
   const result = await api("/api/progress/metrics", {
     method: "POST",
     body: JSON.stringify({ date, ...payload }),
@@ -157,9 +170,10 @@ export async function saveVitals(payload: {
 }
 
 export async function getProgressAnalytics(range: string, date = localIsoDate()) {
-  return cachedQuery(`analytics:${range}:${date}`, async () => {
+  const day = clampIsoDateToToday(date);
+  return cachedQuery(`analytics:${range}:${day}`, async () => {
     const { data } = await api<{ data: ProgressAnalytics }>(
-      `/api/progress/analytics?range=${range}&date=${date}`
+      `/api/progress/analytics?range=${range}&date=${day}`
     );
     return data;
   });

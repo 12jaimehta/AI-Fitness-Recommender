@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DailyWorkout, Exercise, WorkoutPlanData } from "@/shared/types";
 import type { WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
-import { resolveWorkoutPlan, saveWorkoutPlan, beginWorkoutPlanGeneration } from "@/lib/service/dietWorkoutplan";
+import { resolveWorkoutPlan, saveWorkoutPlan, beginWorkoutPlanGeneration, beginWorkoutFromLogs } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
@@ -202,7 +202,8 @@ export default function WorkoutPlanResultPage() {
               type="button"
               onClick={() => {
                 const pending = readPendingWorkoutGeneration();
-                if (pending?.formData) beginWorkoutPlanGeneration(pending.formData);
+                if (pending?.fromLogs) beginWorkoutFromLogs();
+                else if (pending?.formData) beginWorkoutPlanGeneration(pending.formData);
                 setError("");
                 setRetryKey((value) => value + 1);
               }}
@@ -211,10 +212,10 @@ export default function WorkoutPlanResultPage() {
               Try again
             </button>
             <Link
-              href="/workout"
+              href={readPendingWorkoutGeneration()?.fromLogs ? "/progress" : "/workout"}
               className="inline-flex rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
             >
-              Edit details
+              {readPendingWorkoutGeneration()?.fromLogs ? "Back to tracking" : "Edit details"}
             </Link>
           </div>
         </div>

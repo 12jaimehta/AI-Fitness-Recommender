@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { SIGNED_IN_HOME } from "@/shared/lib/app-home";
 
-export default function PlanCheckoutPage() {
-  redirect("/fyte-connect");
+export default function CheckoutPage() {
+  redirect(SIGNED_IN_HOME);
 }

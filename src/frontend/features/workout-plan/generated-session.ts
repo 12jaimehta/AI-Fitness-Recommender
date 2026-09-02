@@ -43,7 +43,8 @@ export function readGeneratedWorkoutPlan(): GeneratedWorkoutSession | null {
 const PENDING_KEY = "fyte.pending-workout-generation";
 
 export type PendingWorkoutGeneration = {
-  formData: WorkoutPlanFormData;
+  formData?: WorkoutPlanFormData;
+  fromLogs?: boolean;
   error?: string;
 };
 
@@ -55,7 +56,7 @@ function readPendingStorage(): PendingWorkoutGeneration | null {
     const raw = sessionStorage.getItem(PENDING_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as PendingWorkoutGeneration;
-    if (!parsed?.formData) return null;
+    if (!parsed?.formData && !parsed?.fromLogs && !parsed?.error) return null;
     return parsed;
   } catch {
     return null;
@@ -77,10 +78,18 @@ export function setPendingWorkoutGeneration(formData: WorkoutPlanFormData) {
   writePendingStorage(pendingGeneration);
 }
 
+export function setPendingWorkoutFromLogs() {
+  pendingGeneration = { fromLogs: true };
+  writePendingStorage(pendingGeneration);
+}
+
 export function setPendingWorkoutError(message: string) {
   const current = readPendingWorkoutGeneration();
-  if (!current) return;
-  pendingGeneration = { ...current, error: message };
+  pendingGeneration = {
+    formData: current?.formData,
+    fromLogs: current?.fromLogs,
+    error: message,
+  };
   writePendingStorage(pendingGeneration);
 }
 
@@ -90,7 +99,9 @@ export function clearPendingWorkoutGeneration() {
 }
 
 export function readPendingWorkoutGeneration(): PendingWorkoutGeneration | null {
-  if (pendingGeneration?.formData) return pendingGeneration;
+  if (pendingGeneration?.formData || pendingGeneration?.fromLogs || pendingGeneration?.error) {
+    return pendingGeneration;
+  }
   pendingGeneration = readPendingStorage();
   return pendingGeneration;
 }

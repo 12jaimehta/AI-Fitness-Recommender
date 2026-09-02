@@ -2,7 +2,11 @@ import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema"
 import type { WorkoutMetrics } from "../workout-metrics";
 import { coerceProgramGoal, programGoalLabel, workoutPromptFocus } from "@/shared/lib/program-goals";
 
-export function buildWorkoutPrompt(userData: WorkoutPlanFormData, metrics: WorkoutMetrics) {
+export function buildWorkoutPrompt(
+  userData: WorkoutPlanFormData,
+  metrics: WorkoutMetrics,
+  logNotes?: string
+) {
   const equipmentNotes =
     userData.availableEquipment === "none"
       ? "All exercises must be bodyweight only, or simple outdoor work if the goal needs running."
@@ -83,5 +87,15 @@ ${
 }`
 }
 
-All work must fit ${userData.fitnessLevel} and ${userData.availableEquipment}.`;
+All work must fit ${userData.fitnessLevel} and ${userData.availableEquipment}.
+${
+  logNotes
+    ? `
+THIS WEEK'S SESSIONS (progress next week from these logs — same equipment, injuries, and goal; do not start from a blank form):
+${logNotes}
+
+If they skipped days, keep frequency honest. If they completed lifts, progress load or reps slightly. Keep rest days they actually need.
+`
+    : ""
+}`;
 }

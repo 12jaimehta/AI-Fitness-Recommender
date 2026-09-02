@@ -35,7 +35,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (!authLoading && isSignedIn) {
-      router.replace("/dashboard");
+      router.replace("/progress");
     }
   }, [authLoading, isSignedIn, router]);
 
@@ -68,7 +68,7 @@ export default function SignUpPage() {
     if (error) setMessage(error.message);
     else if (data?.user) {
       setMessage("Account created. Check your email to verify.");
-      setTimeout(() => router.push("/dashboard"), 3000);
+      setTimeout(() => router.push("/progress"), 3000);
     }
   };
 

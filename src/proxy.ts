@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isProfileComplete, profileAllowedPath } from "@/shared/lib/profile";
-import { isApiPath, isKnownAppPath } from "@/shared/lib/routes";
+import { isApiPath, isConnectPath, isDashboardPath, isKnownAppPath } from "@/shared/lib/routes";
+import { SIGNED_IN_HOME } from "@/shared/lib/app-home";
 
 function redirectWithCookies(request: NextRequest, from: NextResponse, pathname: string) {
   const redirectUrl = request.nextUrl.clone();
@@ -51,8 +52,12 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (isConnectPath(pathname) || isDashboardPath(pathname)) {
+    return redirectWithCookies(request, supabaseResponse, user ? SIGNED_IN_HOME : "/");
+  }
+
   if (!isKnownAppPath(pathname)) {
-    return redirectWithCookies(request, supabaseResponse, user ? "/dashboard" : "/");
+    return redirectWithCookies(request, supabaseResponse, user ? SIGNED_IN_HOME : "/");
   }
 
   if (user && !profileAllowedPath(pathname)) {

@@ -1,7 +1,6 @@
 import { completeJson } from "@backend/shared/api/grok";
 import { ApiError } from "@backend/shared/lib/errors";
 import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
-import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import { emptySetsForExercise } from "@/shared/lib/current-plans";
 import type {
   ExerciseLogEntry,
@@ -11,7 +10,7 @@ import type {
 } from "@/shared/types/progress-tracking";
 import { workingSetsDone } from "@/shared/lib/daily-track";
 import { getCurrentPlans } from "./current-plans";
-import { civilDate, throwIfSchemaMissing, utcToday } from "./db";
+import { civilDate, parseLogDate, throwIfSchemaMissing } from "./db";
 import { rebuildDailyTrackDay } from "./track-day";
 import { buildWorkoutLogPrompt } from "@backend/ai/prompts/workout-log";
 
@@ -109,7 +108,7 @@ export async function quickCheckWorkout(input: {
   notes?: string;
 }) {
   const resolved = await resolveAuth();
-  const date = parseIsoDate(input.date, utcToday());
+  const date = parseLogDate(input.date);
   const plans = await getCurrentPlans(date, resolved);
   const today = plans.workout_plan?.today_workout;
   const existing = await getWorkoutLog(date, resolved);
@@ -164,7 +163,7 @@ export async function saveWorkoutLog(input: {
   title?: string;
 }) {
   const resolved = await resolveAuth();
-  const date = parseIsoDate(input.date, utcToday());
+  const date = parseLogDate(input.date);
   const plans = await getCurrentPlans(date, resolved);
   const today = plans.workout_plan?.today_workout;
   const existing = await getWorkoutLog(date, resolved);
@@ -191,7 +190,7 @@ export async function saveWorkoutLog(input: {
 export async function aiLogWorkout(input: { date?: string; text_prompt?: string }) {
   const text = String(input.text_prompt || "").trim();
   if (!text) throw new ApiError("Describe your workout.", 400);
-  const date = parseIsoDate(input.date, utcToday());
+  const date = parseLogDate(input.date);
 
   type Parsed = {
     title: string;

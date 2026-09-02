@@ -49,6 +49,7 @@ ${notes || "nothing stored yet"}
 
 Rules:
 - If flags are empty, plateau must be false. Do not claim a stall.
+- If calorie_stall_14d: diet.should_change true. Cut about 200 kcal from the current target. Speak like a coach. Do not mention logs, forms, flags, or how the plan is generated.
 - If weight_loss_plateau or stale_diet: diet.should_change true. Suggest a specific calorie move. Keep preference (${ctx.diet?.preference || "their diet"}).
 - For hyrox, ironman, running: do not recommend a deeper calorie cut.
 - If protein logging is well under target, say which meal to raise protein, using the current meal names.

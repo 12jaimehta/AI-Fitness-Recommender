@@ -6,6 +6,7 @@ import { retrieveCoachingContext, type CoachingContext } from "./retrieve";
 import { fallbackCoachingAdvice } from "./fallback";
 import type { CoachingFacts, CoachingNote } from "./memory";
 import { cacheGet, cacheSet, userCacheKeys } from "@backend/shared/lib/redis";
+import { applyCalorieDelta, CALORIE_STALL_CUT, isEnduranceGoal } from "@/shared/lib/calorie-stall";
 
 function clampCalories(value: unknown, current: number | null) {
   const n = Number(value);
@@ -20,32 +21,46 @@ function asStatus(value: unknown, flags: PlateauFlag[]): CoachingStatus {
     return "on_track";
   }
   if (typeof value === "string" && allowed.includes(value as CoachingStatus)) return value as CoachingStatus;
-  if (flags.includes("weight_loss_plateau") || flags.includes("stale_diet")) return "needs_new_plan";
+  if (flags.includes("weight_loss_plateau") || flags.includes("stale_diet") || flags.includes("calorie_stall_14d")) {
+    return "needs_new_plan";
+  }
   return "watch";
 }
 
 function applyGuardrails(raw: Partial<CoachingAdvice> & { memory_note?: string }, ctx: CoachingContext): CoachingAdvice {
   const fallback = fallbackCoachingAdvice(ctx);
   const plateau = ctx.flags.includes("weight_loss_plateau");
+  const stall = ctx.flags.includes("calorie_stall_14d");
+  const sport = isEnduranceGoal(ctx.facts.diet_goal);
   const shouldChangeDiet =
-    Boolean(raw.diet?.should_change) || plateau || ctx.flags.includes("stale_diet");
+    Boolean(raw.diet?.should_change) ||
+    plateau ||
+    ctx.flags.includes("stale_diet") ||
+    (stall && !sport);
   const shouldChangeWorkout =
     Boolean(raw.workout?.should_change) ||
     ctx.flags.includes("stale_workout") ||
     ctx.flags.includes("training_stagnation");
 
+  let calorieChange = coerceCalorieChange(raw.diet?.calorie_change, ctx.facts.diet_goal);
+  let suggested = clampCalories(raw.diet?.suggested_calories, ctx.diet?.calorieTarget || null);
+  if (stall && !sport && ctx.diet?.calorieTarget) {
+    calorieChange = "decrease";
+    suggested = applyCalorieDelta(ctx.diet.calorieTarget, -CALORIE_STALL_CUT);
+  }
+
   return {
     headline: String(raw.headline || fallback.headline).slice(0, 180),
     status: asStatus(raw.status, ctx.flags),
-    plateau,
+    plateau: plateau || stall,
     flags: ctx.flags,
     reasons: ctx.reasons.length ? ctx.reasons : fallback.reasons,
     remembered: String(raw.memory_note || fallback.remembered).slice(0, 240),
     diet: {
       should_change: shouldChangeDiet,
       summary: String(raw.diet?.summary || fallback.diet.summary).slice(0, 280),
-      calorie_change: coerceCalorieChange(raw.diet?.calorie_change, ctx.facts.diet_goal),
-      suggested_calories: clampCalories(raw.diet?.suggested_calories, ctx.diet?.calorieTarget || null),
+      calorie_change: calorieChange,
+      suggested_calories: suggested,
       protein_note: String(raw.diet?.protein_note || fallback.diet.protein_note).slice(0, 180),
       meal_tweaks: (raw.diet?.meal_tweaks || fallback.diet.meal_tweaks)
         .map((item) => String(item).slice(0, 160))

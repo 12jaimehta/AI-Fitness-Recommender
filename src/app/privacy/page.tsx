@@ -365,7 +365,7 @@ export default function PrivacyPolicy() {
             gap: '20px',
             flexWrap: 'wrap'
           }}>
-            <a href="mailto:privacy@dietplan.com" style={{
+            <a href="mailto:jaimehtaalerts@gmail.com" style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
@@ -379,7 +379,7 @@ export default function PrivacyPolicy() {
               transition: 'all 0.3s ease'
             }}>
               <FileText size={18} />
-              privacy@dietplan.com
+              jaimehtaalerts@gmail.com
             </a>
           </div>
         </motion.div>

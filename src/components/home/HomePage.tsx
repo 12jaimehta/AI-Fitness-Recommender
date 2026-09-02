@@ -15,6 +15,7 @@ import { menuItems, slides } from "@/lib/constant";
 import { useCurrentUser, signOutAndClearCache } from "@frontend/features/auth";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
+import { signedInHomeHref } from "@/shared/lib/app-home";
 import HeroVideo from "@/components/home/HeroVideo";
 
 export default function HomePage() {
@@ -71,7 +72,7 @@ export default function HomePage() {
 
     // Extract display name from email if name isn't available
     const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
-    const homeHref = isSignedIn ? (profileComplete ? "/dashboard" : "/") : "/";
+    const homeHref = isSignedIn ? signedInHomeHref(profileComplete) : "/";
 
     useEffect(() => {
         if (!isSignedIn) {
@@ -101,7 +102,9 @@ export default function HomePage() {
                         <button onClick={() => router.push(homeHref)} className="nav-link text-white font-semibold hover:text-white/80 transition">Home</button>
                         <button onClick={() => router.push("/diet")} className="nav-link text-white font-semibold hover:text-white/80 transition">Diet Plan</button>
                         <button onClick={() => router.push("/workout")} className="nav-link text-white font-semibold hover:text-white/80 transition">Workout Plan</button>
+                        {!(isSignedIn && profileComplete) ? (
                         <button onClick={() => router.push("/progress")} className="nav-link text-white font-semibold hover:text-white/80 transition">Track Progress</button>
+                        ) : null}
 
                         {/* Modern Auth Section */}
                         {isSignedIn ? (
@@ -193,11 +196,20 @@ export default function HomePage() {
                         className="fixed top-[80px] left-0 right-0 bottom-0 z-[999] bg-white border-t border-[#282828]/10 shadow-xl flex flex-col"
                     >
                         <div className="flex-1 p-6 overflow-y-auto">
-                            {["Home", "Diet Plan", "Workout Plan", "Track Progress"].map((item, index) => (
+                            {(isSignedIn && profileComplete
+                                ? ["Home", "Diet Plan", "Workout Plan"]
+                                : ["Home", "Diet Plan", "Workout Plan", "Track Progress"]
+                            ).map((item, index) => (
                                 <button
                                     key={index}
                                     onClick={() => {
-                                        router.push(item === "Home" ? homeHref : "/" + item.toLowerCase().replace(" ", ""));
+                                        const paths: Record<string, string> = {
+                                            Home: homeHref,
+                                            "Diet Plan": "/diet",
+                                            "Workout Plan": "/workout",
+                                            "Track Progress": "/progress",
+                                        };
+                                        router.push(paths[item] || "/");
                                         setIsMobileMenuOpen(false);
                                     }}
                                     className="w-full text-left text-[18px] font-semibold text-[#282828] px-5 py-4 rounded-xl mb-2 transition-all duration-300 hover:bg-[#282828]/5"
@@ -295,6 +307,10 @@ export default function HomePage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 1, delay: 0.6 }}
                                     onClick={() => {
+                                        if (isSignedIn && profileComplete) {
+                                            router.push("/progress");
+                                            return;
+                                        }
                                         if (currentSlide === 0) router.push("/diet");
                                         else if (currentSlide === 1) router.push("/workout");
                                         else router.push("/diet");

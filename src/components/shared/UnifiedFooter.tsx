@@ -28,21 +28,20 @@ export default function UnifiedFooter() {
             </div>
 
             <p className="text-base opacity-90 leading-relaxed mb-6">
-              Your personalized health companion powered by AI. Get custom diet
-              and workout plans designed for your unique goals and lifestyle.
+            Your AI-powered health companion for personalized diet, workouts, and plans that evolve with your progress.
             </p>
 
             {/* Contact Info */}
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 text-sm opacity-80">
-                <Mail size={16} /> jai.fyteAI@gmail.com
+                <Mail size={16} /> jaimehtaalerts@gmail.com
               </div>
-              <div className="flex items-center gap-2 text-sm opacity-80">
+              {/* <div className="flex items-center gap-2 text-sm opacity-80">
                 <Phone size={16} /> 1-800-fyteAI
-              </div>
-              <div className="flex items-center gap-2 text-sm opacity-80">
+              </div> */}
+              {/* <div className="flex items-center gap-2 text-sm opacity-80">
                 <MapPin size={16} /> Gurugram, India
-              </div>
+              </div> */}
             </div>
           </motion.div>
 
@@ -74,7 +73,7 @@ export default function UnifiedFooter() {
                       href={item.href}
                       className="flex items-center gap-2 text-white opacity-80 hover:opacity-100 hover:translate-x-1 transition-all text-sm"
                     >
-                      <item.icon size={16} />
+                      {/* <item.icon size={16} /> */}
                       {item.name}
                     </a>
                   </motion.li>

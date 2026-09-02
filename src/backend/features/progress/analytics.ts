@@ -1,5 +1,5 @@
 import type { AnalyticsPoint, ExerciseLogEntry, ProgressAnalytics, TrackRange, WorkoutSetEntry } from "@/shared/types";
-import { addDaysIso, eachIsoDate, localIsoDate, parseIsoDate, weekStartMonday } from "@/shared/lib/plan-tracking";
+import { addDaysIso, clampIsoDateToToday, eachIsoDate, localIsoDate, parseIsoDate, weekStartMonday } from "@/shared/lib/plan-tracking";
 import { trackDaysFromLogs } from "@/shared/lib/daily-track";
 import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
@@ -48,9 +48,9 @@ function lastDayOfMonth(yearMonth: string) {
 }
 
 export function analyticsWindow(range: TrackRange | string, anchor?: string) {
-  const date = parseIsoDate(anchor, localIsoDate());
   const today = localIsoDate();
-  const asOf = date > today ? date : today;
+  const date = clampIsoDateToToday(parseIsoDate(anchor, today), today);
+  const asOf = today;
   const year = date.slice(0, 4);
   const month = date.slice(0, 7);
 

@@ -1,12 +1,12 @@
 import type { DailyProgress, DailyVitals } from "@/shared/types/progress-tracking";
 import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
-import { parseIsoDate } from "@/shared/lib/plan-tracking";
+import { clampIsoDateToToday, parseIsoDate } from "@/shared/lib/plan-tracking";
 import { summarizeTrackDay, workoutTrained } from "@/shared/lib/daily-track";
 import { getCurrentPlans } from "./current-plans";
 import { listMealLogs } from "./meals";
 import { getWorkoutLog } from "./workouts-log";
-import { throwIfSchemaMissing, utcToday } from "./db";
+import { parseLogDate, throwIfSchemaMissing, utcToday } from "./db";
 import { dropCoachingCache } from "@backend/shared/lib/redis";
 
 export async function getVitals(date: string, auth?: AuthCtx): Promise<DailyVitals> {
@@ -39,7 +39,7 @@ export async function upsertVitals(input: {
 }) {
   const resolved = await resolveAuth();
   const { supabase, user } = resolved;
-  const date = parseIsoDate(input.date, utcToday());
+  const date = parseLogDate(input.date);
   const current = await getVitals(date, resolved);
   const water =
     input.water_intake_ml != null
@@ -69,7 +69,7 @@ export async function upsertVitals(input: {
 
 export async function getDailyProgress(dateInput?: string | null, auth?: AuthCtx): Promise<DailyProgress> {
   const resolved = await resolveAuth(auth);
-  const date = parseIsoDate(dateInput, utcToday());
+  const date = clampIsoDateToToday(parseIsoDate(dateInput, utcToday()));
   const [plans, meals, workout, vitals] = await Promise.all([
     getCurrentPlans(date, resolved),
     listMealLogs(date, resolved),

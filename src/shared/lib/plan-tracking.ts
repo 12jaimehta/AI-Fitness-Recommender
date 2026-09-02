@@ -61,6 +61,15 @@ export function localIsoDate(d = new Date()) {
   return `${y}-${m}-${day}`;
 }
 
+export function isFutureIsoDate(iso: string, today = localIsoDate()) {
+  return parseIsoDate(iso, today) > today;
+}
+
+export function clampIsoDateToToday(iso: string, today = localIsoDate()) {
+  const date = parseIsoDate(iso, today);
+  return date > today ? today : date;
+}
+
 /** Civil-date arithmetic on YYYY-MM-DD (timezone-safe). */
 export function addDaysIso(iso: string, days: number) {
   const [year, month, day] = iso.split("-").map(Number);

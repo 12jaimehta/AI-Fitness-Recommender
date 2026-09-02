@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useUser } from "@/lib/hooks/use-user";
+import { SIGNED_IN_HOME } from "@/shared/lib/app-home";
 
 export type BreadcrumbItem = {
   label: string;
@@ -16,7 +17,7 @@ export default function PageBreadcrumb({
   className?: string;
 }) {
   const { isSignedIn } = useUser();
-  const homeHref = isSignedIn ? "/dashboard" : "/";
+  const homeHref = isSignedIn ? SIGNED_IN_HOME : "/";
   const resolved = items.map((item) =>
     item.label === "Home" ? { ...item, href: homeHref } : item
   );
