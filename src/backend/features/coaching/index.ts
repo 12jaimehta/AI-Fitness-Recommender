@@ -1,10 +1,11 @@
 import { completeJson } from "@backend/shared/api/grok";
-import { requireUser } from "@backend/shared/api/supabase";
+import { requireUser, type AuthCtx } from "@backend/shared/api/supabase";
 import type { CoachingAdvice, CoachingStatus, PlateauFlag } from "@/shared/types/progress-tracking";
 import { buildCoachingPrompt, coerceCalorieChange } from "@backend/ai/prompts/coaching";
 import { retrieveCoachingContext, type CoachingContext } from "./retrieve";
 import { fallbackCoachingAdvice } from "./fallback";
 import type { CoachingFacts, CoachingNote } from "./memory";
+import { cacheGet, cacheSet, userCacheKeys } from "@backend/shared/lib/redis";
 
 function clampCalories(value: unknown, current: number | null) {
   const n = Number(value);
@@ -59,9 +60,9 @@ function applyGuardrails(raw: Partial<CoachingAdvice> & { memory_note?: string }
   };
 }
 
-async function persistAdvice(ctx: CoachingContext, advice: CoachingAdvice) {
+async function persistAdvice(auth: AuthCtx, ctx: CoachingContext, advice: CoachingAdvice) {
   try {
-    const { supabase, user } = await requireUser();
+    const { supabase, user } = auth;
     const facts: CoachingFacts = {
       ...ctx.facts,
       last_plateau_flags: ctx.flags,
@@ -111,13 +112,22 @@ async function generateAdvice(ctx: CoachingContext): Promise<CoachingAdvice> {
 }
 
 export async function getCoachingAdvice(force = false): Promise<CoachingAdvice> {
-  const ctx = await retrieveCoachingContext();
+  const auth = await requireUser();
+  const cacheKey = userCacheKeys(auth.user.id).coaching;
+
+  if (!force) {
+    const cached = await cacheGet<CoachingAdvice>(cacheKey);
+    if (cached?.headline) return cached;
+  }
+
+  const ctx = await retrieveCoachingContext(auth);
 
   if (!force && ctx.memory.last_advice && ctx.memory.fingerprint === ctx.fingerprint) {
+    await cacheSet(cacheKey, ctx.memory.last_advice, 600);
     return ctx.memory.last_advice;
   }
 
   const advice = await generateAdvice(ctx);
-  await persistAdvice(ctx, advice);
+  await Promise.all([persistAdvice(auth, ctx, advice), cacheSet(cacheKey, advice, 600)]);
   return advice;
 }

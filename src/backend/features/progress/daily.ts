@@ -1,5 +1,5 @@
 import type { DailyProgress, DailyVitals } from "@/shared/types/progress-tracking";
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import { summarizeTrackDay, workoutTrained } from "@/shared/lib/daily-track";
@@ -9,8 +9,8 @@ import { getWorkoutLog } from "./workouts-log";
 import { throwIfSchemaMissing, utcToday } from "./db";
 import { dropCoachingCache } from "@backend/shared/lib/redis";
 
-export async function getVitals(date: string): Promise<DailyVitals> {
-  const { supabase, user } = await requireUser();
+export async function getVitals(date: string, auth?: AuthCtx): Promise<DailyVitals> {
+  const { supabase, user } = await resolveAuth(auth);
   const { data, error } = await supabase
     .from("daily_progress_logs")
     .select("*")
@@ -37,9 +37,10 @@ export async function upsertVitals(input: {
   energy_rating?: number | null;
   mood_rating?: number | null;
 }) {
-  const { supabase, user } = await requireUser();
+  const resolved = await resolveAuth();
+  const { supabase, user } = resolved;
   const date = parseIsoDate(input.date, utcToday());
-  const current = await getVitals(date);
+  const current = await getVitals(date, resolved);
   const water =
     input.water_intake_ml != null
       ? Number(input.water_intake_ml)
@@ -66,13 +67,14 @@ export async function upsertVitals(input: {
   return data;
 }
 
-export async function getDailyProgress(dateInput?: string | null): Promise<DailyProgress> {
+export async function getDailyProgress(dateInput?: string | null, auth?: AuthCtx): Promise<DailyProgress> {
+  const resolved = await resolveAuth(auth);
   const date = parseIsoDate(dateInput, utcToday());
   const [plans, meals, workout, vitals] = await Promise.all([
-    getCurrentPlans(date),
-    listMealLogs(date),
-    getWorkoutLog(date),
-    getVitals(date),
+    getCurrentPlans(date, resolved),
+    listMealLogs(date, resolved),
+    getWorkoutLog(date, resolved),
+    getVitals(date, resolved),
   ]);
 
   const totals = summarizeTrackDay(meals, workout);

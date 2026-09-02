@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 import UnifiedNavbar from "@/components/shared/UnifiedNavbar";
 import UnifiedFooter from "@/components/shared/UnifiedFooter";
 import PageLoader from "@/components/ui/PageLoader";
@@ -16,7 +16,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     }
   }, [user, isSignedIn, userLoading, router]);
 
-  if (userLoading) {
+  if (userLoading || !isSignedIn) {
     return (
       <div className="min-h-screen bg-gray-50">
         <UnifiedNavbar />

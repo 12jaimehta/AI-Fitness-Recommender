@@ -1,6 +1,6 @@
 import { completeJson } from "@backend/shared/api/grok";
 import { ApiError } from "@backend/shared/lib/errors";
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import type { MealLogRow, MealSourceType, PlannedFoodItem } from "@/shared/types/progress-tracking";
 import { getCurrentPlans } from "./current-plans";
@@ -25,8 +25,8 @@ function asMealLog(row: Record<string, unknown>): MealLogRow {
   };
 }
 
-export async function listMealLogs(date: string) {
-  const { supabase, user } = await requireUser();
+export async function listMealLogs(date: string, auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data, error } = await supabase
     .from("meal_logs")
     .select("*")
@@ -42,9 +42,10 @@ export async function quickCheckMeal(input: { date?: string; meal_slot?: string 
   const slot = String(input.meal_slot || "").trim();
   if (!slot) throw new ApiError("meal_slot is required", 400);
 
-  const { supabase, user } = await requireUser();
+  const resolved = await resolveAuth();
+  const { supabase, user } = resolved;
   const date = parseIsoDate(input.date, utcToday());
-  const plans = await getCurrentPlans(date);
+  const plans = await getCurrentPlans(date, resolved);
   const meal = plans.diet_plan?.meals.find((item) => item.slot === slot || item.meal_id === slot);
   if (!meal) throw new ApiError("That meal is not in today's diet plan. Save a diet plan first.", 400);
 
@@ -61,7 +62,7 @@ export async function quickCheckMeal(input: { date?: string; meal_slot?: string 
   if (existing?.id) {
     const { error: delError } = await supabase.from("meal_logs").delete().eq("id", existing.id).eq("user_id", user.id);
     if (delError) throw new ApiError(delError.message, 400);
-    await rebuildDailyTrackDay(date);
+    await rebuildDailyTrackDay(date, resolved);
     return { removed: true, data: null };
   }
 
@@ -85,7 +86,7 @@ export async function quickCheckMeal(input: { date?: string; meal_slot?: string 
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
   const logged = asMealLog(data as Record<string, unknown>);
-  await rebuildDailyTrackDay(date);
+  await rebuildDailyTrackDay(date, resolved);
   return { removed: false, data: logged };
 }
 
@@ -109,7 +110,8 @@ export async function aiLogMeal(input: {
   const text = String(input.text_prompt || "").trim();
   if (!text) throw new ApiError("Describe what you ate.", 400);
 
-  const { supabase, user } = await requireUser();
+  const resolved = await resolveAuth();
+  const { supabase, user } = resolved;
   const date = parseIsoDate(input.date, utcToday());
   const slot = String(input.meal_slot || "other").trim() || "other";
 
@@ -166,6 +168,6 @@ export async function aiLogMeal(input: {
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
   const logged = asMealLog(data as Record<string, unknown>);
-  await rebuildDailyTrackDay(date);
+  await rebuildDailyTrackDay(date, resolved);
   return logged;
 }

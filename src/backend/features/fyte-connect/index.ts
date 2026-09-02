@@ -1,10 +1,10 @@
-import { getOptionalUser, requireUser } from "@backend/shared/api/supabase";
+import { createServerSupabase, getOptionalUser, requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import type { Creator, CreatorPlan, Trainer } from "@/shared/types";
 import { trainerSchema, type TrainerFormData } from "@/shared/validation/becometrainer";
 
 export async function getMarketplace() {
-  const { supabase } = await getOptionalUser();
+  const supabase = await createServerSupabase();
   const { data: trainers } = await supabase.from("trainer_profiles").select("*").limit(48);
   return {
     trainers: (trainers || []) as Trainer[],
@@ -12,7 +12,7 @@ export async function getMarketplace() {
 }
 
 export async function getCreator(id: string) {
-  const { supabase } = await getOptionalUser();
+  const supabase = await createServerSupabase();
   const { data: creator } = await supabase.from("creators").select("*").eq("id", id).maybeSingle();
   const { data: plans } = await supabase
     .from("creator_plans")
@@ -26,7 +26,7 @@ export async function getCreator(id: string) {
 }
 
 export async function getTrainer(id: string) {
-  const { supabase } = await getOptionalUser();
+  const supabase = await createServerSupabase();
   const { data } = await supabase.from("trainer_profiles").select("*").eq("id", id).maybeSingle();
   return data as Trainer | null;
 }
@@ -126,7 +126,7 @@ export async function purchasePlan(planId: string) {
 }
 
 export async function listRatings(targetType: string, targetId: string) {
-  const { supabase } = await getOptionalUser();
+  const supabase = await createServerSupabase();
   const { data, error } = await supabase
     .from("ratings")
     .select(

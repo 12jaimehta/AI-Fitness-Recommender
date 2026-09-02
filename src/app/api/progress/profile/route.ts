@@ -1,10 +1,16 @@
 import { getProfile, getTrackingContext, updateProfile, upsertProfile } from "@backend/features/progress";
 import { jsonError, jsonOk, readJsonBody } from "@backend/shared";
+import { requireUser } from "@backend/shared/api/supabase";
 
 export async function GET(request: Request) {
   try {
-    const date = new URL(request.url).searchParams.get("date");
-    const [data, tracking] = await Promise.all([getProfile(), getTrackingContext(date)]);
+    const url = new URL(request.url);
+    const date = url.searchParams.get("date");
+    const includeTracking = url.searchParams.get("tracking") === "1";
+    const auth = await requireUser();
+    const data = await getProfile(auth);
+    if (!includeTracking) return jsonOk({ data });
+    const tracking = await getTrackingContext(date, auth);
     return jsonOk({ data, tracking });
   } catch (error) {
     return jsonError(error);

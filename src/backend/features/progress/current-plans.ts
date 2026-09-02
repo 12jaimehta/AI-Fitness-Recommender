@@ -1,14 +1,17 @@
 import type { CurrentPlans } from "@/shared/types/progress-tracking";
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import { mapDietPlan, mapWorkoutPlan } from "@/shared/lib/current-plans";
 import { getCurrentDiet, getCurrentWorkout } from "@backend/features/plan-cache";
 import { utcToday } from "./db";
 
-export async function getCurrentPlans(dateInput?: string | null): Promise<CurrentPlans> {
-  const { user } = await requireUser();
+export async function getCurrentPlans(dateInput?: string | null, auth?: AuthCtx): Promise<CurrentPlans> {
+  const resolved = await resolveAuth(auth);
   const date = parseIsoDate(dateInput, utcToday());
-  const [diet, workout] = await Promise.all([getCurrentDiet(user.id), getCurrentWorkout(user.id)]);
+  const [diet, workout] = await Promise.all([
+    getCurrentDiet(resolved.user.id, resolved),
+    getCurrentWorkout(resolved.user.id, resolved),
+  ]);
 
   return {
     diet_plan: diet

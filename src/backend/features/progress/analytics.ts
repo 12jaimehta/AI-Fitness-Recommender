@@ -1,7 +1,7 @@
 import type { AnalyticsPoint, ExerciseLogEntry, ProgressAnalytics, TrackRange, WorkoutSetEntry } from "@/shared/types";
 import { addDaysIso, eachIsoDate, localIsoDate, parseIsoDate, weekStartMonday } from "@/shared/lib/plan-tracking";
 import { trackDaysFromLogs } from "@/shared/lib/daily-track";
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import { civilDate, throwIfSchemaMissing } from "./db";
 
@@ -104,8 +104,8 @@ function asExercises(value: unknown): ExerciseLogEntry[] {
   }));
 }
 
-export async function getProgressAnalytics(range: string, date?: string): Promise<ProgressAnalytics> {
-  const { supabase, user } = await requireUser();
+export async function getProgressAnalytics(range: string, date?: string, auth?: AuthCtx): Promise<ProgressAnalytics> {
+  const { supabase, user } = await resolveAuth(auth);
   const window = analyticsWindow(range, date);
 
   const [mealsRes, workoutsRes] = await Promise.all([

@@ -1,6 +1,6 @@
 import { completeJson } from "@backend/shared/api/grok";
 import { ApiError } from "@backend/shared/lib/errors";
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { parseIsoDate } from "@/shared/lib/plan-tracking";
 import { emptySetsForExercise } from "@/shared/lib/current-plans";
 import type {
@@ -54,8 +54,8 @@ function asWorkoutLog(row: Record<string, unknown>): WorkoutLogRow {
   };
 }
 
-export async function getWorkoutLog(date: string) {
-  const { supabase, user } = await requireUser();
+export async function getWorkoutLog(date: string, auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data, error } = await supabase
     .from("workout_logs")
     .select("*")
@@ -69,10 +69,11 @@ export async function getWorkoutLog(date: string) {
   return data ? asWorkoutLog(data as Record<string, unknown>) : null;
 }
 
-async function upsertWorkout(payload: Record<string, unknown>) {
-  const { supabase, user } = await requireUser();
+async function upsertWorkout(payload: Record<string, unknown>, auth?: AuthCtx) {
+  const resolved = await resolveAuth(auth);
+  const { supabase, user } = resolved;
   const date = String(payload.date);
-  const existing = await getWorkoutLog(date);
+  const existing = await getWorkoutLog(date, resolved);
 
   if (existing) {
     const { data, error } = await supabase
@@ -85,7 +86,7 @@ async function upsertWorkout(payload: Record<string, unknown>) {
     throwIfSchemaMissing(error);
     if (error) throw new ApiError(error.message, 400);
     const updated = asWorkoutLog(data as Record<string, unknown>);
-    await rebuildDailyTrackDay(date);
+    await rebuildDailyTrackDay(date, resolved);
     return updated;
   }
 
@@ -97,7 +98,7 @@ async function upsertWorkout(payload: Record<string, unknown>) {
   throwIfSchemaMissing(error);
   if (error) throw new ApiError(error.message, 400);
   const created = asWorkoutLog(data as Record<string, unknown>);
-  await rebuildDailyTrackDay(date);
+  await rebuildDailyTrackDay(date, resolved);
   return created;
 }
 
@@ -107,16 +108,17 @@ export async function quickCheckWorkout(input: {
   duration_minutes?: number;
   notes?: string;
 }) {
+  const resolved = await resolveAuth();
   const date = parseIsoDate(input.date, utcToday());
-  const plans = await getCurrentPlans(date);
+  const plans = await getCurrentPlans(date, resolved);
   const today = plans.workout_plan?.today_workout;
-  const existing = await getWorkoutLog(date);
+  const existing = await getWorkoutLog(date, resolved);
 
   if (existing && (existing.is_completed || workingSetsDone(existing.exercises_completed) > 0) && !input.duration_minutes) {
-    const { supabase, user } = await requireUser();
+    const { supabase, user } = resolved;
     const { error } = await supabase.from("workout_logs").delete().eq("id", existing.id).eq("user_id", user.id);
     if (error) throw new ApiError(error.message, 400);
-    await rebuildDailyTrackDay(date);
+    await rebuildDailyTrackDay(date, resolved);
     return { removed: true, data: null };
   }
 
@@ -132,20 +134,23 @@ export async function quickCheckWorkout(input: {
           sets: emptySetsForExercise(exercise),
         }));
 
-  const data = await upsertWorkout({
-    date,
-    workout_plan_id: plans.workout_plan?.id || existing?.workout_plan_id || null,
-    source_type: today && !today.is_rest_day ? "plan_checkoff" : existing?.source_type || "manual",
-    title: (today && !today.is_rest_day ? today.focus_area : null) || existing?.title || "Workout",
-    duration_minutes: Number(
-      input.duration_minutes || existing?.duration_minutes || today?.estimated_duration_min || 45
-    ),
-    rpe_rating: input.rpe_rating ?? existing?.rpe_rating ?? 7,
-    calories_burned_estimated: today?.estimated_calories ?? existing?.calories_burned_estimated ?? 0,
-    exercises_completed: exercises,
-    is_completed: true,
-    notes: input.notes || existing?.notes || null,
-  });
+  const data = await upsertWorkout(
+    {
+      date,
+      workout_plan_id: plans.workout_plan?.id || existing?.workout_plan_id || null,
+      source_type: today && !today.is_rest_day ? "plan_checkoff" : existing?.source_type || "manual",
+      title: (today && !today.is_rest_day ? today.focus_area : null) || existing?.title || "Workout",
+      duration_minutes: Number(
+        input.duration_minutes || existing?.duration_minutes || today?.estimated_duration_min || 45
+      ),
+      rpe_rating: input.rpe_rating ?? existing?.rpe_rating ?? 7,
+      calories_burned_estimated: today?.estimated_calories ?? existing?.calories_burned_estimated ?? 0,
+      exercises_completed: exercises,
+      is_completed: true,
+      notes: input.notes || existing?.notes || null,
+    },
+    resolved
+  );
   return { removed: false, data };
 }
 
@@ -158,25 +163,29 @@ export async function saveWorkoutLog(input: {
   notes?: string;
   title?: string;
 }) {
+  const resolved = await resolveAuth();
   const date = parseIsoDate(input.date, utcToday());
-  const plans = await getCurrentPlans(date);
+  const plans = await getCurrentPlans(date, resolved);
   const today = plans.workout_plan?.today_workout;
-  const existing = await getWorkoutLog(date);
+  const existing = await getWorkoutLog(date, resolved);
   const exercises = input.exercises_completed ?? existing?.exercises_completed ?? [];
   const trained = workingSetsDone(exercises) > 0;
 
-  return upsertWorkout({
-    date,
-    workout_plan_id: plans.workout_plan?.id || existing?.workout_plan_id || null,
-    source_type: existing?.source_type || "manual",
-    title: input.title || existing?.title || today?.focus_area || "Workout",
-    duration_minutes: Number(input.duration_minutes ?? existing?.duration_minutes ?? today?.estimated_duration_min ?? 45),
-    rpe_rating: input.rpe_rating ?? existing?.rpe_rating ?? null,
-    calories_burned_estimated: existing?.calories_burned_estimated ?? today?.estimated_calories ?? null,
-    exercises_completed: exercises,
-    is_completed: Boolean(input.is_completed) || trained || Boolean(existing?.is_completed),
-    notes: input.notes ?? existing?.notes ?? null,
-  });
+  return upsertWorkout(
+    {
+      date,
+      workout_plan_id: plans.workout_plan?.id || existing?.workout_plan_id || null,
+      source_type: existing?.source_type || "manual",
+      title: input.title || existing?.title || today?.focus_area || "Workout",
+      duration_minutes: Number(input.duration_minutes ?? existing?.duration_minutes ?? today?.estimated_duration_min ?? 45),
+      rpe_rating: input.rpe_rating ?? existing?.rpe_rating ?? null,
+      calories_burned_estimated: existing?.calories_burned_estimated ?? today?.estimated_calories ?? null,
+      exercises_completed: exercises,
+      is_completed: Boolean(input.is_completed) || trained || Boolean(existing?.is_completed),
+      notes: input.notes ?? existing?.notes ?? null,
+    },
+    resolved
+  );
 }
 
 export async function aiLogWorkout(input: { date?: string; text_prompt?: string }) {

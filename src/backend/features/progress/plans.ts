@@ -1,5 +1,5 @@
 import type { DietPlanData, TrackingContext, WorkoutEntry, WorkoutPlanData } from "@/shared/types";
-import { requireUser } from "@backend/shared/api/supabase";
+import { requireUser, resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import {
   asLoggedMeals,
@@ -38,8 +38,8 @@ function todayIso() {
   return new Date().toISOString().split("T")[0];
 }
 
-export async function getLatestDietPlan() {
-  const { supabase, user } = await requireUser();
+export async function getLatestDietPlan(auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data } = await supabase
     .from("diet_plans")
     .select("id, title, form_data, diet_plan")
@@ -50,8 +50,8 @@ export async function getLatestDietPlan() {
   return (data as DietPlanRow | null) || null;
 }
 
-export async function getLatestWorkoutPlan() {
-  const { supabase, user } = await requireUser();
+export async function getLatestWorkoutPlan(auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data } = await supabase
     .from("workout_plans")
     .select("id, title, form_data, workout_plan")
@@ -62,8 +62,8 @@ export async function getLatestWorkoutPlan() {
   return (data as WorkoutPlanRow | null) || null;
 }
 
-export async function getTrackingContext(dateInput?: string | null): Promise<TrackingContext> {
-  const { supabase, user } = await requireUser();
+export async function getTrackingContext(dateInput?: string | null, auth?: AuthCtx): Promise<TrackingContext> {
+  const { supabase, user } = await resolveAuth(auth);
   const date = parseIsoDate(dateInput, todayIso());
   const todayKey = weekdayFromIsoDate(date);
   const weekFrom = weekStartMonday(date);

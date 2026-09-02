@@ -1,4 +1,4 @@
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { completeJson } from "@backend/shared/api/grok";
 import { ApiError } from "@backend/shared/lib/errors";
 import { buildProgressInsightsPrompt } from "@backend/ai/prompts/insights";
@@ -87,23 +87,25 @@ function emptyMacros() {
   return { calories: 0, protein: 0, carbs: 0, fats: 0 };
 }
 
-export async function getProfile() {
-  const { supabase, user } = await requireUser();
+export async function getProfile(auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data } = await supabase.from("user_profiles").select("*").eq("id", user.id).maybeSingle();
   return data as UserProfile | null;
 }
 
 export async function upsertProfile(profile: Omit<UserProfile, "created_at" | "updated_at">) {
-  const { supabase, user } = await requireUser();
+  const resolved = await resolveAuth();
+  const { supabase, user } = resolved;
   const payload = { ...profile, id: user.id, email: profile.email || user.email };
   const { data, error } = await supabase.from("user_profiles").upsert(payload).select().single();
   if (error) throw new ApiError(error.message, 400);
-  await recacheUserPlans(user.id);
+  await recacheUserPlans(user.id, resolved);
   return data as UserProfile;
 }
 
 export async function updateProfile(updates: Partial<UserProfile>) {
-  const { supabase, user } = await requireUser();
+  const resolved = await resolveAuth();
+  const { supabase, user } = resolved;
   const { data: existing } = await supabase.from("user_profiles").select("*").eq("id", user.id).maybeSingle();
   const merged = {
     ...(existing || {}),
@@ -126,12 +128,12 @@ export async function updateProfile(updates: Partial<UserProfile>) {
 
   const { data, error } = await supabase.from("user_profiles").upsert(payload).select().single();
   if (error) throw new ApiError(error.message, 400);
-  await recacheUserPlans(user.id);
+  await recacheUserPlans(user.id, resolved);
   return data as UserProfile;
 }
 
-export async function getNutrition(date: string) {
-  const { supabase, user } = await requireUser();
+export async function getNutrition(date: string, auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data } = await supabase
     .from("daily_nutrition")
     .select("*")
@@ -141,8 +143,8 @@ export async function getNutrition(date: string) {
   return data as DailyNutrition | null;
 }
 
-async function listNutritionRange(from: string, to: string) {
-  const { supabase, user } = await requireUser();
+async function listNutritionRange(from: string, to: string, auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data } = await supabase
     .from("daily_nutrition")
     .select("*")
@@ -153,8 +155,8 @@ async function listNutritionRange(from: string, to: string) {
   return (data || []) as DailyNutrition[];
 }
 
-async function listWorkoutRange(from: string, to: string) {
-  const { supabase, user } = await requireUser();
+async function listWorkoutRange(from: string, to: string, auth?: AuthCtx) {
+  const { supabase, user } = await resolveAuth(auth);
   const { data } = await supabase
     .from("workout_entries")
     .select("*")
@@ -208,12 +210,13 @@ function workoutPoints(rows: WorkoutEntry[], window: ReturnType<typeof rangeWind
   return MONTHS.map((label, i) => ({ label, value: byMonth[i] }));
 }
 
-export async function getDietTrack(range: TrackRange): Promise<DietTrack> {
+export async function getDietTrack(range: TrackRange, auth?: AuthCtx): Promise<DietTrack> {
+  const resolved = await resolveAuth(auth);
   const window = rangeWindow(range);
   const [rows, profile, dietPlan] = await Promise.all([
-    listNutritionRange(window.from, window.to),
-    getProfile(),
-    getLatestDietPlan(),
+    listNutritionRange(window.from, window.to, resolved),
+    getProfile(resolved),
+    getLatestDietPlan(resolved),
   ]);
   const todayKey = todayIso();
   const todayRow = rows.find((row) => datePart(String(row.date)) === todayKey);
@@ -248,9 +251,13 @@ export async function getDietTrack(range: TrackRange): Promise<DietTrack> {
   };
 }
 
-export async function getWorkoutTrack(range: TrackRange): Promise<WorkoutTrack> {
+export async function getWorkoutTrack(range: TrackRange, auth?: AuthCtx): Promise<WorkoutTrack> {
+  const resolved = await resolveAuth(auth);
   const window = rangeWindow(range);
-  const [rows, workoutPlan] = await Promise.all([listWorkoutRange(window.from, window.to), getLatestWorkoutPlan()]);
+  const [rows, workoutPlan] = await Promise.all([
+    listWorkoutRange(window.from, window.to, resolved),
+    getLatestWorkoutPlan(resolved),
+  ]);
   const todayKey = todayIso();
   const todayRows = rows.filter((row) => datePart(String(row.date)) === todayKey);
   const weekFrom = weekStartMonday(todayKey);
@@ -288,9 +295,10 @@ export async function getTrackInsights(
   range: TrackRange,
   date?: string | null
 ): Promise<TrackInsight[]> {
+  const auth = await resolveAuth();
   const [snapshot, tracking] = await Promise.all([
-    track === "diet" ? getDietTrack(range) : getWorkoutTrack(range),
-    getTrackingContext(date),
+    track === "diet" ? getDietTrack(range, auth) : getWorkoutTrack(range, auth),
+    getTrackingContext(date, auth),
   ]);
   try {
     const result = await completeJson<{ insights?: TrackInsight[] }>(

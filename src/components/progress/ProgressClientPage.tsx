@@ -16,6 +16,8 @@ import {
   quickCheckWorkout,
   saveVitals,
   saveWorkoutLog,
+  seedDailyProgress,
+  seedProgressAnalytics,
 } from "@/lib/service/progress-database";
 import { emptySetsForExercise } from "@/shared/lib/current-plans";
 import { localIsoDate } from "@/shared/lib/plan-tracking";
@@ -30,7 +32,7 @@ import type {
   WeeklyReview,
   CoachingAdvice,
 } from "@/shared/types";
-import { ProgressSkeleton } from "@/components/ui/Skeleton";
+import { ProgressSkeleton, CoachSkeleton } from "@/components/ui/Skeleton";
 import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import CoachingCard from "@/components/shared/CoachingCard";
 import TrendChart from "@/components/shared/TrendChart";
@@ -109,36 +111,39 @@ function FillBar({
   );
 }
 
-export default function ProgressClientPage() {
+export default function ProgressClientPage({
+  initialDaily = null,
+  initialAnalytics = null,
+}: {
+  initialDaily?: DailyProgress | null;
+  initialAnalytics?: ProgressAnalytics | null;
+}) {
   const { user, isSignedIn, isLoading: userLoading } = useUser();
-  const [date, setDate] = useState(localIsoDate());
+  const [date, setDate] = useState(initialDaily?.date || localIsoDate());
   const [track, setTrack] = useState<TrackKind>("diet");
   const [range, setRange] = useState("month");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialDaily);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
-  const [daily, setDaily] = useState<DailyProgress | null>(null);
-  const [analytics, setAnalytics] = useState<ProgressAnalytics | null>(null);
+  const [daily, setDaily] = useState<DailyProgress | null>(initialDaily);
+  const [analytics, setAnalytics] = useState<ProgressAnalytics | null>(initialAnalytics);
   const [review, setReview] = useState<WeeklyReview | null>(null);
   const [coaching, setCoaching] = useState<CoachingAdvice | null>(null);
+  const [coachingReady, setCoachingReady] = useState(false);
   const [aiSlot, setAiSlot] = useState<string | null>(null);
   const [aiWorkout, setAiWorkout] = useState(false);
   const [activeExerciseId, setActiveExerciseId] = useState<string | null>(null);
 
-  const load = async (silent = false) => {
+  const loadCore = async (silent = false) => {
     if (!silent) setLoading(true);
     setError("");
     try {
-      const [dailyData, analyticsData, reviewData, coachingData] = await Promise.all([
+      const [dailyData, analyticsData] = await Promise.all([
         getDailyProgress(date),
         getProgressAnalytics(range, date),
-        getWeeklyReview().catch(() => null),
-        getCoachingAdvice().catch(() => null),
       ]);
       setDaily(dailyData);
       setAnalytics(analyticsData);
-      setReview(reviewData);
-      setCoaching(coachingData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load tracking.");
     } finally {
@@ -146,9 +151,26 @@ export default function ProgressClientPage() {
     }
   };
 
+  const loadSecondary = () => {
+    setCoachingReady(false);
+    getWeeklyReview()
+      .then(setReview)
+      .catch(() => setReview(null));
+    getCoachingAdvice()
+      .then((advice) => setCoaching(advice))
+      .catch(() => setCoaching(null))
+      .finally(() => setCoachingReady(true));
+  };
+
+  useEffect(() => {
+    if (initialDaily) seedDailyProgress(initialDaily.date, initialDaily);
+    if (initialAnalytics) seedProgressAnalytics("month", initialDaily?.date || localIsoDate(), initialAnalytics);
+  }, [initialDaily, initialAnalytics]);
+
   useEffect(() => {
     if (userLoading || !isSignedIn || !user) return;
-    void load();
+    void loadCore(Boolean(initialDaily) && date === initialDaily?.date && range === "month");
+    loadSecondary();
   }, [user, isSignedIn, userLoading, date, range]);
 
   const planExercises = daily?.workout_plan?.today_workout.exercises || [];
@@ -164,7 +186,7 @@ export default function ProgressClientPage() {
       exercises_completed: next,
       title: daily?.workout_plan?.today_workout.focus_area,
     });
-    await load(true);
+    await loadCore(true);
   };
 
   const openExercise = async (exercise: ExerciseLogEntry) => {
@@ -269,7 +291,11 @@ export default function ProgressClientPage() {
           <p className="mt-2 text-xs text-gray-500">{dateLabel}</p>
         </section>
 
-        {coaching ? (
+        {!coachingReady ? (
+          <div className="mb-6">
+            <CoachSkeleton />
+          </div>
+        ) : coaching ? (
           <div className="mb-6">
             <CoachingCard advice={coaching} />
           </div>
@@ -280,8 +306,8 @@ export default function ProgressClientPage() {
           water={daily?.actuals.water_intake_ml || 0}
           sleep={daily?.actuals.sleep_hours ?? null}
           waterTarget={daily?.targets.water_ml || 3000}
-          onWater={(deltaMl) => void saveVitals({ date, water_increment_ml: deltaMl }).then(() => load(true))}
-          onSave={(patch) => void saveVitals({ date, ...patch }).then(() => load(true))}
+          onWater={(deltaMl) => void saveVitals({ date, water_increment_ml: deltaMl }).then(() => loadCore(true))}
+          onSave={(patch) => void saveVitals({ date, ...patch }).then(() => loadCore(true))}
         />
 
         <section className="mt-6">
@@ -438,7 +464,7 @@ export default function ProgressClientPage() {
                 setBusy(slot);
                 try {
                   await quickCheckMeal(slot, date);
-                  await load(true);
+                  await loadCore(true);
                 } catch (err) {
                   setError(err instanceof Error ? err.message : "Could not log meal.");
                 } finally {
@@ -456,7 +482,7 @@ export default function ProgressClientPage() {
                 setBusy("workout");
                 try {
                   await quickCheckWorkout({}, date);
-                  await load(true);
+                  await loadCore(true);
                 } catch (err) {
                   setError(err instanceof Error ? err.message : "Could not log workout.");
                 } finally {
@@ -485,7 +511,7 @@ export default function ProgressClientPage() {
         onClose={() => setAiSlot(null)}
         onSubmit={async (text) => {
           await aiLogMeal(text, aiSlot || "other", date);
-          await load(true);
+          await loadCore(true);
         }}
       />
       <AIWorkoutLogModal
@@ -493,7 +519,7 @@ export default function ProgressClientPage() {
         onClose={() => setAiWorkout(false)}
         onSubmit={async (text) => {
           await aiLogWorkout(text, date);
-          await load(true);
+          await loadCore(true);
         }}
       />
     </div>

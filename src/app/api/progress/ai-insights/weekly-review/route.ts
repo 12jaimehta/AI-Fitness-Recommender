@@ -1,7 +1,7 @@
 import { getWeeklyReview } from "@backend/features/progress/weekly";
 import { jsonError, jsonOk } from "@backend/shared";
 
-export const maxDuration = 60;
+export const maxDuration = 15;
 
 export async function POST() {
   try {

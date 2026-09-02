@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local working notes (not for git)
+PERFORMANCE.md
+
 # vercel
 .vercel
 

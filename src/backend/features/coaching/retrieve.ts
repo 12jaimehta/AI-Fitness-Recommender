@@ -1,4 +1,4 @@
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { parseLeadingNumber } from "@/shared/lib/plan-tracking";
 import { coerceProgramGoal } from "@/shared/lib/program-goals";
 import { utcToday } from "@backend/features/progress/db";
@@ -64,8 +64,8 @@ function mealSlots(plan: {
     }));
 }
 
-export async function retrieveCoachingContext(): Promise<CoachingContext> {
-  const { supabase, user } = await requireUser();
+export async function retrieveCoachingContext(auth?: AuthCtx): Promise<CoachingContext> {
+  const { supabase, user } = await resolveAuth(auth);
   const today = utcToday();
   const from42 = new Date(`${today}T00:00:00Z`);
   from42.setUTCDate(from42.getUTCDate() - 42);

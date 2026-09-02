@@ -15,13 +15,18 @@ function redirectWithCookies(request: NextRequest, from: NextResponse, pathname:
 }
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
+
+  if (isApiPath(pathname)) {
+    return NextResponse.next({ request });
+  }
+
+  let supabaseResponse = NextResponse.next({ request });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) {
-    if (!isApiPath(pathname) && !isKnownAppPath(pathname)) {
+    if (!isKnownAppPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     return supabaseResponse;
@@ -46,7 +51,7 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!isApiPath(pathname) && !isKnownAppPath(pathname)) {
+  if (!isKnownAppPath(pathname)) {
     return redirectWithCookies(request, supabaseResponse, user ? "/dashboard" : "/");
   }
 

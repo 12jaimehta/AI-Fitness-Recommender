@@ -36,7 +36,7 @@ export default function HeroVideo({ src, active }: { src: string; active: boolea
     }, []);
 
     useEffect(() => {
-        if (playback !== "image") return;
+        if (playback === "pending") return;
         if (active) {
             setKeepImage(true);
             return;
@@ -114,7 +114,11 @@ export default function HeroVideo({ src, active }: { src: string; active: boolea
         return <SafariMp4Image src={src} />;
     }
 
-    return (
+    if (playback === "video") {
+        if (!keepImage && !active) {
+            return <div className="h-full w-full bg-black" aria-hidden />;
+        }
+        return (
         <video
             ref={videoRef}
             muted
@@ -125,7 +129,11 @@ export default function HeroVideo({ src, active }: { src: string; active: boolea
             disableRemotePlayback
             className="hero-clip pointer-events-none h-full w-full object-cover"
         >
-            <source src={src} type="video/mp4" />
+            {active ? <source src={src} type="video/mp4" /> : null}
         </video>
-    );
+        );
+    }
+
+    return <div className="h-full w-full bg-black" aria-hidden />;
 }
+

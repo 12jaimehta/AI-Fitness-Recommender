@@ -1,18 +1,32 @@
 import { Redis } from "@upstash/redis";
 
 const TTL_SECONDS = 60 * 60 * 24 * 30;
-const COMMAND_MS = 2_000;
+const COMMAND_MS = 400;
 const DOWN_MS = 10_000;
+const FAIL_STREAK_BEFORE_DOWN = 3;
 
 type RedisGlobal = {
   __fyteUpstash?: Redis;
   __fyteRedisDownUntil?: number;
+  __fyteRedisFailStreak?: number;
 };
 
 function markRedisDown() {
   const globalForRedis = globalThis as RedisGlobal;
   globalForRedis.__fyteRedisDownUntil = Date.now() + DOWN_MS;
   globalForRedis.__fyteUpstash = undefined;
+  globalForRedis.__fyteRedisFailStreak = 0;
+}
+
+function noteRedisFailure() {
+  const globalForRedis = globalThis as RedisGlobal;
+  const streak = (globalForRedis.__fyteRedisFailStreak || 0) + 1;
+  globalForRedis.__fyteRedisFailStreak = streak;
+  if (streak >= FAIL_STREAK_BEFORE_DOWN) markRedisDown();
+}
+
+function noteRedisOk() {
+  (globalThis as RedisGlobal).__fyteRedisFailStreak = 0;
 }
 
 function redisIsSkipped() {
@@ -43,15 +57,17 @@ async function withBudget<T>(work: Promise<T>): Promise<T | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const raced = await Promise.race([
-      work,
+      work.then((value) => {
+        noteRedisOk();
+        return value;
+      }),
       new Promise<null>((resolve) => {
         timer = setTimeout(() => resolve(null), COMMAND_MS);
       }),
     ]);
-    if (raced === null) markRedisDown();
     return raced;
   } catch {
-    markRedisDown();
+    noteRedisFailure();
     return null;
   } finally {
     if (timer) clearTimeout(timer);

@@ -89,7 +89,7 @@ export default function RefactoredMultiStepForm({
     let cancelled = false;
     void (async () => {
       try {
-        await hydratePlanCache();
+        const [profile] = await Promise.all([getUserProfile().catch(() => null), hydratePlanCache()]);
         if (cancelled) return;
         const workout = readLastWorkoutForm();
         setWorkoutForm(workout);
@@ -102,17 +102,13 @@ export default function RefactoredMultiStepForm({
         }
         if (workout?.medicalConditions) setValue("medicalConditions", workout.medicalConditions);
 
-        try {
-          const profile = await getUserProfile();
-          if (!profile || cancelled) return;
+        if (profile) {
           if (profile.age) setValue("age", String(profile.age));
           if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
           if (profile.height) setValue("height", String(profile.height));
           if (profile.initial_weight) setValue("weight", String(profile.initial_weight));
           const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
           if (profileGoal && !workout?.goal) setValue("goal", profileGoal);
-        } catch {
-          /* form stays on defaults */
         }
       } finally {
         if (!cancelled) setReady(true);

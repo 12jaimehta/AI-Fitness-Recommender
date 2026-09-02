@@ -5,6 +5,16 @@ import { ApiError } from "../lib/errors";
 import type { User } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+export type AuthCtx = {
+  supabase: SupabaseClient;
+  user: User;
+};
+
+export async function resolveAuth(auth?: AuthCtx): Promise<AuthCtx> {
+  if (auth?.user && auth.supabase) return auth;
+  return requireUser();
+}
+
 export async function createServerSupabase() {
   const cookieStore = await cookies();
   const { url, anonKey } = getSupabaseEnv();
@@ -27,10 +37,7 @@ export async function createServerSupabase() {
   });
 }
 
-export async function requireUser(): Promise<{
-  supabase: SupabaseClient;
-  user: User;
-}> {
+export async function requireUser(): Promise<AuthCtx> {
   const supabase = await createServerSupabase();
   const {
     data: { user },

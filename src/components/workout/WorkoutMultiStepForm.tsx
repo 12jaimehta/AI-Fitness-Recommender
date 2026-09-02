@@ -88,15 +88,13 @@ export default function WorkoutMultiStepForm({
     let cancelled = false;
     void (async () => {
       try {
-        await hydratePlanCache();
+        const [profile] = await Promise.all([getUserProfile().catch(() => null), hydratePlanCache()]);
         if (cancelled) return;
         const diet = readLastDietForm();
         setDietForm(diet);
         if (diet?.goal) setValue("goal", coerceProgramGoal(diet.goal) || (diet.goal as WorkoutPlanFormData["goal"]));
         if (diet?.medicalConditions) setValue("medicalConditions", diet.medicalConditions);
-        try {
-          const profile = await getUserProfile();
-          if (!profile || cancelled) return;
+        if (profile) {
           if (profile.age) setValue("age", String(profile.age));
           if (profile.gender === "male" || profile.gender === "female") setValue("gender", profile.gender);
           if (
@@ -108,8 +106,6 @@ export default function WorkoutMultiStepForm({
           }
           const profileGoal = (profile.goals || []).map(coerceProgramGoal).find(Boolean);
           if (profileGoal && !diet?.goal) setValue("goal", profileGoal);
-        } catch {
-          /* form stays on defaults */
         }
       } finally {
         if (!cancelled) setReady(true);

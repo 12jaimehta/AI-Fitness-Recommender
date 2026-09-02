@@ -14,11 +14,12 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { user } = await getOptionalUser();
+    const { supabase, user } = await getOptionalUser();
     if (!user) return jsonOk({ diet: null, workout: null });
+    const auth = { supabase, user };
     const [diet, workout] = await Promise.all([
-      getCurrentDiet(user.id),
-      getCurrentWorkout(user.id),
+      getCurrentDiet(user.id, auth),
+      getCurrentWorkout(user.id, auth),
     ]);
     return jsonOk({ diet, workout });
   } catch (error) {

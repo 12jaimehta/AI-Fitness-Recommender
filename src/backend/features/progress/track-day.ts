@@ -1,4 +1,4 @@
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth, type AuthCtx } from "@backend/shared/api/supabase";
 import { summarizeTrackDay, workingSetsDone, type TrackDaySummary } from "@/shared/lib/daily-track";
 import type { ExerciseLogEntry, MealLogRow, MealSourceType, PlannedFoodItem, WorkoutLogRow } from "@/shared/types/progress-tracking";
 import { civilDate, throwIfSchemaMissing } from "./db";
@@ -38,8 +38,8 @@ function asWorkout(row: Record<string, unknown> | null): WorkoutLogRow | null {
   };
 }
 
-export async function rebuildDailyTrackDay(date: string): Promise<TrackDaySummary> {
-  const { supabase, user } = await requireUser();
+export async function rebuildDailyTrackDay(date: string, auth?: AuthCtx): Promise<TrackDaySummary> {
+  const { supabase, user } = await resolveAuth(auth);
   const [mealsRes, workoutRes] = await Promise.all([
     supabase.from("meal_logs").select("*").eq("user_id", user.id).eq("date", date),
     supabase

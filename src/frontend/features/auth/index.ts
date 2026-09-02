@@ -1,62 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
 import { createClient } from "@frontend/shared/api/supabase";
-import {
-  clearClientPlanCache,
-  dropUserPlanCache,
-  persistClientPlans,
-  purgeLegacyPlanStorage,
-} from "@frontend/features/plan-cache";
+import { dropUserPlanCache } from "@frontend/features/plan-cache";
+import { clearQueryCache } from "@frontend/shared/lib/query-cache";
+import { useAuthContext } from "./AuthProvider";
+
+export { AuthProvider } from "./AuthProvider";
 
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    async function load() {
-      try {
-        const { data } = await supabase.auth.getSession();
-        setUser(data.session?.user ?? null);
-      } catch (err) {
-        console.error("Auth session error:", err);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    load();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-
-      if (event === "SIGNED_OUT") {
-        clearClientPlanCache();
-      }
-      if (event === "SIGNED_IN") {
-        purgeLegacyPlanStorage();
-        void persistClientPlans();
-      }
-      if (event === "USER_UPDATED") {
-        void dropUserPlanCache();
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  return {
-    user,
-    isSignedIn: !!user,
-    isLoading,
-  };
+  return useAuthContext();
 }
 
 export function useCurrentUser() {
@@ -70,6 +22,7 @@ export function useCurrentUser() {
 
 export async function signOutAndClearCache() {
   await dropUserPlanCache();
+  clearQueryCache();
   const supabase = createClient();
   await supabase.auth.signOut();
 }

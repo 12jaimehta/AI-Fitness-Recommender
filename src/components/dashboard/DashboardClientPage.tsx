@@ -5,7 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 import { useUser } from "@/lib/hooks/use-user";
-import { getDailyProgress, getUserProfile, getCoachingAdvice } from "@/lib/service/progress-database";
+import { getDailyProgress, getUserProfile, getCoachingAdvice, seedDailyProgress, seedUserProfile } from "@/lib/service/progress-database";
 import { localIsoDate } from "@/shared/lib/plan-tracking";
 import type { DailyProgress, UserProfile, CoachingAdvice } from "@/shared/types";
 import { CoachSkeleton, DashboardSkeleton, FillBarsSkeleton } from "@/components/ui/Skeleton";
@@ -78,13 +78,24 @@ function Row({
   );
 }
 
-export default function DashboardClientPage() {
+export default function DashboardClientPage({
+  initialDaily = null,
+  initialProfile = null,
+}: {
+  initialDaily?: DailyProgress | null;
+  initialProfile?: UserProfile | null;
+}) {
   const { user, isSignedIn, isLoading } = useUser();
-  const [daily, setDaily] = useState<DailyProgress | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [daily, setDaily] = useState<DailyProgress | null>(initialDaily);
+  const [profile, setProfile] = useState<UserProfile | null>(initialProfile);
   const [coaching, setCoaching] = useState<CoachingAdvice | null>(null);
-  const [pageReady, setPageReady] = useState(false);
+  const [pageReady, setPageReady] = useState(Boolean(initialDaily || initialProfile));
   const [coachingReady, setCoachingReady] = useState(false);
+
+  useEffect(() => {
+    if (initialDaily) seedDailyProgress(initialDaily.date, initialDaily);
+    if (initialProfile !== undefined) seedUserProfile(initialProfile);
+  }, [initialDaily, initialProfile]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -94,7 +105,7 @@ export default function DashboardClientPage() {
       return;
     }
     let cancelled = false;
-    setPageReady(false);
+    if (!initialDaily && !initialProfile) setPageReady(false);
     setCoachingReady(false);
     Promise.allSettled([getDailyProgress(), getUserProfile()]).then(([dailyResult, profileResult]) => {
       if (cancelled) return;
@@ -113,7 +124,7 @@ export default function DashboardClientPage() {
     return () => {
       cancelled = true;
     };
-  }, [isSignedIn, isLoading]);
+  }, [isSignedIn, isLoading, initialDaily, initialProfile]);
 
   if (isLoading || !pageReady) {
     return <DashboardSkeleton />;

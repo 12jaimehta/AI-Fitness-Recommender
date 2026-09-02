@@ -1,4 +1,4 @@
-import { requireUser } from "@backend/shared/api/supabase";
+import { resolveAuth } from "@backend/shared/api/supabase";
 import { weekStartMonday } from "@/shared/lib/plan-tracking";
 import { trackDaysFromLogs } from "@/shared/lib/daily-track";
 import type { ExerciseLogEntry, WeeklyReview } from "@/shared/types/progress-tracking";
@@ -6,7 +6,8 @@ import { civilDate, utcToday } from "./db";
 import { getCurrentPlans } from "./current-plans";
 
 export async function getWeeklyReview(): Promise<WeeklyReview> {
-  const { supabase, user } = await requireUser();
+  const resolved = await resolveAuth();
+  const { supabase, user } = resolved;
   const today = utcToday();
   const from = weekStartMonday(today);
   const [mealsRes, workoutsRes, plans] = await Promise.all([
@@ -22,7 +23,7 @@ export async function getWeeklyReview(): Promise<WeeklyReview> {
       .eq("user_id", user.id)
       .gte("date", from)
       .lte("date", today),
-    getCurrentPlans(today),
+    getCurrentPlans(today, resolved),
   ]);
 
   const days = [
