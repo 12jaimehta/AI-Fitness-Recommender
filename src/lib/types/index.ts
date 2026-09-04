@@ -1,4 +1,5 @@
 import { type DietPlanFormData } from "@/lib/validation/dietPlanSchema";
+import type { ReactNode } from "react";
 
 export interface FormInputProps {
   name?: string;
@@ -11,6 +12,8 @@ export interface FormInputProps {
   error?: string;
   required?: boolean;
   disabled?: boolean;
+  autoComplete?: string;
+  labelExtra?: ReactNode;
   control?: any; // Control from react-hook-form
 }
 

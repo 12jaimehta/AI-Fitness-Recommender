@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { requestPasswordReset } from "@frontend/features/auth";
+import FormInput from "@/components/shared/FormInput";
 import { forgotPasswordSchema, type ForgotPasswordForm } from "@/lib/validation/signINSchema";
-import { AuthAlert, AuthShell, authInputClass } from "@/components/auth/AuthShell";
+import { AuthAlert, AuthShell } from "@/components/auth/AuthShell";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -14,8 +15,14 @@ export default function ForgotPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<ForgotPasswordForm>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordForm>({
     resolver: zodResolver(forgotPasswordSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
     defaultValues: { email: "" },
   });
 
@@ -39,20 +46,24 @@ export default function ForgotPasswordPage() {
       title="Forgot password"
       subtitle="Enter your email and we'll send a link to set a new password."
     >
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
-        <div>
-          <label className="text-sm font-semibold text-fyte-ink">Email</label>
-          <input
-            type="email"
-            autoComplete="email"
-            {...form.register("email")}
-            placeholder="you@example.com"
-            className={authInputClass}
-          />
-          {form.formState.errors.email ? (
-            <p className="mt-1 text-xs text-fyte-danger">{form.formState.errors.email.message}</p>
-          ) : null}
-        </div>
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.email?.message}
+              required
+            />
+          )}
+        />
         <button
           type="submit"
           disabled={loading}

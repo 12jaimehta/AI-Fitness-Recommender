@@ -7,6 +7,8 @@ import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { beginDietPlanGeneration } from "@/lib/service/dietWorkoutplan";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
 import { readLastWorkoutForm } from "@frontend/features/plan-pairing";
+import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
+import { getMembership } from "@/lib/service/billing";
 import { FormPageSkeleton } from "@/components/ui/Skeleton";
 
 const RefactoredMultiStepForm = dynamic(
@@ -28,6 +30,12 @@ export default function DietClientPage() {
     setError("");
     try {
       await hydratePlanCache();
+      const membership = await getMembership().catch(() => null);
+      if (membership?.checkoutReady && !membership.active && readGeneratedDietPlan()) {
+        submitting.current = false;
+        router.push("/billing");
+        return;
+      }
       const workout = readLastWorkoutForm();
       beginDietPlanGeneration({
         ...data,

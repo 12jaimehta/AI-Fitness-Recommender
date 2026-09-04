@@ -1,4 +1,0 @@
--- FyteAI schema moved to numbered copy-paste files.
---
--- Open: supabase/README.md
--- Paste in order: supabase/schema/00_*.sql → 06_*.sql

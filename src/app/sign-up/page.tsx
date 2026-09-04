@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useUser } from "@/lib/hooks/use-user";
 import PageLoader from "@/components/ui/PageLoader";
 import PasswordStrength from "@/components/auth/PasswordStrength";
+import FormInput from "@/components/shared/FormInput";
 import { signUpSchema, type SignUpForm } from "@/lib/validation/signUpSchema";
-import { AuthAlert, AuthDivider, AuthShell, authInputClass } from "@/components/auth/AuthShell";
+import { AuthAlert, AuthDivider, AuthShell } from "@/components/auth/AuthShell";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 export default function SignUpPage() {
@@ -19,12 +20,19 @@ export default function SignUpPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const passwordForm = useForm<SignUpForm>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
     defaultValues: { fullName: "", email: "", password: "", confirmPassword: "" },
   });
 
-  const watchedPassword = passwordForm.watch("password", "");
+  const watchedPassword = watch("password", "");
 
   useEffect(() => {
     if (!authLoading && isSignedIn) {
@@ -64,60 +72,77 @@ export default function SignUpPage() {
       <GoogleAuthButton label="Continue with Google" onError={setMessage} />
       <AuthDivider />
 
-      <form onSubmit={passwordForm.handleSubmit(doSignUp)} className="flex flex-col gap-4">
+      <form noValidate onSubmit={handleSubmit(doSignUp)} className="flex flex-col gap-4">
+        <Controller
+          name="fullName"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Full name"
+              autoComplete="name"
+              placeholder="Your name"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.fullName?.message}
+              required
+            />
+          )}
+        />
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.email?.message}
+              required
+            />
+          )}
+        />
         <div>
-          <label className="text-sm font-semibold text-fyte-ink">Full name</label>
-          <input
-            type="text"
-            autoComplete="name"
-            {...passwordForm.register("fullName")}
-            placeholder="Your name"
-            className={authInputClass}
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <FormInput
+                label="Password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Create a password"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={errors.password?.message}
+                required
+              />
+            )}
           />
-          {passwordForm.formState.errors.fullName ? (
-            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.fullName.message}</p>
-          ) : null}
-        </div>
-        <div>
-          <label className="text-sm font-semibold text-fyte-ink">Email</label>
-          <input
-            type="email"
-            autoComplete="email"
-            {...passwordForm.register("email")}
-            placeholder="you@example.com"
-            className={authInputClass}
-          />
-          {passwordForm.formState.errors.email ? (
-            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.email.message}</p>
-          ) : null}
-        </div>
-        <div>
-          <label className="text-sm font-semibold text-fyte-ink">Password</label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...passwordForm.register("password")}
-            placeholder="Create a password"
-            className={authInputClass}
-          />
-          {passwordForm.formState.errors.password ? (
-            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.password.message}</p>
-          ) : null}
           {watchedPassword.length > 0 ? <PasswordStrength value={watchedPassword} /> : null}
         </div>
-        <div>
-          <label className="text-sm font-semibold text-fyte-ink">Confirm password</label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...passwordForm.register("confirmPassword")}
-            placeholder="Repeat password"
-            className={authInputClass}
-          />
-          {passwordForm.formState.errors.confirmPassword ? (
-            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.confirmPassword.message}</p>
-          ) : null}
-        </div>
+        <Controller
+          name="confirmPassword"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Confirm password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Repeat password"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.confirmPassword?.message}
+              required
+            />
+          )}
+        />
         <button
           type="submit"
           disabled={loading}

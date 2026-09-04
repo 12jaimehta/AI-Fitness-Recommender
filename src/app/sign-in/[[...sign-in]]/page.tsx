@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useUser } from "@/lib/hooks/use-user";
 import PageLoader from "@/components/ui/PageLoader";
+import FormInput from "@/components/shared/FormInput";
 import { signInSchema, type SignInForm } from "@/lib/validation/signINSchema";
-import { AuthAlert, AuthDivider, AuthShell, authInputClass } from "@/components/auth/AuthShell";
+import { AuthAlert, AuthDivider, AuthShell } from "@/components/auth/AuthShell";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 export default function SignInPage() {
@@ -18,8 +19,14 @@ export default function SignInPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const passwordForm = useForm<SignInForm>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
     defaultValues: { email: "", password: "" },
   });
 
@@ -57,42 +64,50 @@ export default function SignInPage() {
       <GoogleAuthButton onError={setMessage} />
       <AuthDivider />
 
-      <form onSubmit={passwordForm.handleSubmit(doSignIn)} className="flex flex-col gap-4">
-        <div>
-          <label className="text-sm font-semibold text-fyte-ink">Email</label>
-          <input
-            type="email"
-            autoComplete="email"
-            {...passwordForm.register("email")}
-            placeholder="you@example.com"
-            className={authInputClass}
-          />
-          {passwordForm.formState.errors.email ? (
-            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.email.message}</p>
-          ) : null}
-        </div>
-        <div>
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-sm font-semibold text-fyte-ink">Password</label>
-            <button
-              type="button"
-              onClick={() => router.push("/forgot-password")}
-              className="text-xs font-semibold text-fyte-ink"
-            >
-              Forgot password?
-            </button>
-          </div>
-          <input
-            type="password"
-            autoComplete="current-password"
-            {...passwordForm.register("password")}
-            placeholder="Your password"
-            className={authInputClass}
-          />
-          {passwordForm.formState.errors.password ? (
-            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.password.message}</p>
-          ) : null}
-        </div>
+      <form noValidate onSubmit={handleSubmit(doSignIn)} className="flex flex-col gap-4">
+        <Controller
+          name="email"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.email?.message}
+              required
+            />
+          )}
+        />
+        <Controller
+          name="password"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Your password"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.password?.message}
+              required
+              labelExtra={
+                <button
+                  type="button"
+                  onClick={() => router.push("/forgot-password")}
+                  className="text-xs font-semibold text-fyte-ink"
+                >
+                  Forgot password?
+                </button>
+              }
+            />
+          )}
+        />
         <button
           type="submit"
           disabled={loading}

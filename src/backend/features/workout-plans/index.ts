@@ -3,6 +3,7 @@ import type { WorkoutPlanData } from "@/shared/types";
 import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import { setCurrentWorkout, recacheWorkoutFromDb, dropWorkoutCache } from "@backend/features/plan-cache";
+import { requirePaidAfterFreePlan } from "@backend/features/billing";
 
 function generateTitle(formData: WorkoutPlanFormData) {
   return `${formData.goal.replace("_", " ")} ${formData.fitnessLevel} plan`;
@@ -15,6 +16,7 @@ export async function createWorkoutPlan(input: {
   description?: string;
 }) {
   const { supabase, user } = await requireUser();
+  await requirePaidAfterFreePlan("workout", { auth: { supabase, user }, forSave: true });
   const { data, error } = await supabase
     .from("workout_plans")
     .insert({

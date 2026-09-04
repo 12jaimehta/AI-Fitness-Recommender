@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { resetPassword } from "@frontend/features/auth";
 import { useUser } from "@/lib/hooks/use-user";
 import PageLoader from "@/components/ui/PageLoader";
 import PasswordStrength from "@/components/auth/PasswordStrength";
+import FormInput from "@/components/shared/FormInput";
 import { resetPasswordSchema, type ResetPasswordForm } from "@/lib/validation/signUpSchema";
-import { AuthAlert, AuthShell, authInputClass } from "@/components/auth/AuthShell";
+import { AuthAlert, AuthShell } from "@/components/auth/AuthShell";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -18,12 +19,19 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
-  const form = useForm<ResetPasswordForm>({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<ResetPasswordForm>({
     resolver: zodResolver(resetPasswordSchema),
+    mode: "onTouched",
+    reValidateMode: "onChange",
     defaultValues: { password: "", confirmPassword: "" },
   });
 
-  const watchedPassword = form.watch("password", "");
+  const watchedPassword = watch("password", "");
 
   useEffect(() => {
     if (authLoading) return;
@@ -69,34 +77,44 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthShell title="Set a new password" subtitle="Use a strong password you have not used here before.">
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <div>
-          <label className="text-sm font-semibold text-fyte-ink">New password</label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...form.register("password")}
-            placeholder="Create a password"
-            className={authInputClass}
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <FormInput
+                label="New password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Create a password"
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={errors.password?.message}
+                required
+              />
+            )}
           />
-          {form.formState.errors.password ? (
-            <p className="mt-1 text-xs text-fyte-danger">{form.formState.errors.password.message}</p>
-          ) : null}
           {watchedPassword.length > 0 ? <PasswordStrength value={watchedPassword} /> : null}
         </div>
-        <div>
-          <label className="text-sm font-semibold text-fyte-ink">Confirm password</label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            {...form.register("confirmPassword")}
-            placeholder="Repeat password"
-            className={authInputClass}
-          />
-          {form.formState.errors.confirmPassword ? (
-            <p className="mt-1 text-xs text-fyte-danger">{form.formState.errors.confirmPassword.message}</p>
-          ) : null}
-        </div>
+        <Controller
+          name="confirmPassword"
+          control={control}
+          render={({ field }) => (
+            <FormInput
+              label="Confirm password"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Repeat password"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.confirmPassword?.message}
+              required
+            />
+          )}
+        />
         <button
           type="submit"
           disabled={loading}

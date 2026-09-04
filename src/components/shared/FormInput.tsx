@@ -13,17 +13,23 @@ export default function FormInput({
   error,
   required = false,
   disabled = false,
+  autoComplete,
+  labelExtra,
 }: FormInputProps) {
   const inputValue = value === undefined || value === null ? "" : String(value);
   return (
     <div className="text-left">
-      <label className="mb-2 block text-sm font-semibold text-fyte-ink">
-        {label}
-        {required ? <span> *</span> : null}
+      <label className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold text-fyte-ink">
+        <span>
+          {label}
+          {required ? <span> *</span> : null}
+        </span>
+        {labelExtra}
       </label>
       <input
         type={type}
         inputMode={type === "number" ? "decimal" : undefined}
+        autoComplete={autoComplete}
         value={inputValue}
         onChange={(e) => onChange?.(e.target.value)}
         onBlur={onBlur}

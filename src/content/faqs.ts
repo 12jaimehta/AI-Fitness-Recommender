@@ -115,7 +115,7 @@ export const faqData = {
   billing: [
     {
       question: "What am I paying for?",
-      answer: "A 30-day coach pass. We watch the week and change the meal or session that slipped. First diet, first workout, and logging as planned (ate it / trained / skipped / weight / sleep) stay free. We do not sell AI tokens."
+      answer: "A 30-day coach pass. We watch the week and change the meal or session that slipped. Your first diet and first workout are free — once each. Logging as planned (ate it / trained / skipped / weight / sleep) stays free. Another plan, swaps, and the weekly review need the pass."
     },
     {
       question: "What payment methods do you accept?",

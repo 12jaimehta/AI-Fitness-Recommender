@@ -27,7 +27,6 @@ export const navItems = [
   { name: "Home", href: "/" },
   { name: "Diet Plan", href: "/diet" },
   { name: "Workout Plan", href: "/workout" },
-  { name: "Coach", href: "/progress" },
   // Marketplace paused — restore when checkout works.
   // { name: "Trainers", href: "/fyte-connect" },
 ];

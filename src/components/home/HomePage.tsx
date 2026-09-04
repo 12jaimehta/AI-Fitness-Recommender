@@ -79,9 +79,6 @@ export default function HomePage() {
                         <button onClick={() => router.push(homeHref)} className="nav-link text-white font-semibold hover:text-white/80 transition">Home</button>
                         <button onClick={() => router.push("/diet")} className="nav-link text-white font-semibold hover:text-white/80 transition">Diet Plan</button>
                         <button onClick={() => router.push("/workout")} className="nav-link text-white font-semibold hover:text-white/80 transition">Workout Plan</button>
-                        {!(isSignedIn && profileComplete) ? (
-                        <button onClick={() => router.push("/progress")} className="nav-link text-white font-semibold hover:text-white/80 transition">Coach</button>
-                        ) : null}
 
                         {/* Modern Auth Section */}
                         {isSignedIn ? (
@@ -178,10 +175,7 @@ export default function HomePage() {
                         className="fixed top-[80px] left-0 right-0 bottom-0 z-[999] bg-white border-t border-[#282828]/10 shadow-xl flex flex-col"
                     >
                         <div className="flex-1 p-6 overflow-y-auto">
-                            {(isSignedIn && profileComplete
-                                ? ["Home", "Diet Plan", "Workout Plan"]
-                                : ["Home", "Diet Plan", "Workout Plan", "Coach"]
-                            ).map((item, index) => (
+                            {["Home", "Diet Plan", "Workout Plan"].map((item, index) => (
                                 <button
                                     key={index}
                                     onClick={() => {
@@ -189,7 +183,6 @@ export default function HomePage() {
                                             Home: homeHref,
                                             "Diet Plan": "/diet",
                                             "Workout Plan": "/workout",
-                                            Coach: "/progress",
                                         };
                                         router.push(paths[item] || "/");
                                         setIsMobileMenuOpen(false);

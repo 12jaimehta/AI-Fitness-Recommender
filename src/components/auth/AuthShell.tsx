@@ -6,9 +6,6 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { FadeIn, motion, enter } from "@/components/shared/Motion";
 
-export const authInputClass =
-  "mt-1.5 h-12 w-full rounded-xl border-2 border-fyte-line bg-fyte-card px-4 text-base font-medium text-fyte-ink outline-none transition placeholder:text-gray-400 focus:border-fyte-ink";
-
 const POINTS = [
   "Meals with real numbers, not vibes",
   "Log a cheat meal in one sentence or a photo",

@@ -73,7 +73,7 @@ export const termsSections = [
     content: [
       {
         heading: "Coach pass",
-        text: "Paid access is a 30-day coach pass (currently ₹299 unless a different amount is shown at checkout). You pay once for that period. It is not a token wallet and is not billed by AI model usage. First diet, first workout, and logging as planned remain free."
+        text: "Paid access is a 30-day coach pass (currently ₹299 unless a different amount is shown at checkout). You pay once for that period. It is not a token wallet and is not billed by AI model usage. Your first diet and first workout are free once each. Logging as planned remains free. Another diet or workout, and coach edits, require an active pass."
       },
       {
         heading: "Payment",

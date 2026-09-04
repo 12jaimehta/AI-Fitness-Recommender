@@ -4,6 +4,7 @@ import { requireUser } from "@backend/shared/api/supabase";
 import { ApiError } from "@backend/shared/lib/errors";
 import { programGoalLabel } from "@/shared/lib/program-goals";
 import { setCurrentDiet, recacheDietFromDb, dropDietCache } from "@backend/features/plan-cache";
+import { requirePaidAfterFreePlan } from "@backend/features/billing";
 
 function generatePlanTitle(formData: DietPlanFormData): string {
   const preferenceMap: Record<string, string> = {
@@ -33,6 +34,7 @@ export async function createDietPlan(input: {
   description?: string;
 }) {
   const { supabase, user } = await requireUser();
+  await requirePaidAfterFreePlan("diet", { auth: { supabase, user }, forSave: true });
   const { data, error } = await supabase
     .from("diet_plans")
     .insert({

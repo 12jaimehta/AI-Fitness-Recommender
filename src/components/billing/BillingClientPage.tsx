@@ -36,7 +36,10 @@ const INCLUDED = [
   "Extra walk today, or a lighter meal tomorrow. Delay in days, not a lecture",
 ];
 
-const FREE = ["First diet and first workout", "Ate it / trained / skipped / weight / sleep"];
+const FREE = [
+  "First diet and first workout — once each",
+  "Ate it / trained / skipped / weight / sleep",
+];
 
 function periodLabel(iso: string | null | undefined) {
   if (!iso) return null;

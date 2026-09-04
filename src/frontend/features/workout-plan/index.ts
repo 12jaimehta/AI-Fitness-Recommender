@@ -61,6 +61,10 @@ export function beginWorkoutPlanGeneration(formData: WorkoutPlanFormData) {
       clearPendingWorkoutGeneration();
     })
     .catch((err) => {
+      if (redirectIfPaywall(err)) {
+        clearPendingWorkoutGeneration();
+        return;
+      }
       setPendingWorkoutError(
         err instanceof Error ? err.message : "Could not make your workout plan. Try again."
       );
@@ -150,6 +154,10 @@ export async function resolveWorkoutPlan(userId?: string): Promise<WorkoutPlanRe
       if (userId) void saveWorkoutPlan(userId, pending.formData, plan).catch(() => {});
       return { status: "ready", session };
     } catch (err) {
+      if (redirectIfPaywall(err)) {
+        clearPendingWorkoutGeneration();
+        return { status: "error", error: "Your first workout is free. Take the pass to make another." };
+      }
       const error =
         err instanceof Error ? err.message : "Could not make your workout plan. Try again.";
       setPendingWorkoutError(error);

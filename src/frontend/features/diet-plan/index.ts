@@ -60,6 +60,10 @@ export function beginDietPlanGeneration(formData: DietPlanFormData) {
       clearPendingDietGeneration();
     })
     .catch((err) => {
+      if (redirectIfPaywall(err)) {
+        clearPendingDietGeneration();
+        return;
+      }
       setPendingDietError(err instanceof Error ? err.message : "Could not make your meal plan. Try again.");
     });
 }
@@ -146,6 +150,10 @@ export async function resolveDietPlan(userId?: string): Promise<DietPlanResolveR
       if (userId) void saveDietPlan(userId, pending.formData, plan).catch(() => {});
       return { status: "ready", session };
     } catch (err) {
+      if (redirectIfPaywall(err)) {
+        clearPendingDietGeneration();
+        return { status: "error", error: "Your first diet is free. Take the pass to make another." };
+      }
       const error = err instanceof Error ? err.message : "Could not make your meal plan. Try again.";
       setPendingDietError(error);
       return { status: "error", error };

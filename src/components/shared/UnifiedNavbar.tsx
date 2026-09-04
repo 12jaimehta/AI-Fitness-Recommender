@@ -29,10 +29,7 @@ export default function Navbar() {
   const homeHref = isSignedIn ? signedInHomeHref(profileComplete) : "/";
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account";
 
-  const navLinks = navItems
-    .filter((item) => item.name !== "Trainers")
-    .filter((item) => !(isSignedIn && profileComplete && item.name === "Coach"))
-    .map((item) => (item.name === "Home" ? { ...item, href: homeHref } : item));
+  const navLinks = navItems.map((item) => (item.name === "Home" ? { ...item, href: homeHref } : item));
 
   const isNavActive = (href: string) => {
     if (href === "/" || href === "/progress") return pathname === href;

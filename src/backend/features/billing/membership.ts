@@ -2,6 +2,7 @@ import type { AuthCtx } from "@backend/shared/api/supabase";
 import { resolveAuth } from "@backend/shared/api/supabase";
 import { createServiceSupabase } from "@backend/shared/api/supabase-admin";
 import { getRazorpayEnv, getServiceRoleKey } from "@backend/shared/config/env";
+import { getCurrentDiet, getCurrentWorkout } from "@backend/features/plan-cache";
 import { ApiError } from "@backend/shared/lib/errors";
 import {
   COACH_AMOUNT_PAISE,
@@ -122,6 +123,47 @@ export async function requirePaidCoach(auth?: AuthCtx) {
   if (membership.setupRequired) return ctx;
   if (membership.active) return ctx;
   throw new ApiError("Unlock the coach to log a different meal, swap a slot, or rebuild from the week.", 402, {
+    code: MEMBERSHIP_REQUIRED,
+    href: "/billing",
+  });
+}
+
+async function countUserPlans(auth: AuthCtx, table: "diet_plans" | "workout_plans") {
+  const { count, error } = await auth.supabase
+    .from(table)
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", auth.user.id);
+  if (error) throw new ApiError(error.message, 500);
+  return count || 0;
+}
+
+async function hasUsedFreePlan(auth: AuthCtx, kind: "diet" | "workout", forSave: boolean) {
+  if (kind === "diet") {
+    if (!forSave) {
+      const current = await getCurrentDiet(auth.user.id, auth);
+      if (current?.plan) return true;
+    }
+    return (await countUserPlans(auth, "diet_plans")) > 0;
+  }
+  if (!forSave) {
+    const current = await getCurrentWorkout(auth.user.id, auth);
+    if (current?.plan) return true;
+  }
+  return (await countUserPlans(auth, "workout_plans")) > 0;
+}
+
+/** First diet and first workout stay free. A second generate or save needs the 30-day pass. */
+export async function requirePaidAfterFreePlan(
+  kind: "diet" | "workout",
+  options?: { auth?: AuthCtx; forSave?: boolean }
+) {
+  const ctx = await resolveAuth(options?.auth);
+  if (!getRazorpayEnv().configured || !getServiceRoleKey()) return ctx;
+  const membership = await getMembershipView(ctx);
+  if (membership.setupRequired || membership.active) return ctx;
+  if (!(await hasUsedFreePlan(ctx, kind, Boolean(options?.forSave)))) return ctx;
+  const noun = kind === "diet" ? "diet" : "workout";
+  throw new ApiError(`Your first ${noun} plan is free. Take the 30-day pass to make another.`, 402, {
     code: MEMBERSHIP_REQUIRED,
     href: "/billing",
   });
