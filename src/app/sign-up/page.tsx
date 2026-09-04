@@ -66,7 +66,7 @@ export default function SignUpPage() {
 
       <form onSubmit={passwordForm.handleSubmit(doSignUp)} className="flex flex-col gap-4">
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Full name</label>
+          <label className="text-sm font-semibold text-fyte-ink">Full name</label>
           <input
             type="text"
             autoComplete="name"
@@ -75,11 +75,11 @@ export default function SignUpPage() {
             className={authInputClass}
           />
           {passwordForm.formState.errors.fullName ? (
-            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.fullName.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.fullName.message}</p>
           ) : null}
         </div>
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Email</label>
+          <label className="text-sm font-semibold text-fyte-ink">Email</label>
           <input
             type="email"
             autoComplete="email"
@@ -88,11 +88,11 @@ export default function SignUpPage() {
             className={authInputClass}
           />
           {passwordForm.formState.errors.email ? (
-            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.email.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.email.message}</p>
           ) : null}
         </div>
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Password</label>
+          <label className="text-sm font-semibold text-fyte-ink">Password</label>
           <input
             type="password"
             autoComplete="new-password"
@@ -101,12 +101,12 @@ export default function SignUpPage() {
             className={authInputClass}
           />
           {passwordForm.formState.errors.password ? (
-            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.password.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.password.message}</p>
           ) : null}
           {watchedPassword.length > 0 ? <PasswordStrength value={watchedPassword} /> : null}
         </div>
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Confirm password</label>
+          <label className="text-sm font-semibold text-fyte-ink">Confirm password</label>
           <input
             type="password"
             autoComplete="new-password"
@@ -115,13 +115,13 @@ export default function SignUpPage() {
             className={authInputClass}
           />
           {passwordForm.formState.errors.confirmPassword ? (
-            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.confirmPassword.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.confirmPassword.message}</p>
           ) : null}
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
+          className="h-12 rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a] disabled:opacity-60"
         >
           {loading ? "Creating account..." : "Create account"}
         </button>
@@ -129,15 +129,15 @@ export default function SignUpPage() {
 
       <AuthAlert message={message} tone={success ? "success" : "error"} />
 
-      <p className="mt-6 border-t border-gray-200 pt-6 text-center text-xs text-gray-500">
+      <p className="mt-6 border-t border-fyte-line pt-6 text-center text-xs text-fyte-muted">
         By creating an account, you agree to our Terms and Privacy Policy.
       </p>
-      <p className="mt-4 text-center text-sm text-gray-600">
+      <p className="mt-4 text-center text-sm text-fyte-muted">
         Already have an account?{" "}
         <button
           type="button"
           onClick={() => router.push("/sign-in")}
-          className="font-semibold text-[#282828]"
+          className="font-semibold text-fyte-ink"
         >
           Sign in
         </button>

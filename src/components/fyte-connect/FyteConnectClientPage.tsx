@@ -2,12 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { UserPlus, Users } from "lucide-react";
+import { Search, UserPlus } from "lucide-react";
 import { getMarketplace } from "@frontend/features/fyte-connect";
 import type { Trainer } from "@/shared/types";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageHero from "@/components/shared/PageHero";
+import { FadeInView } from "@/components/shared/Motion";
 import { TrainersSkeleton } from "@/components/ui/Skeleton";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 
 export default function FyteConnectClientPage() {
   const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -16,9 +19,7 @@ export default function FyteConnectClientPage() {
 
   useEffect(() => {
     getMarketplace()
-      .then((data) => {
-        setTrainers(data.trainers || []);
-      })
+      .then((data) => setTrainers(data.trainers || []))
       .finally(() => setLoading(false));
   }, []);
 
@@ -36,120 +37,88 @@ export default function FyteConnectClientPage() {
     });
   }, [trainers, q]);
 
-  if (loading) {
-    return <TrainersSkeleton />;
-  }
+  if (loading) return <TrainersSkeleton />;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb items={[{ label: "Home" }, { label: "Trainers" }]} />
-
-        <header className="mb-8 border-b border-gray-200 pb-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Trainers</h1>
-          <p className="mt-2 text-gray-600">Hire a trainer, or list yourself so people can book you.</p>
-        </header>
-
-        <section className="mb-10 grid gap-4 sm:grid-cols-2">
-          <a
-            href="#hire"
-            className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 transition hover:border-[#282828]"
-          >
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#282828] text-white">
-              <Users size={20} />
-            </div>
-            <h2 className="text-lg font-semibold text-[#282828]">Hire a trainer</h2>
-            <p className="mt-2 flex-1 text-sm leading-6 text-gray-600">
-              Browse trainers, open Instagram, and book a session.
-            </p>
-            <span className="mt-5 inline-flex w-fit items-center justify-center rounded-xl bg-[#282828] px-5 py-2.5 text-sm font-semibold text-white">
-              Hire a trainer
-            </span>
-          </a>
-          <Link
-            href="/fyte-connect/become-trainer"
-            className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 transition hover:border-[#282828]"
-          >
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#282828] text-white">
-              <UserPlus size={20} />
-            </div>
-            <h2 className="text-lg font-semibold text-[#282828]">Become a trainer</h2>
-            <p className="mt-2 flex-1 text-sm leading-6 text-gray-600">
-              Add your profile, rate, Instagram, and expertise so people can hire you.
-            </p>
-            <span className="mt-5 inline-flex w-fit items-center justify-center rounded-xl border-2 border-[#282828] bg-white px-5 py-2.5 text-sm font-semibold text-[#282828] transition hover:bg-[#282828] hover:text-white">
-              Become a trainer
-            </span>
+    <div className={fyte.page}>
+      <PageHero
+        photo="connect"
+        kicker="Trainers"
+        title="A human, when you want one."
+        subtitle="Browse trainers, book a session, or list yourself so people can hire you."
+        actions={
+          <Link href="/fyte-connect/become-trainer" className={fyte.glass}>
+            <UserPlus size={16} /> Become a trainer
           </Link>
-        </section>
-
-        <section id="hire" className="scroll-mt-24">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-[#282828]">Hire a trainer</h2>
+        }
+        aside={
+          <label className="flex h-12 w-full items-center gap-3 rounded-full border border-white/30 bg-white/10 px-4 text-white backdrop-blur-md lg:w-80">
+            <Search size={18} className="shrink-0 text-white/70" />
             <input
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by name, skill, or Instagram"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-[#282828] outline-none focus:border-[#282828] sm:max-w-md"
+              placeholder="Name, skill, or Instagram"
+              className="w-full bg-transparent text-sm font-medium outline-none placeholder:text-white/60"
             />
-          </div>
+          </label>
+        }
+      />
 
-          {filteredTrainers.length ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredTrainers.map((trainer) => (
-                <article
-                  key={trainer.id}
-                  className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6"
-                >
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#282828] text-sm font-semibold text-white">
-                    {trainer.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={trainer.avatar_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      (trainer.full_name || "T").charAt(0)
-                    )}
+      <div className={fyte.content}>
+        {filteredTrainers.length ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredTrainers.map((trainer, index) => (
+              <FadeInView key={trainer.id} delay={index * 0.03}>
+                <article className={cn(fyte.card, fyte.cardHover, "flex h-full flex-col")}>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-fyte-ink text-base font-bold text-white">
+                      {trainer.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={trainer.avatar_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        (trainer.full_name || "T").charAt(0)
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="truncate text-lg font-bold text-fyte-ink">{trainer.full_name || "Trainer"}</h3>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-fyte-muted">
+                        {trainer.is_verified ? "Verified · " : ""}
+                        {trainer.hourly_rate ? `₹${trainer.hourly_rate} / hr` : "Rate on request"}
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-[#282828]">
-                    {trainer.full_name || "Trainer"}
-                    {trainer.is_verified ? (
-                      <span className="ml-2 text-xs font-medium text-gray-500">Verified</span>
-                    ) : null}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 flex-1 text-sm text-gray-600">
-                    {trainer.bio || "Personal trainer."}
-                  </p>
-                  {trainer.hourly_rate ? (
-                    <p className="mt-2 text-sm text-gray-500">Rs {trainer.hourly_rate} / hour</p>
+                  <p className="mt-4 line-clamp-3 flex-1 text-sm leading-6 text-fyte-muted">{trainer.bio || "Personal trainer."}</p>
+                  {trainer.expertise?.length ? (
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {trainer.expertise.slice(0, 3).map((item) => (
+                        <span key={item} className="rounded-full bg-fyte-panel px-2.5 py-1 text-xs font-medium text-fyte-ink">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
                   ) : null}
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(trainer.expertise || []).slice(0, 3).map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-gray-200 px-2.5 py-1 text-xs text-gray-600"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <Link
-                      href={`/fyte-connect/trainers/${trainer.id}`}
-                      className="inline-flex items-center rounded-xl bg-[#282828] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#454545]"
-                    >
+                    <Link href={`/fyte-connect/trainers/${trainer.id}`} className={cn(fyte.primary, "h-10 w-auto px-4")}>
                       Hire
                     </Link>
                     <InstagramLink handle={trainer.instagram_handle} compact />
                   </div>
                 </article>
-              ))}
-            </div>
-          ) : (
-            <p className="rounded-2xl border border-gray-200 bg-white px-5 py-8 text-sm text-gray-600">
-              {q ? "No trainers match that search." : "No trainers yet. Become the first."}
-            </p>
-          )}
-        </section>
+              </FadeInView>
+            ))}
+          </div>
+        ) : (
+          <div className={cn(fyte.card, "py-14 text-center")}>
+            <p className="text-lg font-bold text-fyte-ink">{q ? "No trainers match that." : "No trainers yet."}</p>
+            <p className={`mt-1 ${fyte.body}`}>{q ? "Try a different word." : "Be the first one people can book."}</p>
+            {!q ? (
+              <Link href="/fyte-connect/become-trainer" className={`${fyte.primary} mt-6`}>
+                Become a trainer
+              </Link>
+            ) : null}
+          </div>
+        )}
       </div>
     </div>
   );

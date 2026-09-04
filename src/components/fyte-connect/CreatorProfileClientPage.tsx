@@ -5,10 +5,13 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getCreator } from "@frontend/features/fyte-connect";
 import type { Creator, CreatorPlan } from "@/shared/types";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageHero from "@/components/shared/PageHero";
+import { FadeInView } from "@/components/shared/Motion";
 import { TrainerProfileSkeleton } from "@/components/ui/Skeleton";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 import RatingReview from "@/components/fyte-connect/RatingReview";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 
 export default function CreatorProfileClientPage() {
   const params = useParams();
@@ -30,83 +33,73 @@ export default function CreatorProfileClientPage() {
 
   if (missing) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-16">
-          <p className="text-gray-600">Creator not found.</p>
-          <Link href="/fyte-connect" className="mt-4 inline-block font-semibold text-[#282828]">
-            Back to Fyte Connect
-          </Link>
-        </div>
+      <div className={fyte.page}>
+        <PageHero
+          photo="connect"
+          kicker="Creators"
+          title="Creator not found"
+          actions={
+            <Link href="/fyte-connect" className={fyte.glassSolid}>
+              Back to Fyte Connect
+            </Link>
+          }
+        />
       </div>
     );
   }
 
-  if (!creator) {
-    return <TrainerProfileSkeleton />;
-  }
+  if (!creator) return <TrainerProfileSkeleton />;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb
-          items={[
-            { label: "Home" },
-            { label: "Fyte Connect", href: "/fyte-connect" },
-            { label: creator.full_name },
-          ]}
-        />
-
-        <header className="mb-8 border-b border-gray-200 pb-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#282828] text-lg font-semibold text-white">
-              {creator.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={creator.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                creator.full_name.charAt(0)
-              )}
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">{creator.full_name}</h1>
-              <p className="mt-1 text-sm text-gray-500">{creator.category || "Fitness creator"}</p>
-            </div>
+    <div className={fyte.page}>
+      <PageHero
+        photo="connect"
+        kicker={creator.category || "Fitness creator"}
+        title={creator.full_name}
+        subtitle={creator.bio || undefined}
+        actions={<InstagramLink handle={creator.instagram_handle} />}
+        aside={
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-white/30 bg-fyte-ink text-3xl font-extrabold text-white shadow-2xl">
+            {creator.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={creator.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              creator.full_name.charAt(0)
+            )}
           </div>
-          {creator.bio ? <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-700">{creator.bio}</p> : null}
-          <div className="mt-4">
-            <InstagramLink handle={creator.instagram_handle} />
-          </div>
-        </header>
+        }
+      />
 
-        <h2 className="mb-4 text-lg font-semibold text-[#282828]">Plans</h2>
+      <div className={fyte.content}>
+        <h2 className="mb-4 text-xl font-bold text-fyte-ink">Plans</h2>
         {plans.length ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {plans.map((plan) => (
-              <article key={plan.id} className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6">
-                <h3 className="text-lg font-semibold text-[#282828]">{plan.title}</h3>
-                <p className="mt-2 line-clamp-3 flex-1 text-sm text-gray-600">{plan.description}</p>
-                <p className="mt-3 text-sm text-gray-500">
-                  {plan.duration_weeks ? `${plan.duration_weeks} weeks` : "Open length"}
-                  {plan.difficulty ? ` · ${plan.difficulty}` : ""}
-                </p>
-                <div className="mt-5 flex items-center justify-between">
-                  <p className="font-semibold text-[#282828]">Rs {plan.price}</p>
-                  <Link
-                    href={`/fyte-connect/checkout/${plan.id}`}
-                    className="rounded-xl bg-[#282828] px-4 py-2 text-sm font-semibold text-white hover:bg-[#454545]"
-                  >
-                    View and buy
-                  </Link>
-                </div>
-              </article>
+            {plans.map((plan, index) => (
+              <FadeInView key={plan.id} delay={index * 0.03}>
+                <article className={cn(fyte.card, fyte.cardHover, "flex h-full flex-col")}>
+                  <p className={fyte.kicker}>
+                    {plan.duration_weeks ? `${plan.duration_weeks} weeks` : "Open length"}
+                    {plan.difficulty ? ` · ${plan.difficulty}` : ""}
+                  </p>
+                  <h3 className="mt-2 text-lg font-bold text-fyte-ink">{plan.title}</h3>
+                  <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-fyte-muted">{plan.description}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <p className="text-xl font-extrabold text-fyte-ink">₹{plan.price}</p>
+                    <Link href={`/fyte-connect/checkout/${plan.id}`} className={cn(fyte.primary, "h-10 w-auto px-4")}>
+                      View
+                    </Link>
+                  </div>
+                </article>
+              </FadeInView>
             ))}
           </div>
         ) : (
-          <p className="rounded-2xl border border-gray-200 bg-white px-5 py-8 text-sm text-gray-600">
-            No plans yet.
-          </p>
+          <p className={cn(fyte.card, "py-10 text-center text-sm text-fyte-muted")}>No plans yet.</p>
         )}
 
-        <RatingReview targetType="creator" targetId={creator.id} />
+        <div className="mt-8">
+          <RatingReview targetType="creator" targetId={creator.id} />
+        </div>
       </div>
     </div>
   );

@@ -6,10 +6,14 @@ import Link from "next/link";
 import { createBooking, getTrainer } from "@frontend/features/fyte-connect";
 import type { Trainer } from "@/shared/types";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageHero from "@/components/shared/PageHero";
+import FormInput from "@/components/shared/FormInput";
+import FormTextarea from "@/components/shared/FormTextarea";
 import { TrainerProfileSkeleton } from "@/components/ui/Skeleton";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
 import RatingReview from "@/components/fyte-connect/RatingReview";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 
 export default function TrainerProfileClientPage() {
   const params = useParams();
@@ -35,14 +39,10 @@ export default function TrainerProfileClientPage() {
     setBookingLoading(true);
     setBookingMessage("");
     try {
-      await createBooking({
-        trainerId: trainer.id,
-        sessionDate,
-        notes: notes.trim() || null,
-      });
+      await createBooking({ trainerId: trainer.id, sessionDate, notes: notes.trim() || null });
       setNotes("");
       setSessionDate("");
-      setBookingMessage("Session requested.");
+      setBookingMessage("Session requested. The trainer will confirm.");
     } catch {
       setBookingMessage("Could not book. Try again.");
     } finally {
@@ -52,124 +52,84 @@ export default function TrainerProfileClientPage() {
 
   if (missing) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-16">
-          <p className="text-gray-600">Trainer not found.</p>
-          <Link href="/fyte-connect" className="mt-4 inline-block font-semibold text-[#282828]">
-            Back to Trainers
-          </Link>
-        </div>
+      <div className={fyte.page}>
+        <PageHero
+          photo="connect"
+          kicker="Trainers"
+          title="Trainer not found"
+          subtitle="They may have removed their profile."
+          actions={
+            <Link href="/fyte-connect" className={fyte.glassSolid}>
+              Back to trainers
+            </Link>
+          }
+        />
       </div>
     );
   }
 
-  if (!trainer) {
-    return <TrainerProfileSkeleton />;
-  }
+  if (!trainer) return <TrainerProfileSkeleton />;
+
+  const name = trainer.full_name || "Trainer";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb
-          items={[
-            { label: "Home" },
-            { label: "Trainers", href: "/fyte-connect" },
-            { label: trainer.full_name || "Trainer" },
-          ]}
-        />
+    <div className={fyte.page}>
+      <PageHero
+        photo="connect"
+        kicker={trainer.is_verified ? "Verified trainer" : "Trainer"}
+        title={name}
+        subtitle={trainer.experience_years ? `${trainer.experience_years} years of coaching` : "Fitness trainer"}
+        actions={<InstagramLink handle={trainer.instagram_handle} />}
+        aside={
+          <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-4 border-white/30 bg-fyte-ink text-3xl font-extrabold text-white shadow-2xl">
+            {trainer.avatar_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={trainer.avatar_url} alt="" className="h-full w-full object-cover" />
+            ) : (
+              name.charAt(0)
+            )}
+          </div>
+        }
+      />
 
-        <div className="grid gap-8 lg:grid-cols-[1.4fr,1fr]">
-          <div>
-            <div className="mb-5 flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#282828] text-lg font-semibold text-white">
-                {trainer.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={trainer.avatar_url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  (trainer.full_name || "T").charAt(0)
-                )}
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                  {trainer.full_name || "Trainer"}
-                </h1>
-                <p className="mt-1 text-gray-600">
-                  {trainer.experience_years
-                    ? `${trainer.experience_years} years of experience`
-                    : "Fitness trainer"}
-                </p>
-              </div>
-            </div>
-
-            {trainer.bio ? <p className="mt-4 text-sm leading-6 text-gray-700">{trainer.bio}</p> : null}
-
+      <div className={cn(fyte.content, "grid gap-6 lg:grid-cols-[1.4fr_1fr]")}>
+        <div className="space-y-6">
+          <section className={fyte.card}>
+            <p className={fyte.kicker}>About</p>
+            <p className="mt-2 text-base leading-7 text-fyte-ink">{trainer.bio || "This trainer hasn't written a bio yet."}</p>
             {trainer.expertise?.length ? (
-              <div className="mt-6 flex flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap gap-2">
                 {trainer.expertise.map((item) => (
-                  <span
-                    key={item}
-                    className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600"
-                  >
+                  <span key={item} className="rounded-full bg-fyte-panel px-3 py-1 text-sm font-medium text-fyte-ink">
                     {item}
                   </span>
                 ))}
               </div>
             ) : null}
-
-            <div className="mt-6 flex flex-wrap gap-2">
-              <InstagramLink handle={trainer.instagram_handle} />
-            </div>
-
-            <RatingReview targetType="trainer" targetId={trainer.id} />
-          </div>
-
-          <aside className="h-fit rounded-2xl border border-gray-200 bg-white p-6">
-            <h2 className="text-lg font-semibold text-[#282828]">Book a session</h2>
-            <p className="mt-1 text-sm text-gray-600">
-              Pick a date and time. You can also message on Instagram.
-            </p>
-
-            <label className="mt-4 block text-sm font-medium text-[#282828]">Date and time</label>
-            <input
-              type="datetime-local"
-              value={sessionDate}
-              onChange={(event) => setSessionDate(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#282828]"
-            />
-
-            <label className="mt-4 block text-sm font-medium text-[#282828]">Notes</label>
-            <textarea
-              rows={3}
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-[#282828]"
-              placeholder="What do you want to work on?"
-            />
-
-            <p className="mt-4 text-sm text-gray-600">
-              Rate: {trainer.hourly_rate ? `Rs ${trainer.hourly_rate} / hour` : "Ask the trainer"}
-            </p>
-
-            {isSignedIn ? (
-              <button
-                type="button"
-                disabled={bookingLoading || !sessionDate}
-                onClick={handleBook}
-                className="mt-4 w-full rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
-              >
-                {bookingLoading ? "Booking..." : "Book session"}
-              </button>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="mt-4 block w-full rounded-xl bg-[#282828] px-5 py-3 text-center text-sm font-semibold text-white"
-              >
-                Sign in to book
-              </Link>
-            )}
-            {bookingMessage ? <p className="mt-3 text-sm text-gray-600">{bookingMessage}</p> : null}
-          </aside>
+          </section>
+          <RatingReview targetType="trainer" targetId={trainer.id} />
         </div>
+
+        <aside className={cn(fyte.card, "h-fit lg:sticky lg:top-28")}>
+          <div className="flex items-baseline justify-between">
+            <h2 className={fyte.title}>Book a session</h2>
+            <p className="text-lg font-extrabold text-fyte-ink">{trainer.hourly_rate ? `₹${trainer.hourly_rate}/hr` : "Ask"}</p>
+          </div>
+          <div className="mt-5 space-y-5">
+            <FormInput label="Date and time" type="datetime-local" value={sessionDate} onChange={setSessionDate} required />
+            <FormTextarea label="What do you want to work on?" value={notes} onChange={setNotes} rows={3} placeholder="Goal, injuries, schedule" />
+          </div>
+          {isSignedIn ? (
+            <button type="button" disabled={bookingLoading || !sessionDate} onClick={handleBook} className={`${fyte.primary} mt-5 w-full sm:w-full`}>
+              {bookingLoading ? "Booking…" : "Request session"}
+            </button>
+          ) : (
+            <Link href="/sign-in" className={`${fyte.primary} mt-5 w-full sm:w-full`}>
+              Sign in to book
+            </Link>
+          )}
+          {bookingMessage ? <p className="mt-3 text-sm text-fyte-muted">{bookingMessage}</p> : null}
+        </aside>
       </div>
     </div>
   );

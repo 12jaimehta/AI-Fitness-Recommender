@@ -18,18 +18,19 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   if (userLoading || !isSignedIn) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[#161616]">
         <UnifiedNavbar />
-        <PageLoader />
-        <UnifiedFooter />
+        <div className="pt-24">
+          <PageLoader />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-fyte-page">
       <UnifiedNavbar />
-      <div className="">{children}</div>
+      {children}
       <UnifiedFooter />
     </div>
   );

@@ -59,7 +59,7 @@ export default function SignInPage() {
 
       <form onSubmit={passwordForm.handleSubmit(doSignIn)} className="flex flex-col gap-4">
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Email</label>
+          <label className="text-sm font-semibold text-fyte-ink">Email</label>
           <input
             type="email"
             autoComplete="email"
@@ -68,16 +68,16 @@ export default function SignInPage() {
             className={authInputClass}
           />
           {passwordForm.formState.errors.email ? (
-            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.email.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.email.message}</p>
           ) : null}
         </div>
         <div>
           <div className="flex items-center justify-between gap-3">
-            <label className="text-sm font-semibold text-[#282828]">Password</label>
+            <label className="text-sm font-semibold text-fyte-ink">Password</label>
             <button
               type="button"
               onClick={() => router.push("/forgot-password")}
-              className="text-xs font-semibold text-[#282828]"
+              className="text-xs font-semibold text-fyte-ink"
             >
               Forgot password?
             </button>
@@ -90,13 +90,13 @@ export default function SignInPage() {
             className={authInputClass}
           />
           {passwordForm.formState.errors.password ? (
-            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.password.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{passwordForm.formState.errors.password.message}</p>
           ) : null}
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
+          className="h-12 rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a] disabled:opacity-60"
         >
           {loading ? "Signing in..." : "Sign in"}
         </button>
@@ -104,12 +104,12 @@ export default function SignInPage() {
 
       <AuthAlert message={message} />
 
-      <p className="mt-6 border-t border-gray-200 pt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 border-t border-fyte-line pt-6 text-center text-sm text-fyte-muted">
         New here?{" "}
         <button
           type="button"
           onClick={() => router.push("/sign-up")}
-          className="font-semibold text-[#282828]"
+          className="font-semibold text-fyte-ink"
         >
           Create an account
         </button>

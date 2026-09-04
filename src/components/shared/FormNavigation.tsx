@@ -1,9 +1,8 @@
-// components/shared/FormNavigation.tsx
 "use client";
 
-import { FadeIn, StepSwap } from "@/components/shared/Motion";
-import { Loader2 } from "lucide-react";
+import { FadeIn } from "@/components/shared/Motion";
 import MotionButton from "@/components/ui/MotionButton";
+import { fyte } from "@/shared/lib/ui";
 
 interface FormNavigationProps {
   currentStep: number;
@@ -24,54 +23,30 @@ export default function FormNavigation({
   onSubmit,
   loading,
   isLastStep,
-  submitLabel = "Generate AI Diet Plan",
-  loadingLabel = "Please wait...",
+  submitLabel = "Make my plan",
+  loadingLabel = "Making it…",
 }: FormNavigationProps) {
   return (
-    <FadeIn delay={0.08} className="flex justify-between gap-4 mt-10">
-      {currentStep !== 0 && (
-        <MotionButton
-          type="button"
-          variant="secondary"
-          onClick={onPrevious}
-          disabled={currentStep === 0}
-          className="flex-1 relative"
-        >
-          Previous
-        </MotionButton>
+    <FadeIn delay={0.06} className="mt-10 flex items-center justify-between gap-4">
+      {currentStep > 0 ? (
+        <button type="button" onClick={onPrevious} className={fyte.ghost}>
+          Back
+        </button>
+      ) : (
+        <span />
       )}
-
-      <StepSwap id={isLastStep ? "submit" : "next"} className="flex-1">
-        {isLastStep ? (
-          <MotionButton
-            type="button"
-            onClick={() => {
-              if (loading) return;
-              onSubmit();
-            }}
-            loading={loading}
-            className="relative overflow-hidden bg-[#282828] hover:bg-[#454545] text-white shadow-md"
-          >
-            {loading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 size={20} className="animate-spin" />
-                {loadingLabel}
-              </div>
-            ) : (
-              submitLabel
-            )}
-          </MotionButton>
-        ) : (
-          <MotionButton
-            type="button"
-            variant="primary"
-            onClick={onNext}
-            className="relative overflow-hidden bg-[#282828] hover:bg-[#454545]"
-          >
-            Next Step
-          </MotionButton>
-        )}
-      </StepSwap>
+      <MotionButton
+        type="button"
+        loading={loading}
+        onClick={() => {
+          if (loading) return;
+          if (isLastStep) onSubmit();
+          else onNext();
+        }}
+        className="w-auto min-w-[10rem] px-6"
+      >
+        {isLastStep ? (loading ? loadingLabel : submitLabel) : "Continue"}
+      </MotionButton>
     </FadeIn>
   );
 }

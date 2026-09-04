@@ -41,7 +41,7 @@ export default function ForgotPasswordPage() {
     >
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Email</label>
+          <label className="text-sm font-semibold text-fyte-ink">Email</label>
           <input
             type="email"
             autoComplete="email"
@@ -50,13 +50,13 @@ export default function ForgotPasswordPage() {
             className={authInputClass}
           />
           {form.formState.errors.email ? (
-            <p className="mt-1 text-xs text-red-600">{form.formState.errors.email.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{form.formState.errors.email.message}</p>
           ) : null}
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
+          className="h-12 rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a] disabled:opacity-60"
         >
           {loading ? "Sending..." : "Send reset link"}
         </button>
@@ -64,12 +64,12 @@ export default function ForgotPasswordPage() {
 
       <AuthAlert message={message} tone={success ? "success" : "error"} />
 
-      <p className="mt-6 border-t border-gray-200 pt-6 text-center text-sm text-gray-600">
+      <p className="mt-6 border-t border-fyte-line pt-6 text-center text-sm text-fyte-muted">
         Remember it?{" "}
         <button
           type="button"
           onClick={() => router.push("/sign-in")}
-          className="font-semibold text-[#282828]"
+          className="font-semibold text-fyte-ink"
         >
           Sign in
         </button>

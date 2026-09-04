@@ -4,14 +4,17 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getUserProfile, updateUserProfile } from "@/lib/service/progress-database";
 import { useUser } from "@/lib/hooks/use-user";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { ProfileSkeleton } from "@/components/ui/Skeleton";
-import OptionChipGrid from "@/components/shared/OptionChipGrid";
+import PageHero from "@/components/shared/PageHero";
+import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";
+import OptionChipGrid from "@/components/shared/OptionChipGrid";
 import { fitnessLevelOptions } from "@/lib/constant";
-import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
+import { PROGRAM_GOAL_OPTIONS, programGoalLabel } from "@/shared/lib/program-goals";
 import { profileSetupSchema } from "@/lib/validation/profileSchema";
 import { isProfileComplete } from "@/shared/lib/profile";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 import type { UserProfile } from "@/shared/types";
 
 const GENDERS = [
@@ -21,7 +24,6 @@ const GENDERS = [
 ];
 
 const FITNESS = fitnessLevelOptions.filter((item) => item.value);
-const GOALS = PROGRAM_GOAL_OPTIONS;
 
 const emptyForm = {
   full_name: "",
@@ -67,7 +69,6 @@ export default function ProfileClientPage() {
       setLoading(false);
       return;
     }
-
     getUserProfile()
       .then((data) => {
         setProfile(data);
@@ -88,15 +89,7 @@ export default function ProfileClientPage() {
   const handleSave = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
-    const parsed = profileSetupSchema.safeParse({
-      full_name: form.full_name,
-      age: form.age,
-      gender: form.gender,
-      height: form.height,
-      initial_weight: form.initial_weight,
-      fitness_level: form.fitness_level,
-      goals: form.goals,
-    });
+    const parsed = profileSetupSchema.safeParse(form);
     if (!parsed.success) {
       const next: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
@@ -109,16 +102,7 @@ export default function ProfileClientPage() {
     setFieldErrors({});
     setSaving(true);
     try {
-      const saved = await updateUserProfile({
-        full_name: parsed.data.full_name,
-        age: parsed.data.age,
-        gender: parsed.data.gender,
-        height: parsed.data.height,
-        initial_weight: parsed.data.initial_weight,
-        fitness_level: parsed.data.fitness_level,
-        goals: parsed.data.goals,
-        profile_completed: true,
-      });
+      const saved = await updateUserProfile({ ...parsed.data, profile_completed: true });
       setProfile(saved);
       setForm(fromProfile(saved, ""));
       setEditing(false);
@@ -130,141 +114,68 @@ export default function ProfileClientPage() {
     }
   };
 
-  if (userLoading || loading) {
-    return <ProfileSkeleton />;
-  }
+  if (userLoading || loading) return <ProfileSkeleton />;
 
-  const inputClass =
-    "mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]";
+  const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "You";
+  const email = user?.email || profile?.email || "";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb items={[{ label: "Home" }, { label: "My profile" }]} />
+    <div className={fyte.page}>
+      <PageHero
+        photo="profile"
+        kicker="Account"
+        title={complete ? name : "Finish your profile"}
+        subtitle={
+          complete
+            ? "These numbers feed every plan and every coach decision. Keep them current."
+            : "One minute. Your plans need your age, height, weight, and goal to be right."
+        }
+        aside={
+          <div className={cn(fyte.stat, "flex items-center gap-4 lg:w-80")}>
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-xl font-extrabold text-fyte-ink">
+              {name.charAt(0).toUpperCase()}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-bold">{name}</span>
+              <span className="block truncate text-sm text-white/70">{email}</span>
+            </span>
+          </div>
+        }
+      />
 
-        <header className="mb-8 border-b border-gray-200 pb-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">My profile</h1>
-          <p className="mt-2 text-gray-600">
-            {complete
-              ? "Your details for diet, workout, and progress."
-              : "Add these details to use diet, workout, and tracking."}
-          </p>
-        </header>
-
-        {!complete ? (
-          <p className="mb-6 rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm text-gray-700">
-            You signed in. Fill this once so your plans can use your age, height, weight, and goals.
-          </p>
-        ) : null}
-
+      <div className="relative z-10 mx-auto -mt-10 max-w-3xl px-4 pb-20 sm:px-6">
         {showForm ? (
-          <form onSubmit={handleSave} className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <form onSubmit={handleSave} className={cn(fyte.card, "p-6 sm:p-8")}>
+            <div className="grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="text-sm font-semibold text-[#282828]">Email</label>
-                <input value={user?.email || profile?.email || ""} disabled className={`${inputClass} bg-gray-50 text-gray-500`} />
+                <FormInput label="Full name" placeholder="Your name" value={form.full_name} onChange={(v) => setField("full_name", v)} error={fieldErrors.full_name} required />
               </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Full name</label>
-                <input
-                  value={form.full_name}
-                  onChange={(event) => setField("full_name", event.target.value)}
-                  className={inputClass}
-                />
-                {fieldErrors.full_name ? <p className="mt-1 text-xs text-red-600">{fieldErrors.full_name}</p> : null}
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Age</label>
-                <input
-                  type="number"
-                  min={13}
-                  max={100}
-                  value={form.age}
-                  onChange={(event) => setField("age", event.target.value)}
-                  className={inputClass}
-                />
-                {fieldErrors.age ? <p className="mt-1 text-xs text-red-600">{fieldErrors.age}</p> : null}
-              </div>
-              <div>
-                <FormSelect
-                  label="Gender"
-                  value={form.gender}
-                  onChange={(value) => setField("gender", value)}
-                  options={GENDERS}
-                  error={fieldErrors.gender}
-                  required
-                  columns={1}
-                  variant="dropdown"
-                />
-              </div>
-              <div>
-                <FormSelect
-                  label="Fitness level"
-                  value={form.fitness_level}
-                  onChange={(value) => setField("fitness_level", value)}
-                  options={FITNESS}
-                  error={fieldErrors.fitness_level}
-                  required
-                  columns={1}
-                  variant="dropdown"  
-                />
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Height (cm)</label>
-                <input
-                  type="number"
-                  min={100}
-                  max={250}
-                  step="0.1"
-                  value={form.height}
-                  onChange={(event) => setField("height", event.target.value)}
-                  className={inputClass}
-                />
-                {fieldErrors.height ? <p className="mt-1 text-xs text-red-600">{fieldErrors.height}</p> : null}
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Weight (kg)</label>
-                <input
-                  type="number"
-                  min={30}
-                  max={400}
-                  step="0.1"
-                  value={form.initial_weight}
-                  onChange={(event) => setField("initial_weight", event.target.value)}
-                  className={inputClass}
-                />
-                {fieldErrors.initial_weight ? (
-                  <p className="mt-1 text-xs text-red-600">{fieldErrors.initial_weight}</p>
-                ) : null}
+              <FormInput label="Age" type="number" placeholder="28" value={form.age} onChange={(v) => setField("age", v)} error={fieldErrors.age} required />
+              <FormSelect label="Sex" compact columns={3} value={form.gender} onChange={(v) => setField("gender", v)} options={GENDERS} error={fieldErrors.gender} required />
+              <FormInput label="Height (cm)" type="number" placeholder="175" value={form.height} onChange={(v) => setField("height", v)} error={fieldErrors.height} required />
+              <FormInput label="Weight (kg)" type="number" placeholder="72" value={form.initial_weight} onChange={(v) => setField("initial_weight", v)} error={fieldErrors.initial_weight} required />
+              <div className="sm:col-span-2">
+                <FormSelect label="Training experience" compact columns={3} value={form.fitness_level} onChange={(v) => setField("fitness_level", v)} options={FITNESS} error={fieldErrors.fitness_level} required />
               </div>
             </div>
 
             <div className="mt-6">
               <OptionChipGrid
                 label="Goals"
-                options={GOALS}
+                options={PROGRAM_GOAL_OPTIONS}
                 selected={form.goals}
                 onToggle={(value) =>
-                  setField(
-                    "goals",
-                    form.goals.includes(value) ? form.goals.filter((item) => item !== value) : [...form.goals, value]
-                  )
+                  setField("goals", form.goals.includes(value) ? form.goals.filter((item) => item !== value) : [...form.goals, value])
                 }
                 error={fieldErrors.goals}
               />
             </div>
 
-            {error ? (
-              <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
-            ) : null}
+            {error ? <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-fyte-danger">{error}</p> : null}
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
-              >
-                {saving ? "Saving..." : complete ? "Save changes" : "Save and continue"}
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button type="submit" disabled={saving} className={fyte.primary}>
+                {saving ? "Saving…" : complete ? "Save changes" : "Save and continue"}
               </button>
               {complete ? (
                 <button
@@ -274,7 +185,7 @@ export default function ProfileClientPage() {
                     setForm(fromProfile(profile, ""));
                     setFieldErrors({});
                   }}
-                  className="rounded-xl border-2 border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828] hover:bg-[#282828] hover:text-white"
+                  className={fyte.ghost}
                 >
                   Cancel
                 </button>
@@ -282,52 +193,30 @@ export default function ProfileClientPage() {
             </div>
           </form>
         ) : (
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
-            <dl className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt className="text-sm text-gray-500">Email</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">{user?.email || profile?.email}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Full name</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">{profile?.full_name || "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Age</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">{profile?.age ?? "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Gender</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">{profile?.gender || "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Height</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">{profile?.height ? `${profile.height} cm` : "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Weight</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">
-                  {profile?.initial_weight ? `${profile.initial_weight} kg` : "-"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Fitness level</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">{profile?.fitness_level || "-"}</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-gray-500">Goals</dt>
-                <dd className="mt-1 font-semibold text-[#282828]">
-                  {(profile?.goals || []).length ? profile?.goals?.join(", ") : "-"}
-                </dd>
-              </div>
+          <div className={cn(fyte.card, "p-6 sm:p-8")}>
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
+              {[
+                ["Age", profile?.age ?? "-"],
+                ["Sex", profile?.gender || "-"],
+                ["Height", profile?.height ? `${profile.height} cm` : "-"],
+                ["Weight", profile?.initial_weight ? `${profile.initial_weight} kg` : "-"],
+                ["Experience", profile?.fitness_level || "-"],
+                ["Goal", (profile?.goals || []).length ? profile!.goals!.map((g) => programGoalLabel(g)).join(", ") : "-"],
+              ].map(([label, value]) => (
+                <div key={String(label)}>
+                  <dt className={fyte.kicker}>{label}</dt>
+                  <dd className="mt-1 text-lg font-bold capitalize text-fyte-ink">{value}</dd>
+                </div>
+              ))}
             </dl>
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="mt-6 rounded-xl border-2 border-[#282828] bg-white px-5 py-2.5 text-sm font-semibold text-[#282828] transition hover:bg-[#282828] hover:text-white"
-            >
-              Edit profile
-            </button>
+            <div className="mt-8 flex flex-wrap gap-3 border-t border-fyte-line pt-6">
+              <button type="button" onClick={() => setEditing(true)} className={fyte.secondary}>
+                Edit profile
+              </button>
+              <button type="button" onClick={() => router.push("/progress")} className={fyte.ghost}>
+                Back to coach
+              </button>
+            </div>
           </div>
         )}
       </div>

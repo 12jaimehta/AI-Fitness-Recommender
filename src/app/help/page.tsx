@@ -1,253 +1,38 @@
 "use client";
 
-import React from 'react';
-import { enter, hoverLift, motion } from '@/components/shared/Motion';
-import { 
-  HelpCircle, 
-  Mail, 
-  MessageCircle, 
-  Building, 
-  Info, 
-  Shield, 
-  FileText,
-  ArrowLeft,
-  Home
-} from 'lucide-react';
-import Link from 'next/link';
-
-const helpCenterItems = [
-  {
-    icon: HelpCircle,
-    title: "Getting Started",
-    description: "Learn how to use our diet and workout planning features",
-    link: "/help/getting-started"
-  },
-  {
-    icon: MessageCircle,
-    title: "FAQs",
-    description: "Find answers to commonly asked questions",
-    link: "/help/faqs"
-  },
-  {
-    icon: Mail,
-    title: "Contact Support",
-    description: "Get in touch with our support team",
-    link: "/help/contact"
-  },
-  {
-    icon: Building,
-    title: "About Our Company",
-    description: "Learn more about our mission and values",
-    link: "/about"
-  },
-  {
-    icon: Shield,
-    title: "Privacy Policy",
-    description: "Understand how we protect your data",
-    link: "/privacy"
-  },
-  {
-    icon: FileText,
-    title: "Terms of Service",
-    description: "Read our terms and conditions",
-    link: "/terms"
-  }
-];
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import DocShell, { DocCta } from "@/components/docs/DocShell";
+import { FadeInView } from "@/components/shared/Motion";
+import { helpCenterItems } from "@/content/help-center";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 
 export default function HelpCenter() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#ffffff',
-      padding: '40px 20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Navigation */}
-        <motion.div
-          {...enter()}
-          style={{ marginBottom: '40px' }}
-        >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px',
-            color: '#6b7280'
-          }}>
-            <Link href="/" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              textDecoration: 'none',
-              color: '#6b7280',
-              fontSize: '16px',
-              fontWeight: '500'
-            }}>
-              <Home size={20} />
-              Home
+    <DocShell kicker="Help" title="How can we help?" subtitle="Short answers. If you can't find it here, write to us and a person replies.">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {helpCenterItems.map((item, index) => (
+          <FadeInView key={item.title} delay={index * 0.04}>
+            <Link href={item.link} className={cn(fyte.card, fyte.cardHover, "group flex h-full flex-col")}>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-fyte-ink text-white">
+                <item.icon size={20} />
+              </span>
+              <h2 className="mt-5 text-lg font-bold text-fyte-ink">{item.title}</h2>
+              <p className="mt-1 flex-1 text-sm leading-6 text-fyte-muted">{item.description}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-fyte-ink">
+                Open <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
+              </span>
             </Link>
-            <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>Help Center</span>
-          </div>
-        </motion.div>
-
-        {/* Header */}
-        <motion.div
-          {...enter(0.1)}
-          style={{
-            textAlign: 'center',
-            marginBottom: '60px'
-          }}
-        >
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '80px',
-            height: '80px',
-            background: '#282828',
-            borderRadius: '20px',
-            marginBottom: '20px'
-          }}>
-            <HelpCircle size={40} color="#ffffff" />
-          </div>
-          <h1 style={{
-            fontSize: '48px',
-            fontWeight: '700',
-            color: '#282828',
-            marginBottom: '16px',
-            margin: 0
-          }}>
-            Help Center
-          </h1>
-          <p style={{
-            fontSize: '20px',
-            color: '#6b7280',
-            marginBottom: '0',
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            Find answers, get support, and learn more about our services
-          </p>
-        </motion.div>
-
-        {/* Help Items Grid */}
-        <motion.div
-          {...enter(0.2)}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-            gap: '24px'
-          }}
-        >
-          {helpCenterItems.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <motion.div
-                key={index}
-                {...enter(0.3 + index * 0.1)}
-                {...hoverLift}
-                style={{
-                  background: '#ffffff',
-                  borderRadius: '16px',
-                  padding: '32px',
-                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  border: '1px solid rgba(22, 42, 65, 0.1)'
-                }}
-              >
-                <Link href={item.link} style={{
-                  textDecoration: 'none',
-                  color: 'inherit'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '20px'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '56px',
-                      height: '56px',
-                      background: '#282828',
-                      borderRadius: '12px',
-                      flexShrink: 0
-                    }}>
-                      <Icon size={28} color="#ffffff" />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        fontSize: '20px',
-                        fontWeight: '600',
-                        color: '#282828',
-                        marginBottom: '8px',
-                        margin: 0
-                      }}>
-                        {item.title}
-                      </h3>
-                      <p style={{
-                        fontSize: '16px',
-                        color: '#6b7280',
-                        lineHeight: '1.6',
-                        margin: 0
-                      }}>
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-
-        {/* Quick Help Section */}
-        <motion.div
-          {...enter(0.8)}
-          style={{
-            background: 'rgba(22, 42, 65, 0.05)',
-            borderRadius: '16px',
-            padding: '32px',
-            marginTop: '60px',
-            textAlign: 'center',
-            border: '1px solid rgba(22, 42, 65, 0.1)'
-          }}
-        >
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: '#282828',
-            marginBottom: '16px'
-          }}>
-            Still need help?
-          </h2>
-          <p style={{
-            fontSize: '16px',
-            color: '#6b7280',
-            marginBottom: '24px'
-          }}>
-            Our support team is here to assist you with any questions or concerns.
-          </p>
-          <Link href="/help/contact" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: '#282828',
-            color: '#ffffff',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '16px',
-            transition: 'all 0.3s ease'
-          }}>
-            <Mail size={18} />
-            Contact Support
-          </Link>
-        </motion.div>
+          </FadeInView>
+        ))}
       </div>
-    </div>
+      <DocCta
+        title="Still stuck?"
+        body="Email us. We read everything and answer within a day."
+        href="/help/contact"
+        label="Contact support"
+      />
+    </DocShell>
   );
 }

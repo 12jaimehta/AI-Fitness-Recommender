@@ -5,28 +5,26 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { DailyWorkout, Exercise, WorkoutPlanData } from "@/shared/types";
 import type { WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
-import { resolveWorkoutPlan, saveWorkoutPlan, beginWorkoutPlanGeneration, beginWorkoutFromLogs } from "@/lib/service/dietWorkoutplan";
+import {
+  resolveWorkoutPlan,
+  saveWorkoutPlan,
+  beginWorkoutPlanGeneration,
+  beginWorkoutFromLogs,
+} from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
-import PlanPairingCard from "@/components/shared/PlanPairingCard";
+import PageHero from "@/components/shared/PageHero";
+import { delay, FadeIn } from "@/components/shared/Motion";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
 import { readPendingWorkoutGeneration } from "@frontend/features/workout-plan";
+import { coerceProgramGoal, programGoalLabel } from "@/shared/lib/program-goals";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 
-const WEEKDAYS = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-] as const;
+const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 
 function todayWeekday() {
-  return new Date()
-    .toLocaleDateString("en-US", { weekday: "long" })
-    .toLowerCase() as (typeof WEEKDAYS)[number];
+  return new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase() as (typeof WEEKDAYS)[number];
 }
 
 function calories(value: string | number | undefined) {
@@ -49,82 +47,92 @@ function workoutForDay(plan: WorkoutPlanData, day: (typeof WEEKDAYS)[number]) {
   return plan.singleWorkout;
 }
 
-function ExerciseCard({ exercise }: { exercise: Exercise }) {
+function ExerciseCard({ exercise, index }: { exercise: Exercise; index: number }) {
   const alternatives = exercise.alternatives?.filter((item) => item.name) ?? [];
+  const [open, setOpen] = useState(false);
 
   return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-      <h3 className="text-lg font-semibold text-[#282828]">{exercise.name}</h3>
-      {exercise.muscleGroup ? (
-        <p className="mt-1 text-sm capitalize text-gray-500">{exercise.muscleGroup}</p>
-      ) : null}
-
-      <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-          <dt className="text-xs text-gray-500">Sets</dt>
-          <dd className="mt-1 text-sm font-semibold text-[#282828]">{exercise.sets ?? "-"}</dd>
+    <FadeIn delay={delay(index)}>
+      <article className={cn(fyte.card, fyte.cardHover)}>
+        <div className="flex items-start gap-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-fyte-ink text-sm font-bold text-white">
+            {index + 1}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <h3 className="text-lg font-bold leading-snug text-fyte-ink">{exercise.name}</h3>
+              {exercise.muscleGroup ? (
+                <p className="text-xs font-semibold uppercase tracking-wide text-fyte-muted">{exercise.muscleGroup}</p>
+              ) : null}
+            </div>
+            <dl className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+              {[
+                ["Sets", exercise.sets ?? "-"],
+                ["Reps", exercise.reps ?? "-"],
+                ["Rest", exercise.rest || "-"],
+                ["Load", exercise.weight || "Bodyweight"],
+              ].map(([label, value]) => (
+                <div key={String(label)} className="flex items-baseline gap-1.5">
+                  <dt className="text-fyte-muted">{label}</dt>
+                  <dd className="font-semibold text-fyte-ink">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            {exercise.instructions || alternatives.length ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setOpen((v) => !v)}
+                  className="mt-3 text-sm font-semibold text-fyte-ink underline-offset-4 hover:underline"
+                >
+                  {open ? "Hide" : "How to do it"}
+                </button>
+                {open ? (
+                  <div className="mt-3 grid gap-4 border-t border-fyte-line pt-4 sm:grid-cols-2">
+                    {exercise.instructions ? (
+                      <p className="text-sm leading-6 text-fyte-muted">{exercise.instructions}</p>
+                    ) : null}
+                    {alternatives.length ? (
+                      <div>
+                        <h4 className="text-sm font-semibold text-fyte-ink">Swap for</h4>
+                        <ul className="mt-2 space-y-1.5">
+                          {alternatives.map((item) => (
+                            <li key={item.name} className="text-sm leading-6 text-fyte-muted">
+                              <span className="font-medium text-fyte-ink">{item.name}</span>
+                              {item.description ? ` — ${item.description}` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+          </div>
         </div>
-        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-          <dt className="text-xs text-gray-500">Reps</dt>
-          <dd className="mt-1 text-sm font-semibold text-[#282828]">{exercise.reps ?? "-"}</dd>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-          <dt className="text-xs text-gray-500">Rest</dt>
-          <dd className="mt-1 text-sm font-semibold text-[#282828]">{exercise.rest || "-"}</dd>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-          <dt className="text-xs text-gray-500">Load</dt>
-          <dd className="mt-1 text-sm font-semibold text-[#282828]">{exercise.weight || "Bodyweight"}</dd>
-        </div>
-      </dl>
-
-      {exercise.instructions ? (
-        <div className="mt-4">
-          <h4 className="text-sm font-semibold text-[#282828]">How to do it</h4>
-          <p className="mt-2 text-sm leading-6 text-gray-600">{exercise.instructions}</p>
-        </div>
-      ) : null}
-
-      {alternatives.length > 0 ? (
-        <div className="mt-4">
-          <h4 className="text-sm font-semibold text-[#282828]">You can also do</h4>
-          <ul className="mt-2 space-y-2">
-            {alternatives.map((item) => (
-              <li key={item.name} className="text-sm text-gray-600">
-                {item.name}
-                {item.description ? `. ${item.description}` : ""}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </article>
+      </article>
+    </FadeIn>
   );
 }
 
 function RoutineList({ title, exercises }: { title: string; exercises?: Exercise[] }) {
   if (!exercises?.length) return null;
   return (
-    <section className="mb-8">
-      <h2 className="mb-4 text-lg font-semibold text-[#282828]">{title}</h2>
-      <div className="space-y-4">
+    <section className="mt-10">
+      <h2 className="mb-3 text-xl font-bold text-fyte-ink">{title}</h2>
+      <ul className={cn(fyte.card, "divide-y divide-fyte-line p-0 sm:p-0")}>
         {exercises.map((exercise, index) => (
-          <article
-            key={`${exercise.name}-${index}`}
-            className="rounded-2xl border border-gray-200 bg-white p-5"
-          >
-            <h3 className="text-base font-semibold text-[#282828]">{exercise.name}</h3>
-            <p className="mt-1 text-sm text-gray-600">
-              {exercise.sets ? `${exercise.sets} sets` : ""}
-              {exercise.reps ? ` · ${exercise.reps}` : ""}
-              {exercise.rest ? ` · rest ${exercise.rest}` : ""}
+          <li key={`${exercise.name}-${index}`} className="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3.5">
+            <p className="font-semibold text-fyte-ink">{exercise.name}</p>
+            <p className="text-sm text-fyte-muted">
+              {[exercise.sets ? `${exercise.sets} sets` : "", exercise.reps ? String(exercise.reps) : "", exercise.duration || ""]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
-            {exercise.instructions ? (
-              <p className="mt-2 text-sm leading-6 text-gray-600">{exercise.instructions}</p>
-            ) : null}
-          </article>
+          </li>
         ))}
-      </div>
+      </ul>
     </section>
   );
 }
@@ -176,7 +184,7 @@ export default function WorkoutPlanResultPage() {
     setSaveMessage("");
     try {
       await saveWorkoutPlan(user.id, formData, plan);
-      setSaveMessage("Plan saved.");
+      setSaveMessage("Saved. The coach will use this plan.");
     } catch {
       setSaveMessage("Could not save the plan. Try again.");
     } finally {
@@ -185,147 +193,143 @@ export default function WorkoutPlanResultPage() {
   };
 
   if (error) {
+    const pending = readPendingWorkoutGeneration();
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-          <PageBreadcrumb
-            items={[
-              { label: "Home" },
-              { label: "Workout Plan", href: "/workout" },
-              { label: "Your workout" },
-            ]}
-          />
-          <h1 className="text-2xl font-bold text-gray-900">Could not make your workout plan</h1>
-          <p className="mt-2 text-gray-600">{error}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                const pending = readPendingWorkoutGeneration();
-                if (pending?.fromLogs) beginWorkoutFromLogs();
-                else if (pending?.formData) beginWorkoutPlanGeneration(pending.formData);
-                setError("");
-                setRetryKey((value) => value + 1);
-              }}
-              className="inline-flex rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white"
-            >
-              Try again
-            </button>
-            <Link
-              href={readPendingWorkoutGeneration()?.fromLogs ? "/progress" : "/workout"}
-              className="inline-flex rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
-            >
-              {readPendingWorkoutGeneration()?.fromLogs ? "Back to tracking" : "Edit details"}
-            </Link>
-          </div>
-        </div>
+      <div className={fyte.page}>
+        <PageHero
+          photo="workout"
+          kicker="Workout plan"
+          title="Could not make your workout plan"
+          subtitle={error}
+          actions={
+            <>
+              <button
+                type="button"
+                className={fyte.glassSolid}
+                onClick={() => {
+                  if (pending?.fromLogs) beginWorkoutFromLogs();
+                  else if (pending?.formData) beginWorkoutPlanGeneration(pending.formData);
+                  setError("");
+                  setRetryKey((value) => value + 1);
+                }}
+              >
+                Try again
+              </button>
+              <Link href={pending?.fromLogs ? "/progress" : "/workout"} className={fyte.glass}>
+                {pending?.fromLogs ? "Back to coach" : "Edit details"}
+              </Link>
+            </>
+          }
+        />
       </div>
     );
   }
 
-  if (!plan) {
-    return <PlanResultSkeleton />;
-  }
+  if (!plan) return <PlanResultSkeleton />;
 
   const rest = isRestDay(currentWorkout);
   const sessionCalories = currentWorkout?.estimatedCalories || plan.estimatedCaloriesBurn;
+  const goal = coerceProgramGoal(formData?.goal) ? programGoalLabel(formData?.goal) : "";
+  const trainingDays = plan.weeklyPlan
+    ? WEEKDAYS.filter((day) => !isRestDay(plan.weeklyPlan?.[day])).length
+    : Number(formData?.workoutFrequency) || 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb
-          items={[
-            { label: "Home" },
-            { label: "Workout Plan", href: "/workout" },
-            { label: "Your workout" },
-          ]}
-        />
-
-        <header className="mb-8 border-b border-gray-200 pb-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Your workout plan</h1>
-          <p className="mt-2 text-gray-600">
-            Do these sessions. Then make a matching diet so calories follow the work.
-          </p>
-        </header>
-
-        <PlanPairingCard
-          context="workout-result"
-          otherExists={otherExists}
-          goal={formData?.goal}
-        />
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold text-[#282828]">This session</h2>
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Calories</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">{calories(sessionCalories)}</dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Duration</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">
-                {rest ? "Rest" : currentWorkout?.duration || formData?.workoutDuration || "-"}
-              </dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Days per week</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">
-                {formData?.workoutFrequency || "-"}
-              </dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Rest days</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">
-                {plan.recommendedRestDays?.length || 0}
-              </dd>
-            </div>
+    <div className={fyte.page}>
+      <PageHero
+        photo="workout"
+        kicker={goal ? `Workout plan · ${goal}` : "Workout plan"}
+        title="Your training week"
+        subtitle="Show up, do the work, tell the coach how it felt. It adjusts from there."
+        actions={
+          <>
+            <button type="button" onClick={handleSave} disabled={saving} className={fyte.glassSolid}>
+              {saving ? "Saving…" : "Save this plan"}
+            </button>
+            <Link href={otherExists ? "/diet/plan" : "/diet"} className={fyte.glass}>
+              {otherExists ? "See matching diet" : "Make a matching diet"}
+            </Link>
+            <Link href="/workout" className={fyte.glass}>
+              New plan
+            </Link>
+          </>
+        }
+        aside={
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[26rem]">
+            {[
+              ["Days / week", trainingDays || "-"],
+              ["Per session", currentWorkout?.duration || (formData?.workoutDuration ? `${formData.workoutDuration} min` : "-")],
+              ["Burn", calories(sessionCalories)],
+              ["Rest days", plan.recommendedRestDays?.length || 7 - trainingDays],
+            ].map(([label, value]) => (
+              <div key={String(label)} className={fyte.stat}>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-white/60">{label}</dt>
+                <dd className="mt-1 text-xl font-extrabold">{value}</dd>
+              </div>
+            ))}
           </dl>
-        </section>
+        }
+      />
 
-        <section className="mb-8">
+      <div className={fyte.content}>
+        {saveMessage ? (
+          <p className="mb-4 rounded-xl bg-fyte-ink px-4 py-3 text-sm font-medium text-white shadow-card">{saveMessage}</p>
+        ) : null}
+
+        <section>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <h2 className="text-lg font-semibold text-[#282828]">What to train</h2>
+            <div>
+              <h2 className="text-xl font-bold capitalize text-fyte-ink">
+                {showWeek ? selectedDay : "Your session"}
+                {rest ? " · Rest" : ""}
+              </h2>
+              {!rest && currentWorkout?.muscleGroups?.length ? (
+                <p className="mt-1 text-sm text-fyte-muted">
+                  {currentWorkout.muscleGroups.join(", ")}
+                  {currentWorkout.difficulty ? ` · ${currentWorkout.difficulty}` : ""}
+                </p>
+              ) : null}
+            </div>
             {showWeek ? (
-              <div className="flex flex-wrap gap-2">
-                {WEEKDAYS.map((day) => (
-                  <button
-                    key={day}
-                    type="button"
-                    onClick={() => setSelectedDay(day)}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium capitalize ${
-                      selectedDay === day
-                        ? "bg-[#282828] text-white"
-                        : "border border-gray-200 bg-white text-[#282828]"
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-1.5">
+                {WEEKDAYS.map((day) => {
+                  const dayRest = isRestDay(plan.weeklyPlan?.[day]);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setSelectedDay(day)}
+                      className={cn(
+                        "rounded-full px-3 py-1.5 text-sm font-semibold capitalize transition",
+                        selectedDay === day
+                          ? "bg-fyte-ink text-white"
+                          : dayRest
+                            ? "border border-dashed border-fyte-line bg-transparent text-fyte-muted hover:border-fyte-ink"
+                            : "border border-fyte-line bg-fyte-card text-fyte-ink hover:border-fyte-ink"
+                      )}
+                    >
+                      {day.slice(0, 3)}
+                    </button>
+                  );
+                })}
               </div>
             ) : null}
           </div>
 
           {rest || !currentWorkout ? (
-            <article className="rounded-2xl border border-gray-200 bg-white p-6">
-              <h3 className="text-lg font-semibold text-[#282828]">Rest day</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-600">
-                Recover so the next session is useful. Walk, sleep, and eat enough protein.
+            <article className={cn(fyte.card, "flex flex-col items-start gap-2 py-10 text-left sm:items-center sm:text-center")}>
+              <p className={fyte.kicker}>Rest day</p>
+              <h3 className="text-2xl font-bold text-fyte-ink">Recovery is part of the program.</h3>
+              <p className="max-w-md text-sm leading-6 text-fyte-muted">
+                Walk, sleep, and hit your protein. Tomorrow&apos;s session depends on it.
               </p>
             </article>
           ) : (
-            <>
-              {currentWorkout.muscleGroups?.length ? (
-                <p className="mb-4 text-sm text-gray-600">
-                  Focus: {currentWorkout.muscleGroups.join(", ")}
-                  {currentWorkout.difficulty ? ` · ${currentWorkout.difficulty}` : ""}
-                </p>
-              ) : null}
-              <div className="space-y-4">
-                {currentWorkout.exercises.map((exercise, index) => (
-                  <ExerciseCard key={`${exercise.name}-${index}`} exercise={exercise} />
-                ))}
-              </div>
-            </>
+            <div className="space-y-3">
+              {currentWorkout.exercises.map((exercise, index) => (
+                <ExerciseCard key={`${selectedDay}-${exercise.name}-${index}`} exercise={exercise} index={index} />
+              ))}
+            </div>
           )}
         </section>
 
@@ -333,35 +337,20 @@ export default function WorkoutPlanResultPage() {
         <RoutineList title="Cool down" exercises={plan.cooldownRoutine} />
 
         {plan.workoutTips?.length ? (
-          <section className="mb-8">
-            <h2 className="mb-4 text-lg font-semibold text-[#282828]">Tips</h2>
-            <ol className="list-decimal space-y-3 rounded-2xl border border-gray-200 bg-white p-5 pl-8 sm:p-6 sm:pl-9">
+          <section className="mt-12 rounded-2xl bg-fyte-ink p-6 text-white shadow-card sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Train smart</p>
+            <ol className="mt-4 grid gap-4 sm:grid-cols-2">
               {plan.workoutTips.map((tip, index) => (
-                <li key={`${index}-${tip}`} className="text-sm leading-6 text-gray-700">
+                <li key={`${index}-${tip}`} className="flex gap-3 text-sm leading-6 text-white/85">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-bold">
+                    {index + 1}
+                  </span>
                   {tip}
                 </li>
               ))}
             </ol>
           </section>
         ) : null}
-
-        <div className="flex flex-wrap items-center gap-3 border-t border-gray-200 pt-6">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-70"
-          >
-            {saving ? "Saving..." : "Save this plan"}
-          </button>
-          <Link
-            href="/workout"
-            className="rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
-          >
-            Make a new plan
-          </Link>
-          {saveMessage ? <p className="text-sm text-gray-600">{saveMessage}</p> : null}
-        </div>
       </div>
     </div>
   );

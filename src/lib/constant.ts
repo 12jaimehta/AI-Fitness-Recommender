@@ -76,24 +76,22 @@ export const socialLinks = [
 ];
 
 export const steps = [
-  { id: "personal", title: "Personal Information", icon: User, description: "Tell us about yourself" },
-  { id: "physical", title: "Physical Details", icon: Activity, description: "Your measurements and activity" },
-  { id: "preferences", title: "Dietary Preferences", icon: Heart, description: "Your food preferences and goals" },
-  { id: "health", title: "Health Information", icon: Target, description: "Health considerations and favorites" },
+  { id: "about", title: "About you", icon: User, description: "Enough to set calories. Nothing else." },
+  { id: "goal", title: "Goal and food", icon: Heart, description: "What you train for and how you eat." },
+  { id: "notes", title: "Anything we should know?", icon: Target, description: "All optional. Skip if nothing applies." },
 ];
 
 export const workoutSteps = [
-  { id: "personal", title: "Personal Information", icon: User, description: "Tell us about yourself" },
-  { id: "fitness", title: "Fitness Profile", icon: Activity, description: "Your fitness level and goals" },
-  { id: "workout", title: "Workout Preferences", icon: Dumbbell, description: "Your workout schedule and equipment" },
-  { id: "health", title: "Optional details", icon: Target, description: "Injuries and muscle bias if you want them" },
+  { id: "about", title: "About you", icon: User, description: "Where you are starting from." },
+  { id: "training", title: "Training", icon: Dumbbell, description: "Goal, time, and what you have access to." },
+  { id: "notes", title: "Anything we should know?", icon: Activity, description: "All optional. Skip if nothing applies." },
 ];
 
 export const fitnessLevelOptions = [
   { value: "", label: "Select fitness level" },
-  { value: "beginner", label: "Beginner (Just starting)" },
-  { value: "intermediate", label: "Intermediate (6-12 months)" },
-  { value: "advanced", label: "Advanced (1+ years)" },
+  { value: "beginner", label: "Beginner" },
+  { value: "intermediate", label: "Intermediate" },
+  { value: "advanced", label: "Advanced" },
 ];
 
 export const workoutGoalOptions = [
@@ -120,9 +118,9 @@ export const workoutFrequencyDaysOptions = [
 
 export const equipmentOptions = [
   { value: "", label: "Select available equipment" },
-  { value: "none", label: "No equipment (bodyweight only)" },
-  { value: "basic", label: "Basic equipment (dumbbells, resistance bands)" },
-  { value: "full_gym", label: "Full gym access" },
+  { value: "none", label: "Bodyweight only" },
+  { value: "basic", label: "Dumbbells / bands" },
+  { value: "full_gym", label: "Full gym" },
 ];
 
 export const preferredTimeOptions = [
@@ -163,11 +161,11 @@ export const goalOptions = [
 
 export const activityOptions = [
   { value: "", label: "Select activity level" },
-  { value: "sedentary", label: "Sedentary (Little or no exercise)" },
-  { value: "lightly_active", label: "Lightly Active (1-3 days/week)" },
-  { value: "moderately_active", label: "Moderately Active (3-5 days/week)" },
-  { value: "very_active", label: "Very Active (6-7 days/week)" },
-  { value: "extremely_active", label: "Extremely Active (Physical job)" },
+  { value: "sedentary", label: "Mostly sitting" },
+  { value: "lightly_active", label: "On my feet a little" },
+  { value: "moderately_active", label: "Active most days" },
+  { value: "very_active", label: "Very active" },
+  { value: "extremely_active", label: "Physical job" },
 ];
 
 export const workoutOptions = [

@@ -53,11 +53,6 @@ export interface Step {
   description: string;
 }
 
-export interface ProgressBarProps {
-  steps: Step[];
-  currentStep: number;
-}
-
 export interface DietPlanData {
   meals?: {
     breakfast?: MealData;

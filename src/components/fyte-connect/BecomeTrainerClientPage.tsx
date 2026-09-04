@@ -7,10 +7,15 @@ import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { trainerSchema, type TrainerFormData } from "@/lib/validation/becometrainer";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
+import PageHero from "@/components/shared/PageHero";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 import { BecomeTrainerSkeleton } from "@/components/ui/Skeleton";
 import UploadImage from "@/components/ui/UploadImage";
 import InstagramLink from "@/components/fyte-connect/InstagramLink";
+
+const INPUT =
+  "mt-1.5 h-12 w-full rounded-xl border-2 border-fyte-line bg-fyte-card px-4 text-base font-medium text-fyte-ink outline-none transition placeholder:text-gray-400 focus:border-fyte-ink";
 
 export default function BecomeTrainerClientPage() {
   const router = useRouter();
@@ -108,38 +113,32 @@ export default function BecomeTrainerClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb
-          items={[
-            { label: "Home" },
-            { label: "Trainers", href: "/fyte-connect" },
-            { label: "Become a trainer" },
-          ]}
-        />
-
-        <header className="mb-8 border-b border-gray-200 pb-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Become a trainer</h1>
-          <p className="mt-2 text-gray-600">
-            Add your details so people can find you, book a session, and message you on Instagram.
-          </p>
-        </header>
-
-        <div className="grid gap-8 lg:grid-cols-[1fr,1.4fr]">
-          <aside className="h-fit rounded-2xl border border-gray-200 bg-white p-6">
-            <h2 className="text-lg font-semibold text-[#282828]">What people see</h2>
-            <ul className="mt-4 space-y-3 text-sm leading-6 text-gray-600">
-              <li>Your name, photo, and bio on the Trainers page.</li>
-              <li>A book-a-session form on your profile.</li>
-              <li>An Instagram button if you add your handle.</li>
-              <li>You can edit this any time.</li>
+    <div className={fyte.page}>
+      <PageHero
+        photo="connect"
+        kicker="Trainers"
+        title="Get booked."
+        subtitle="Your name, photo, rate and Instagram on the Trainers page, with a book-a-session form. Edit any time."
+      />
+      <div className={cn(fyte.content, "grid gap-6 lg:grid-cols-[1fr_1.6fr]")}>
+          <aside className={cn(fyte.card, "h-fit lg:sticky lg:top-28")}>
+            <p className={fyte.kicker}>What people see</p>
+            <ul className="mt-4 space-y-3 text-sm leading-6 text-fyte-muted">
+              {[
+                "Your name, photo, and bio on the Trainers page.",
+                "A book-a-session form on your profile.",
+                "An Instagram button if you add your handle.",
+                "Your hourly rate, so nobody has to ask.",
+              ].map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-fyte-ink" />
+                  {item}
+                </li>
+              ))}
             </ul>
           </aside>
 
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} className={cn(fyte.card, "p-6 sm:p-8")}>
             <UploadImage
               label="Profile photo"
               bucket="trainer-avatars"
@@ -151,60 +150,60 @@ export default function BecomeTrainerClientPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="text-sm font-semibold text-[#282828]">Full name</label>
+                <label className="text-sm font-semibold text-fyte-ink">Full name</label>
                 <input
                   {...register("full_name")}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]"
+                  className={INPUT}
                 />
                 {errors.full_name ? (
-                  <p className="mt-1 text-xs text-red-600">{errors.full_name.message}</p>
+                  <p className="mt-1 text-xs font-medium text-fyte-danger">{errors.full_name.message}</p>
                 ) : null}
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[#282828]">Years of experience</label>
+                <label className="text-sm font-semibold text-fyte-ink">Years of experience</label>
                 <input
                   type="number"
                   min={0}
                   {...register("experience_years")}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]"
+                  className={INPUT}
                 />
                 {errors.experience_years ? (
-                  <p className="mt-1 text-xs text-red-600">{errors.experience_years.message}</p>
+                  <p className="mt-1 text-xs font-medium text-fyte-danger">{errors.experience_years.message}</p>
                 ) : null}
               </div>
 
               <div className="sm:col-span-2">
-                <label className="text-sm font-semibold text-[#282828]">Bio</label>
+                <label className="text-sm font-semibold text-fyte-ink">Bio</label>
                 <textarea
                   {...register("bio")}
                   rows={4}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]"
+                  className={cn(INPUT, "h-auto py-3")}
                 />
-                {errors.bio ? <p className="mt-1 text-xs text-red-600">{errors.bio.message}</p> : null}
+                {errors.bio ? <p className="mt-1 text-xs font-medium text-fyte-danger">{errors.bio.message}</p> : null}
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[#282828]">Hourly rate (Rs)</label>
+                <label className="text-sm font-semibold text-fyte-ink">Hourly rate (Rs)</label>
                 <input
                   type="number"
                   min={0}
                   {...register("hourly_rate")}
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]"
+                  className={INPUT}
                 />
                 {errors.hourly_rate ? (
-                  <p className="mt-1 text-xs text-red-600">{errors.hourly_rate.message}</p>
+                  <p className="mt-1 text-xs font-medium text-fyte-danger">{errors.hourly_rate.message}</p>
                 ) : null}
               </div>
 
               <div>
-                <label className="text-sm font-semibold text-[#282828]">Instagram</label>
+                <label className="text-sm font-semibold text-fyte-ink">Instagram</label>
                 <input
                   {...register("instagram_handle")}
                   placeholder="@yourname"
-                  className="mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]"
+                  className={INPUT}
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-fyte-muted">
                   Handle or profile URL. People get a button to message you on Instagram.
                 </p>
                 {instagramHandle ? (
@@ -216,7 +215,7 @@ export default function BecomeTrainerClientPage() {
             </div>
 
             <div className="mt-6">
-              <label className="text-sm font-semibold text-[#282828]">Expertise</label>
+              <label className="text-sm font-semibold text-fyte-ink">Expertise</label>
               <div className="mt-2 flex gap-2">
                 <input
                   value={tagDraft}
@@ -228,12 +227,12 @@ export default function BecomeTrainerClientPage() {
                     }
                   }}
                   placeholder="e.g. Fat loss, Strength training"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]"
+                  className={INPUT}
                 />
                 <button
                   type="button"
                   onClick={() => addExpertise(tagDraft)}
-                  className="shrink-0 rounded-xl border-2 border-[#282828] px-4 py-2 text-sm font-semibold text-[#282828] hover:bg-[#282828] hover:text-white"
+                  className={cn(fyte.secondary, "h-12 w-auto shrink-0")}
                 >
                   Add
                 </button>
@@ -242,35 +241,30 @@ export default function BecomeTrainerClientPage() {
                 {expertise.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-700"
+                    className="inline-flex items-center gap-2 rounded-full bg-fyte-panel px-3 py-1 text-xs font-medium text-fyte-ink"
                   >
                     {tag}
-                    <button type="button" onClick={() => removeExpertise(tag)} className="text-gray-500">
+                    <button type="button" onClick={() => removeExpertise(tag)} className="text-fyte-muted hover:text-fyte-ink">
                       Remove
                     </button>
                   </span>
                 ))}
               </div>
               {errors.expertise ? (
-                <p className="mt-1 text-xs text-red-600">{errors.expertise.message}</p>
+                <p className="mt-1 text-xs font-medium text-fyte-danger">{errors.expertise.message}</p>
               ) : null}
             </div>
 
             {submitError ? (
-              <p className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-fyte-danger">
                 {submitError}
               </p>
             ) : null}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="mt-6 w-full rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
-            >
-              {isSubmitting ? "Saving..." : "Save trainer profile"}
+            <button type="submit" disabled={isSubmitting} className={`${fyte.primary} mt-8`}>
+              {isSubmitting ? "Saving…" : "Save trainer profile"}
             </button>
           </form>
-        </div>
       </div>
     </div>
   );

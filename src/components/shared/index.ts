@@ -1,24 +1,15 @@
 export { default as FormInput } from './FormInput';
 export { default as PageBreadcrumb } from './PageBreadcrumb';
+export { default as PageHero } from './PageHero';
 export { default as FormSelect } from './FormSelect';
 export { default as FormTextarea } from './FormTextarea';
 export { default as FormNavigation } from './FormNavigation';
-export { default as FormTwoColumnLayout } from './FormTwoColumnLayout';
-export { default as PlanFormHeader } from './PlanFormHeader';
-export { default as FormStepHeader } from './FormStepHeader';
+export { default as PlanFormShell } from './PlanFormShell';
 export { default as OptionChipGrid } from './OptionChipGrid';
-export { default as ProgressBar } from './ProgressBar';
 export { default as UnifiedNavbar } from './UnifiedNavbar';
 export { default as UnifiedFooter } from './UnifiedFooter';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as PageLoader } from '@/components/ui/PageLoader';
-export { default as SavedPlanActions } from './SavedPlanActions';
-export { default as PlanGeneratorClient } from './PlanGeneratorClient';
-export { default as PlanDisplayShell } from './PlanDisplayShell';
-export { default as PlanResultHeader } from './PlanResultHeader';
-export { default as PlanStatGrid } from './PlanStatGrid';
-export { default as PlanViewToggle } from './PlanViewToggle';
-export { default as PlanTips } from './PlanTips';
 export { default as SurfaceCard } from './SurfaceCard';
 export { default as AppModal } from './AppModal';
 export {

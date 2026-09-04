@@ -1,11 +1,19 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useRouter } from "next/navigation";
-import { UnifiedFooter } from "@/components";
+import Image from "next/image";
+import Link from "next/link";
+import { Check } from "lucide-react";
+import { FadeIn, motion, enter } from "@/components/shared/Motion";
 
 export const authInputClass =
-  "mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]";
+  "mt-1.5 h-12 w-full rounded-xl border-2 border-fyte-line bg-fyte-card px-4 text-base font-medium text-fyte-ink outline-none transition placeholder:text-gray-400 focus:border-fyte-ink";
+
+const POINTS = [
+  "Meals with real numbers, not vibes",
+  "Log a cheat meal in one sentence or a photo",
+  "The coach fixes one slot, never the whole plan",
+];
 
 export function AuthShell({
   title,
@@ -16,58 +24,62 @@ export function AuthShell({
   subtitle: string;
   children: ReactNode;
 }) {
-  const router = useRouter();
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="text-2xl font-bold text-[#282828]"
-          >
+    <div className="min-h-screen bg-fyte-page lg:grid lg:grid-cols-[1.1fr_1fr]">
+      <aside className="relative isolate hidden overflow-hidden bg-black text-white lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <Image src="/home/photos/photo3.jpg" alt="" fill priority sizes="55vw" className="object-cover opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/30" />
+        <Link href="/" className="relative text-2xl font-extrabold tracking-tight text-shadow-md">
+          fyteAI
+        </Link>
+        <div className="relative max-w-md">
+          <motion.h2 {...enter(0.04)} className="text-[clamp(32px,3.4vw,48px)] font-extrabold leading-[1.05] tracking-tight text-shadow-lg">
+            A trainer who notices what you actually did.
+          </motion.h2>
+          <ul className="mt-8 space-y-3">
+            {POINTS.map((point, index) => (
+              <motion.li key={point} {...enter(0.1 + index * 0.05)} className="flex items-center gap-3 text-white/85">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 backdrop-blur-md">
+                  <Check size={14} />
+                </span>
+                {point}
+              </motion.li>
+            ))}
+          </ul>
+        </div>
+        <p className="relative text-xs text-white/50">© 2026 fyteAI</p>
+      </aside>
+
+      <main className="flex min-h-screen flex-col px-5 py-6 sm:px-10 lg:min-h-0 lg:justify-center lg:py-12">
+        <div className="flex items-center justify-between lg:hidden">
+          <Link href="/" className="text-2xl font-extrabold tracking-tight text-fyte-ink">
             fyteAI
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="rounded-xl border-2 border-[#282828] bg-white px-5 py-2.5 text-sm font-semibold text-[#282828] transition hover:bg-[#282828] hover:text-white"
-          >
+          </Link>
+          <Link href="/" className="text-sm font-semibold text-fyte-muted hover:text-fyte-ink">
             Back to home
-          </button>
+          </Link>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-md px-4 py-12 sm:py-16">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-          <p className="mt-2 text-sm text-gray-600">{subtitle}</p>
+        <FadeIn className="mx-auto mt-10 w-full max-w-md lg:mt-0">
+          <h1 className="text-3xl font-extrabold tracking-tight text-fyte-ink">{title}</h1>
+          <p className="mt-2 text-sm text-fyte-muted">{subtitle}</p>
           {children}
-        </div>
+        </FadeIn>
+        <p className="mx-auto mt-10 w-full max-w-md text-center text-xs text-fyte-muted lg:mt-12">
+          <Link href="/terms" className="hover:text-fyte-ink">Terms</Link> · <Link href="/privacy" className="hover:text-fyte-ink">Privacy</Link> ·{" "}
+          <Link href="/help" className="hover:text-fyte-ink">Help</Link>
+        </p>
       </main>
-
-      <UnifiedFooter />
     </div>
   );
 }
 
-export function AuthAlert({
-  message,
-  tone = "error",
-}: {
-  message: string | null;
-  tone?: "error" | "success";
-}) {
+export function AuthAlert({ message, tone = "error" }: { message: string | null; tone?: "error" | "success" }) {
   if (!message) return null;
   const ok = tone === "success";
   return (
     <p
-      className={`mt-4 rounded-xl px-4 py-3 text-sm ${
-        ok
-          ? "border border-gray-200 bg-gray-50 text-gray-700"
-          : "border border-red-200 bg-red-50 text-red-700"
-      }`}
+      role={ok ? "status" : "alert"}
+      className={`mt-4 rounded-xl px-4 py-3 text-sm ${ok ? "bg-fyte-ink text-white" : "border border-red-200 bg-red-50 text-red-700"}`}
     >
       {message}
     </p>
@@ -77,9 +89,9 @@ export function AuthAlert({
 export function AuthDivider() {
   return (
     <div className="my-6 flex items-center gap-3">
-      <div className="h-px flex-1 bg-gray-200" />
-      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">or</span>
-      <div className="h-px flex-1 bg-gray-200" />
+      <div className="h-px flex-1 bg-fyte-line" />
+      <span className="text-xs font-semibold uppercase tracking-wide text-fyte-muted">or</span>
+      <div className="h-px flex-1 bg-fyte-line" />
     </div>
   );
 }

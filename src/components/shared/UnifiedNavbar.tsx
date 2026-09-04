@@ -7,23 +7,31 @@ import { navItems } from "@/lib/constant";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
 import { signedInHomeHref } from "@/shared/lib/app-home";
+import { AnimatePresence, motion, popIn, fadeUp, transition } from "@/components/shared/Motion";
+import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const { user, isSignedIn, isLoading } = useUser();
   const pathname = usePathname();
   const router = useRouter();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [profileComplete, setProfileComplete] = useState(true);
+  // Menus remember the path they were opened on, so navigating closes them without an effect.
+  const [mobileMenuPath, setMobileMenuPath] = useState<string | null>(null);
+  const [userMenuPath, setUserMenuPath] = useState<string | null>(null);
+  const [loadedProfileComplete, setLoadedProfileComplete] = useState(true);
+  const isMobileMenuOpen = mobileMenuPath === pathname;
+  const isUserMenuOpen = userMenuPath === pathname;
+  const setIsMobileMenuOpen = (open: boolean) => setMobileMenuPath(open ? pathname : null);
+  const setIsUserMenuOpen = (open: boolean) => setUserMenuPath(open ? pathname : null);
+  const profileComplete = !isSignedIn || loadedProfileComplete;
+  const [scrolled, setScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const homeHref = isSignedIn ? signedInHomeHref(profileComplete) : "/";
-  const isHomePage = pathname === "/";
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Account";
 
   const navLinks = navItems
     .filter((item) => item.name !== "Trainers")
-    .filter((item) => !(isSignedIn && profileComplete && item.name === "Progress"))
+    .filter((item) => !(isSignedIn && profileComplete && item.name === "Coach"))
     .map((item) => (item.name === "Home" ? { ...item, href: homeHref } : item));
 
   const isNavActive = (href: string) => {
@@ -32,23 +40,33 @@ export default function Navbar() {
   };
 
   useEffect(() => {
-    if (!isSignedIn) {
-      setProfileComplete(true);
-      return;
-    }
+    if (!isSignedIn) return;
+    let cancelled = false;
     getUserProfile()
-      .then((profile) => setProfileComplete(isProfileComplete(profile)))
+      .then((profile) => {
+        if (!cancelled) setLoadedProfileComplete(isProfileComplete(profile));
+      })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [isSignedIn, user?.id]);
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setIsUserMenuOpen(false);
+        setUserMenuPath(null);
       }
     };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const handleSignOut = async () => {
@@ -65,130 +83,119 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   };
 
-  if (isLoading) {
-    return (
-      <>
-        <nav
-          className={`fixed top-0 left-0 right-0 z-50 
-            ${isHomePage ? "bg-transparent border-b border-white/20" : "bg-white border-b border-black/10"}
-          `}
-        >
-          <div className="max-w-[1200px] mx-auto px-6 py-4 flex justify-between items-center">
-            <div className={`font-bold text-2xl ${isHomePage ? "text-white" : "text-[#282828]"}`}>
-              fyteAI
-            </div>
-            <div className="w-[100px] h-[40px]" />
-          </div>
-        </nav>
-        <div className="h-[80px]" />
-      </>
-    );
-  }
-
   return (
-    <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition 
-        ${isHomePage ? "bg-transparent backdrop-blur-md border-b border-white/20" : "bg-white border-b border-black/10"}`}
-      >
-        <div className="max-w-[1200px] mx-auto px-6 py-4 flex justify-between items-center">
-          <div
-            onClick={() => router.push(homeHref)}
-            className={`font-bold text-2xl cursor-pointer ${isHomePage ? "text-white" : "text-[#282828]"}`}
-          >
-            fyteAI
-          </div>
+    <nav
+      className={cn(
+        "fixed inset-x-0 top-0 z-50 border-b text-white transition-colors duration-300",
+        scrolled || isMobileMenuOpen
+          ? "border-white/10 bg-[#161616]/85 backdrop-blur-xl"
+          : "border-white/15 bg-transparent backdrop-blur-sm"
+      )}
+    >
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
+        <button
+          type="button"
+          onClick={() => router.push(homeHref)}
+          className="text-2xl font-extrabold tracking-tight text-shadow-md transition hover:scale-[1.015]"
+        >
+          fyteAI
+        </button>
 
-          <div className="hidden md:flex gap-4 items-center">
-            {navLinks.map((item) => (
+        <div className="hidden items-center gap-1 md:flex">
+          {navLinks.map((item) => (
+            <button
+              key={item.name}
+              type="button"
+              onClick={() => router.push(item.href)}
+              className={cn(
+                "rounded-full px-4 py-2 text-sm font-semibold transition",
+                isNavActive(item.href) ? "bg-white/15 text-white" : "text-white/75 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3">
+          {isLoading ? (
+            <div className="h-10 w-24 rounded-full bg-white/10" />
+          ) : isSignedIn ? (
+            <div className="relative" ref={userMenuRef}>
               <button
-                key={item.name}
-                onClick={() => router.push(item.href)}
-                className={`px-4 py-2 rounded-md font-medium text-sm transition 
-                  ${isHomePage ? "text-white" : "text-[#282828]"} 
-                  ${isNavActive(item.href) ? "opacity-100" : "opacity-70 hover:opacity-100"}
-                `}
+                type="button"
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 rounded-full border border-white/30 bg-white/10 py-1.5 pl-1.5 pr-3 text-sm font-semibold backdrop-blur-md transition hover:bg-white/20"
               >
-                {item.name}
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-xs font-bold text-fyte-ink">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+                <span className="hidden max-w-[120px] truncate sm:inline">{displayName}</span>
+                <ChevronDown size={16} className={cn("transition-transform", isUserMenuOpen && "rotate-180")} />
               </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            {isSignedIn ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsUserMenuOpen((open) => !open)}
-                  className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold ${
-                    isHomePage
-                      ? "border border-white/30 bg-white/10 text-white"
-                      : "border border-gray-200 bg-white text-[#282828]"
-                  }`}
-                >
-                  <span className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs ${
-                    isHomePage ? "bg-white text-[#282828]" : "bg-[#282828] text-white"
-                  }`}>
-                    {displayName.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="hidden max-w-[120px] truncate sm:inline">{displayName}</span>
-                  <ChevronDown size={16} className={isUserMenuOpen ? "rotate-180" : ""} />
-                </button>
+              <AnimatePresence>
                 {isUserMenuOpen ? (
-                  <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white py-1 shadow-lg">
+                  <motion.div
+                    {...popIn}
+                    transition={transition}
+                    className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-white/15 bg-[#1c1c1c]/95 py-2 shadow-2xl backdrop-blur-xl"
+                  >
+                    <div className="mb-1 border-b border-white/10 px-4 py-3">
+                      <p className="text-xs text-white/60">Signed in as</p>
+                      <p className="truncate text-sm font-medium">{user?.email}</p>
+                    </div>
                     <button
                       type="button"
                       onClick={() => go("/my-profile")}
-                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[#282828] hover:bg-gray-50"
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-white/10"
                     >
-                      <User size={16} />
-                      My profile
+                      <User size={16} /> My profile
                     </button>
                     <button
                       type="button"
                       onClick={handleSignOut}
-                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-[#282828] hover:bg-gray-50"
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-300 hover:bg-red-500/10"
                     >
-                      <LogOut size={16} />
-                      Log out
+                      <LogOut size={16} /> Log out
                     </button>
-                  </div>
+                  </motion.div>
                 ) : null}
-              </div>
-            ) : (
-              <button
-                onClick={() => router.push("/sign-in")}
-                className={`px-6 py-2 rounded-md text-sm font-medium 
-                  ${isHomePage ? "border border-white/30 text-white bg-transparent" : "bg-[#282828] text-white"}
-                `}
-              >
-                Sign In
-              </button>
-            )}
-
+              </AnimatePresence>
+            </div>
+          ) : (
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`md:hidden p-2 ${isHomePage ? "text-white" : "text-[#282828]"}`}
+              type="button"
+              onClick={() => router.push("/sign-in")}
+              className="rounded-full border border-white/30 bg-white/10 px-5 py-2 text-sm font-semibold backdrop-blur-md transition hover:bg-white/20"
             >
-              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              Sign in
             </button>
-          </div>
-        </div>
+          )}
 
-        {isMobileMenuOpen ? (
-          <div
-            className={`md:hidden px-6 py-4 border-t 
-              ${isHomePage ? "bg-black/90 border-white/20" : "bg-white border-black/10"}
-            `}
+          <button
+            type="button"
+            aria-label="Menu"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="rounded-full border border-white/30 bg-white/10 p-2 backdrop-blur-md md:hidden"
           >
-            <div className="flex flex-col gap-2">
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {isMobileMenuOpen ? (
+          <motion.div {...fadeUp} transition={transition} className="border-t border-white/10 px-5 py-4 md:hidden">
+            <div className="flex flex-col gap-1">
               {navLinks.map((item) => (
                 <button
                   key={item.name}
+                  type="button"
                   onClick={() => go(item.href)}
-                  className={`w-full text-left px-4 py-3 rounded-md text-lg 
-                    ${isHomePage ? "text-white" : "text-[#282828]"}
-                  `}
+                  className={cn(
+                    "w-full rounded-xl px-4 py-3 text-left text-base font-semibold",
+                    isNavActive(item.href) ? "bg-white/15" : "text-white/80 hover:bg-white/10"
+                  )}
                 >
                   {item.name}
                 </button>
@@ -196,29 +203,25 @@ export default function Navbar() {
               {isSignedIn ? (
                 <>
                   <button
+                    type="button"
                     onClick={() => go("/my-profile")}
-                    className={`w-full text-left px-4 py-3 rounded-md text-lg ${
-                      isHomePage ? "text-white" : "text-[#282828]"
-                    }`}
+                    className="w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-white/80 hover:bg-white/10"
                   >
                     My profile
                   </button>
                   <button
+                    type="button"
                     onClick={handleSignOut}
-                    className={`w-full text-left px-4 py-3 rounded-md text-lg ${
-                      isHomePage ? "text-white" : "text-[#282828]"
-                    }`}
+                    className="w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-red-300 hover:bg-red-500/10"
                   >
                     Log out
                   </button>
                 </>
               ) : null}
             </div>
-          </div>
+          </motion.div>
         ) : null}
-      </nav>
-
-      <div className="h-[40px]" />
-    </>
+      </AnimatePresence>
+    </nav>
   );
 }

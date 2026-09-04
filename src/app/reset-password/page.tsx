@@ -59,7 +59,7 @@ export default function ResetPasswordPage() {
         <button
           type="button"
           onClick={() => router.push("/forgot-password")}
-          className="mt-6 w-full rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545]"
+          className="mt-6 h-12 w-full rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a]"
         >
           Send a new link
         </button>
@@ -71,7 +71,7 @@ export default function ResetPasswordPage() {
     <AuthShell title="Set a new password" subtitle="Use a strong password you have not used here before.">
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <div>
-          <label className="text-sm font-semibold text-[#282828]">New password</label>
+          <label className="text-sm font-semibold text-fyte-ink">New password</label>
           <input
             type="password"
             autoComplete="new-password"
@@ -80,12 +80,12 @@ export default function ResetPasswordPage() {
             className={authInputClass}
           />
           {form.formState.errors.password ? (
-            <p className="mt-1 text-xs text-red-600">{form.formState.errors.password.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{form.formState.errors.password.message}</p>
           ) : null}
           {watchedPassword.length > 0 ? <PasswordStrength value={watchedPassword} /> : null}
         </div>
         <div>
-          <label className="text-sm font-semibold text-[#282828]">Confirm password</label>
+          <label className="text-sm font-semibold text-fyte-ink">Confirm password</label>
           <input
             type="password"
             autoComplete="new-password"
@@ -94,13 +94,13 @@ export default function ResetPasswordPage() {
             className={authInputClass}
           />
           {form.formState.errors.confirmPassword ? (
-            <p className="mt-1 text-xs text-red-600">{form.formState.errors.confirmPassword.message}</p>
+            <p className="mt-1 text-xs text-fyte-danger">{form.formState.errors.confirmPassword.message}</p>
           ) : null}
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
+          className="h-12 rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a] disabled:opacity-60"
         >
           {loading ? "Saving..." : "Update password"}
         </button>

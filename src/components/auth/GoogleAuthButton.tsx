@@ -48,7 +48,7 @@ export default function GoogleAuthButton({
           onError(error instanceof Error ? error.message : "Google sign-in failed.");
         }
       }}
-      className="mt-6 flex w-full items-center justify-center gap-3 rounded-xl border-2 border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-[#282828] transition hover:border-[#282828] disabled:opacity-60"
+      className="mt-6 flex h-12 w-full items-center justify-center gap-3 rounded-xl border-2 border-fyte-line bg-fyte-card px-5 text-sm font-semibold text-fyte-ink transition hover:border-fyte-ink disabled:opacity-60"
     >
       <GoogleMark />
       {loading ? "Redirecting..." : label}

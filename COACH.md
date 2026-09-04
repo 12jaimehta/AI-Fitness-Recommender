@@ -271,3 +271,26 @@ If `11_coach.sql` is not pasted, Today explains that. Diet/workout generate stil
 - Explicit diet-break phase
 - Grok job queue
 - Set logbook as an *optional* advanced surface
+
+## 7. Accuracy and scale: what we add, in order
+
+No new framework. Each item below is a table, a job, or a metric.
+
+**Accuracy (what makes the coach trusted)**
+
+1. `food_items` reference table (IFCT 2017 for Indian food, USDA FDC for the rest): name, portion unit, kcal, protein per portion. Grok maps text/photo → item + portion; the number comes from the table, not the model. Fallback to Grok estimate only when no match.
+2. Eval set: 100 real meals with known kcal (weighed). Run every prompt change; ship only if median error stays under 15%.
+3. Ranges, not points: show “~450–550 kcal” and ask one question only when the range changes the action.
+4. Weekly weight trend (7-day average) decides plan changes, never a single weigh-in.
+
+**Scale (what keeps 1M users cheap)**
+
+1. `/coach/today` read is one indexed query per table + Redis; no LLM on read. Target p95 < 150 ms.
+2. Grok calls go through a queue (QStash or Inngest) with per-user daily cap; the UI gets the result by polling the interview row.
+3. Postgres via Supavisor pooling; `coach_events` partitioned by month once it passes 50M rows.
+4. Sentry for errors, PostHog for the three product numbers: day‑7 check‑in rate, meals answered per day, weekly review opened.
+
+**What sells (paywall placement)**
+
+- Free: plan generation + “as planned / skipped” buttons.
+- Paid: photo + “something else” interview, swaps, weekly review, and the honest delay‑days number. That is the trainer; that is what people pay a human for.

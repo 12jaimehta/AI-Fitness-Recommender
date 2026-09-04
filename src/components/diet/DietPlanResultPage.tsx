@@ -7,11 +7,14 @@ import type { DailyMeals, DietPlanData, MealData } from "@/shared/types";
 import type { DietPlanFormData } from "@/lib/validation/dietPlanSchema";
 import { resolveDietPlan, saveDietPlan, beginDietPlanGeneration, beginDietFromLogs } from "@/lib/service/dietWorkoutplan";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
-import PlanPairingCard from "@/components/shared/PlanPairingCard";
+import PageHero from "@/components/shared/PageHero";
+import { delay, FadeIn } from "@/components/shared/Motion";
 import { readGeneratedWorkoutPlan } from "@frontend/features/workout-plan";
 import { readPendingDietGeneration } from "@frontend/features/diet-plan";
+import { coerceProgramGoal, programGoalLabel } from "@/shared/lib/program-goals";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
 
 const MEAL_ORDER = [
   "breakfast",
@@ -35,15 +38,7 @@ const MEAL_LABELS: Record<string, string> = {
   beforeBed: "Before bed",
 };
 
-const WEEKDAYS = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-] as const;
+const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 
 function mealList(meals?: DailyMeals | null) {
   if (!meals) return [];
@@ -85,64 +80,75 @@ function calories(value: string | number | undefined) {
 }
 
 function todayWeekday() {
-  return new Date()
-    .toLocaleDateString("en-US", { weekday: "long" })
-    .toLowerCase() as (typeof WEEKDAYS)[number];
+  return new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase() as (typeof WEEKDAYS)[number];
 }
 
-function MacroRow({ meal }: { meal: MealData }) {
-  return (
-    <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-        <dt className="text-xs text-gray-500">Calories</dt>
-        <dd className="mt-1 text-sm font-semibold text-[#282828]">{meal.calories}</dd>
-      </div>
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-        <dt className="text-xs text-gray-500">Protein</dt>
-        <dd className="mt-1 text-sm font-semibold text-[#282828]">{meal.protein} g</dd>
-      </div>
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-        <dt className="text-xs text-gray-500">Carbs</dt>
-        <dd className="mt-1 text-sm font-semibold text-[#282828]">{meal.carbs} g</dd>
-      </div>
-      <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-        <dt className="text-xs text-gray-500">Fat</dt>
-        <dd className="mt-1 text-sm font-semibold text-[#282828]">{meal.fat} g</dd>
-      </div>
-    </dl>
-  );
-}
-
-function MealCard({ mealType, meal }: { mealType: string; meal: MealData }) {
+function MealCard({ mealType, meal, index }: { mealType: string; meal: MealData; index: number }) {
   const ingredients = ingredientText(meal.ingredientBreakdown);
   const alternatives = meal.alternatives?.filter((item) => item.name) ?? [];
+  const [open, setOpen] = useState(false);
 
   return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-      <h3 className="text-lg font-semibold text-[#282828]">{MEAL_LABELS[mealType] || mealType}</h3>
-      <p className="mt-2 text-base text-gray-800">{meal.name}</p>
-      <MacroRow meal={meal} />
-      {ingredients ? (
-        <div className="mt-4">
-          <h4 className="text-sm font-semibold text-[#282828]">Ingredients</h4>
-          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-gray-600">{ingredients}</p>
+    <FadeIn delay={delay(index)}>
+      <article className={cn(fyte.card, fyte.cardHover)}>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className={fyte.kicker}>{MEAL_LABELS[mealType] || mealType}</p>
+            <h3 className="mt-1 text-lg font-bold leading-snug text-fyte-ink sm:text-xl">{meal.name}</h3>
+          </div>
+          <p className="shrink-0 rounded-full bg-fyte-ink px-3 py-1 text-sm font-bold text-white">
+            {calories(meal.calories)} kcal
+          </p>
         </div>
-      ) : null}
-      {alternatives.length > 0 ? (
-        <div className="mt-4">
-          <h4 className="text-sm font-semibold text-[#282828]">You can also eat</h4>
-          <ul className="mt-2 space-y-2">
-            {alternatives.map((item) => (
-              <li key={item.name} className="text-sm text-gray-600">
-                {item.name}
-                {item.calories ? ` (${item.calories} calories)` : ""}
-                {item.description ? `. ${item.description}` : ""}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
-    </article>
+        <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+          {[
+            ["Protein", grams(meal.protein)],
+            ["Carbs", grams(meal.carbs)],
+            ["Fat", grams(meal.fat)],
+          ].map(([label, value]) => (
+            <div key={label} className="flex items-baseline gap-1.5">
+              <dt className="text-fyte-muted">{label}</dt>
+              <dd className="font-semibold text-fyte-ink">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        {ingredients || alternatives.length ? (
+          <>
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              className="mt-4 text-sm font-semibold text-fyte-ink underline-offset-4 hover:underline"
+            >
+              {open ? "Hide details" : "Ingredients and swaps"}
+            </button>
+            {open ? (
+              <div className="mt-4 grid gap-5 border-t border-fyte-line pt-4 sm:grid-cols-2">
+                {ingredients ? (
+                  <div>
+                    <h4 className="text-sm font-semibold text-fyte-ink">Ingredients</h4>
+                    <p className="mt-2 whitespace-pre-line text-sm leading-6 text-fyte-muted">{ingredients}</p>
+                  </div>
+                ) : null}
+                {alternatives.length ? (
+                  <div>
+                    <h4 className="text-sm font-semibold text-fyte-ink">You can also eat</h4>
+                    <ul className="mt-2 space-y-2">
+                      {alternatives.map((item) => (
+                        <li key={item.name} className="text-sm leading-6 text-fyte-muted">
+                          <span className="font-medium text-fyte-ink">{item.name}</span>
+                          {item.calories ? ` · ${item.calories} kcal` : ""}
+                          {item.description ? ` — ${item.description}` : ""}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+      </article>
+    </FadeIn>
   );
 }
 
@@ -196,7 +202,7 @@ export default function DietPlanResultPage() {
     setSaveMessage("");
     try {
       await saveDietPlan(user.id, formData, plan);
-      setSaveMessage("Plan saved.");
+      setSaveMessage("Saved. The coach will use this plan.");
     } catch {
       setSaveMessage("Could not save the plan. Try again.");
     } finally {
@@ -205,152 +211,129 @@ export default function DietPlanResultPage() {
   };
 
   if (error) {
+    const pending = readPendingDietGeneration();
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-          <PageBreadcrumb
-            items={[
-              { label: "Home" },
-              { label: "Diet Plan", href: "/diet" },
-              { label: "Your meals" },
-            ]}
-          />
-          <h1 className="text-2xl font-bold text-gray-900">Could not make your meal plan</h1>
-          <p className="mt-2 text-gray-600">{error}</p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                const pending = readPendingDietGeneration();
-                if (pending?.fromLogs) beginDietFromLogs();
-                else if (pending?.formData) beginDietPlanGeneration(pending.formData);
-                setError("");
-                setRetryKey((value) => value + 1);
-              }}
-              className="inline-flex rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white"
-            >
-              Try again
-            </button>
-            <Link
-              href={readPendingDietGeneration()?.fromLogs ? "/progress" : "/diet"}
-              className="inline-flex rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
-            >
-              {readPendingDietGeneration()?.fromLogs ? "Back to tracking" : "Edit details"}
-            </Link>
-          </div>
-        </div>
+      <div className={fyte.page}>
+        <PageHero
+          photo="diet"
+          kicker="Diet plan"
+          title="Could not make your meal plan"
+          subtitle={error}
+          actions={
+            <>
+              <button
+                type="button"
+                className={fyte.glassSolid}
+                onClick={() => {
+                  if (pending?.fromLogs) beginDietFromLogs();
+                  else if (pending?.formData) beginDietPlanGeneration(pending.formData);
+                  setError("");
+                  setRetryKey((value) => value + 1);
+                }}
+              >
+                Try again
+              </button>
+              <Link href={pending?.fromLogs ? "/progress" : "/diet"} className={fyte.glass}>
+                {pending?.fromLogs ? "Back to coach" : "Edit details"}
+              </Link>
+            </>
+          }
+        />
       </div>
     );
   }
 
-  if (!plan) {
-    return <PlanResultSkeleton />;
-  }
+  if (!plan) return <PlanResultSkeleton />;
+
+  const goal = coerceProgramGoal(formData?.goal) ? programGoalLabel(formData?.goal) : "";
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <PageBreadcrumb
-          items={[
-            { label: "Home" },
-            { label: "Diet Plan", href: "/diet" },
-            { label: "Your meals" },
-          ]}
-        />
-
-        <header className="mb-8 border-b border-gray-200 pb-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Your meal plan</h1>
-          <p className="mt-2 text-gray-600">Eat these meals. The numbers are how much energy each meal has.</p>
-        </header>
-
-        <PlanPairingCard
-          context="diet-result"
-          otherExists={otherExists}
-          goal={formData?.goal}
-        />
-
-        <section className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold text-[#282828]">Eat this much today</h2>
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Calories</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">{calories(plan.calorieTarget)}</dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Protein</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">{grams(plan.proteinTarget)}</dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Carbs</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">{grams(plan.carbTarget)}</dd>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-4">
-              <dt className="text-sm text-gray-500">Fat</dt>
-              <dd className="mt-1 text-xl font-semibold text-[#282828]">{grams(plan.fatTarget)}</dd>
-            </div>
+    <div className={fyte.page}>
+      <PageHero
+        photo="diet"
+        kicker={goal ? `Diet plan · ${goal}` : "Diet plan"}
+        title="Your meal plan"
+        subtitle="Eat these. Tell the coach what actually happened and it adjusts the rest."
+        actions={
+          <>
+            <button type="button" onClick={handleSave} disabled={saving} className={fyte.glassSolid}>
+              {saving ? "Saving…" : "Save this plan"}
+            </button>
+            <Link href={otherExists ? "/workout/plan" : "/workout"} className={fyte.glass}>
+              {otherExists ? "See matching workout" : "Make a matching workout"}
+            </Link>
+            <Link href="/diet" className={fyte.glass}>
+              New plan
+            </Link>
+          </>
+        }
+        aside={
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[26rem]">
+            {[
+              ["Calories", calories(plan.calorieTarget)],
+              ["Protein", grams(plan.proteinTarget)],
+              ["Carbs", grams(plan.carbTarget)],
+              ["Fat", grams(plan.fatTarget)],
+            ].map(([label, value]) => (
+              <div key={label} className={fyte.stat}>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-white/60">{label}</dt>
+                <dd className="mt-1 text-xl font-extrabold">{value}</dd>
+              </div>
+            ))}
           </dl>
-        </section>
+        }
+      />
 
-        <section className="mb-8">
+      <div className={fyte.content}>
+        {saveMessage ? (
+          <p className="mb-4 rounded-xl bg-fyte-ink px-4 py-3 text-sm font-medium text-white shadow-card">{saveMessage}</p>
+        ) : null}
+
+        <section>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <h2 className="text-lg font-semibold text-[#282828]">What to eat</h2>
+            <h2 className="text-xl font-bold text-fyte-ink">What to eat{showWeek ? "" : " every day"}</h2>
             {showWeek ? (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {WEEKDAYS.map((day) => (
                   <button
                     key={day}
                     type="button"
                     onClick={() => setSelectedDay(day)}
-                    className={`rounded-lg px-3 py-2 text-sm font-medium capitalize ${
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-sm font-semibold capitalize transition",
                       selectedDay === day
-                        ? "bg-[#282828] text-white"
-                        : "border border-gray-200 bg-white text-[#282828]"
-                    }`}
+                        ? "bg-fyte-ink text-white"
+                        : "border border-fyte-line bg-fyte-card text-fyte-ink hover:border-fyte-ink"
+                    )}
                   >
-                    {day}
+                    {day.slice(0, 3)}
                   </button>
                 ))}
               </div>
             ) : null}
           </div>
-
           <div className="space-y-4">
-            {meals.map(([mealType, meal]) => (
-              <MealCard key={mealType} mealType={mealType} meal={meal} />
+            {meals.map(([mealType, meal], index) => (
+              <MealCard key={`${selectedDay}-${mealType}`} mealType={mealType} meal={meal} index={index} />
             ))}
           </div>
         </section>
 
         {plan.nutritionTips?.length ? (
-          <section className="mb-8">
-            <h2 className="mb-4 text-lg font-semibold text-[#282828]">Tips</h2>
-            <ol className="list-decimal space-y-3 rounded-2xl border border-gray-200 bg-white p-5 pl-8 sm:p-6 sm:pl-9">
+          <section className="mt-12 rounded-2xl bg-fyte-ink p-6 text-white shadow-card sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">How to make it stick</p>
+            <ol className="mt-4 grid gap-4 sm:grid-cols-2">
               {plan.nutritionTips.map((tip, index) => (
-                <li key={`${index}-${tip}`} className="text-sm leading-6 text-gray-700">
+                <li key={`${index}-${tip}`} className="flex gap-3 text-sm leading-6 text-white/85">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/15 text-xs font-bold">
+                    {index + 1}
+                  </span>
                   {tip}
                 </li>
               ))}
             </ol>
           </section>
         ) : null}
-
-        <div className="flex flex-wrap items-center gap-3 border-t border-gray-200 pt-6">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white disabled:opacity-70"
-          >
-            {saving ? "Saving..." : "Save this plan"}
-          </button>
-          <Link
-            href="/diet"
-            className="rounded-xl border border-[#282828] px-5 py-3 text-sm font-semibold text-[#282828]"
-          >
-            Make a new plan
-          </Link>
-          {saveMessage ? <p className="text-sm text-gray-600">{saveMessage}</p> : null}
-        </div>
       </div>
     </div>
   );

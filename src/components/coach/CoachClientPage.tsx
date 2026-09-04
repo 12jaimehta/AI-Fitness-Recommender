@@ -17,15 +17,16 @@ import { ENERGY_OPTIONS, FEEL_OPTIONS } from "@/shared/lib/coach/questions";
 import { fyte } from "@/shared/lib/ui";
 import type { CoachInterviewKind, CoachInterviewView, CoachSlotView, CoachToday } from "@/shared/types/coach";
 import { ProgressSkeleton } from "@/components/ui/Skeleton";
-import PageBreadcrumb from "@/components/shared/PageBreadcrumb";
 import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";
-import DayCalendar from "@/components/progress/DayCalendar";
+import { Collapse } from "@/components/shared/Motion";
+import DateStrip from "@/components/coach/DateStrip";
+import PageHero from "@/components/shared/PageHero";
 import InterviewModal from "@/components/coach/InterviewModal";
 
 function statusLine(slot: CoachSlotView) {
   if (slot.status === "as_planned") return "As planned";
-  if (slot.status === "replaced") return slot.actualLabel || "Replaced this slot";
+  if (slot.status === "replaced") return slot.actualLabel || "Replaced";
   if (slot.status === "ate_other") {
     return slot.actualKcal != null
       ? `${slot.actualLabel || "Different meal"} · ~${slot.actualKcal} kcal`
@@ -35,6 +36,11 @@ function statusLine(slot: CoachSlotView) {
   if (slot.status === "skipped") return "Skipped";
   return null;
 }
+
+const ROW = "flex flex-wrap items-center justify-between gap-3 py-4";
+const CHIP = "inline-flex h-9 items-center justify-center rounded-lg px-3 text-sm font-semibold transition";
+const CHIP_PRIMARY = `${CHIP} bg-fyte-ink text-white disabled:opacity-60`;
+const CHIP_SECONDARY = `${CHIP} border border-fyte-line bg-fyte-card text-fyte-ink hover:border-fyte-ink disabled:opacity-40`;
 
 export default function CoachClientPage({ initial = null }: { initial?: CoachToday | null }) {
   const { isSignedIn, isLoading: userLoading } = useUser();
@@ -46,6 +52,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState("");
   const [feel, setFeel] = useState("right");
+  const [checkinOpen, setCheckinOpen] = useState(false);
   const [weight, setWeight] = useState(initial?.daily.weightKg != null ? String(initial.daily.weightKg) : "");
   const [sleep, setSleep] = useState(initial?.daily.sleepHours != null ? String(initial.daily.sleepHours) : "");
   const [energy, setEnergy] = useState(initial?.daily.energy || "");
@@ -53,17 +60,22 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
   const [modalSlot, setModalSlot] = useState<CoachSlotView | null>(null);
   const [interview, setInterview] = useState<CoachInterviewView | null>(null);
 
-  const load = async (day: string, silent = false) => {
-    if (!silent) setLoading(true);
+  const applyBoard = (next: CoachToday) => {
+    setBoard(next);
+    setWeight(next.daily.weightKg != null ? String(next.daily.weightKg) : "");
+    setSleep(next.daily.sleepHours != null ? String(next.daily.sleepHours) : "");
+    setEnergy(next.daily.energy || "");
+    setInterview(next.openInterview);
+  };
+
+  const load = async (day: string) => {
+    setLoading(true);
     setError("");
+    setNote("");
     try {
       const next = await getCoachToday(day);
-      setBoard(next);
       seedCoachToday(day, next);
-      setWeight(next.daily.weightKg != null ? String(next.daily.weightKg) : "");
-      setSleep(next.daily.sleepHours != null ? String(next.daily.sleepHours) : "");
-      setEnergy(next.daily.energy || "");
-      setInterview(next.openInterview);
+      applyBoard(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load today.");
     } finally {
@@ -72,8 +84,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
   };
 
   useEffect(() => {
-    if (userLoading) return;
-    if (!isSignedIn) return;
+    if (userLoading || !isSignedIn) return;
     if (initial && date === initial.date) {
       setLoading(false);
       return;
@@ -87,9 +98,8 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
     setError("");
     try {
       const result = await work();
-      setBoard(result.board);
+      applyBoard(result.board);
       setNote(result.note);
-      setInterview(result.board.openInterview);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save.");
     } finally {
@@ -107,8 +117,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
     }
     setBusy("interview");
     try {
-      const next = await startCoachInterview({ slot_key: slot.slotKey, kind }, date);
-      setInterview(next);
+      setInterview(await startCoachInterview({ slot_key: slot.slotKey, kind }, date));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start.");
       setModalKind(null);
@@ -118,228 +127,225 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
     }
   };
 
+  const closeModal = () => {
+    setModalKind(null);
+    setModalSlot(null);
+  };
+
   if (userLoading || loading) return <ProgressSkeleton />;
+
+  const daily = board?.daily;
+  const walkOpen = Boolean(daily && daily.extraStepsTarget > 0 && daily.extraStepsDone < daily.extraStepsTarget);
+  const checkinSaved = Boolean(daily?.weightKg || daily?.sleepHours || daily?.energy);
 
   return (
     <div className={fyte.page}>
-      <div className={fyte.shell}>
-        <PageBreadcrumb items={[{ label: "Home", href: "/" }, { label: "Coach" }]} />
-        <h1 className="text-2xl font-bold text-fyte-ink">Coach</h1>
-        <p className="mt-1 max-w-2xl text-sm text-fyte-muted">
-          We watch the week. We change the meal or session that slipped — not the whole plan. No lectures.
-        </p>
-
-        {error ? <p className="mt-4 text-sm text-fyte-danger">{error}</p> : null}
-        {note ? <p className="mt-4 text-sm font-medium text-fyte-ink">{note}</p> : null}
+      <PageHero
+        photo="coach"
+        kicker="Coach"
+        title={board?.headline || "Today"}
+        subtitle={
+          daily
+            ? `${daily.mealsLogged || 0} of ${board?.meals.length || 0} meals answered${
+                daily.surplusKcal > 0 ? ` · ${Math.round(daily.surplusKcal)} kcal over` : ""
+              }`
+            : undefined
+        }
+        aside={
+          <div className="rounded-full border border-white/25 bg-white/10 px-2 py-1 backdrop-blur-md [&_button]:text-white [&_button:hover]:bg-white/15 [&_p]:text-white">
+            <DateStrip value={date} today={today} onChange={(next) => setDate(clampIsoDateToToday(next, today))} />
+          </div>
+        }
+      />
+      <div className="relative z-10 mx-auto -mt-10 max-w-2xl px-4 pb-20 sm:px-6">
+        {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-fyte-danger">{error}</p> : null}
+        {note ? (
+          <p className="rounded-xl bg-fyte-ink px-4 py-3 text-sm font-medium text-white shadow-card">{note}</p>
+        ) : null}
 
         {board?.setupRequired ? (
-          <section className={`${fyte.card} mt-6`}>
+          <section className={`${fyte.card} mt-4`}>
             <p className={fyte.title}>One SQL file to turn the coach on</p>
             <p className={`mt-2 ${fyte.body}`}>{board.setupMessage}</p>
           </section>
         ) : null}
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_16rem]">
-          <div className="space-y-6">
-            <section className={fyte.card}>
-              <p className={fyte.kicker}>Today</p>
-              <h2 className={`mt-1 ${fyte.title}`}>{board?.headline || "Today"}</h2>
-              {!board?.hasDiet ? (
-                <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                  <Link href="/diet" className={fyte.primary}>
-                    Make a diet plan
-                  </Link>
-                  <Link href="/workout" className={fyte.secondary}>
-                    Make a workout
-                  </Link>
-                </div>
-              ) : null}
-            </section>
+        {board && !board.hasDiet && !board.setupRequired ? (
+          <section className={`${fyte.card} mt-4`}>
+            <p className={fyte.title}>Start with a plan. Then we coach the week.</p>
+            <p className={`mt-2 ${fyte.body}`}>Two short forms. After that, you only tell us what actually happened.</p>
+            <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+              <Link href="/diet" className={fyte.primary}>
+                Make a diet
+              </Link>
+              <Link href="/workout" className={fyte.secondary}>
+                Make a workout
+              </Link>
+            </div>
+          </section>
+        ) : null}
 
-            {board && board.daily.extraStepsTarget > 0 ? (
-              <section className={fyte.card}>
-                <p className={fyte.kicker}>Same-day hold</p>
-                <p className={`mt-1 ${fyte.title}`}>
-                  {board.daily.extraStepsDone >= board.daily.extraStepsTarget
-                    ? "Extra walk is in."
-                    : extraStepsCard(
-                        board.daily.extraStepsTarget,
-                        board.daily.surplusKcal,
-                        board.daily.delayDays
-                      )}
+        {walkOpen && daily ? (
+          <section className={`${fyte.card} mt-4 flex flex-wrap items-center justify-between gap-4`}>
+            <p className="max-w-sm text-sm font-medium text-fyte-ink">
+              {extraStepsCard(daily.extraStepsTarget, daily.surplusKcal, daily.delayDays)}
+            </p>
+            <button
+              type="button"
+              disabled={Boolean(busy)}
+              className={CHIP_PRIMARY}
+              onClick={() =>
+                run("steps", () => coachCheckin({ action: "steps", extra_steps_done: daily.extraStepsTarget }, date))
+              }
+            >
+              I walked it
+            </button>
+          </section>
+        ) : null}
+
+        {board?.meals.length ? (
+          <section className={`${fyte.card} mt-4`}>
+            <div className="flex items-baseline justify-between">
+              <h2 className={fyte.title}>Meals</h2>
+              <p className="text-sm text-fyte-muted">
+                {daily?.mealsLogged || 0} / {board.meals.length}
+              </p>
+            </div>
+            <ul className="mt-2 divide-y divide-fyte-line">
+              {board.meals.map((meal) => {
+                const done = meal.status !== "planned";
+                const line = statusLine(meal);
+                return (
+                  <li key={meal.id} className={ROW}>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-fyte-ink">{meal.title}</p>
+                      <p className="text-sm text-fyte-muted">
+                        {line ? line : `~${meal.budgetKcal} kcal${meal.budgetProteinG ? ` · ${Math.round(meal.budgetProteinG)} g protein` : ""}`}
+                      </p>
+                    </div>
+                    {!done ? (
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={Boolean(busy)}
+                          className={CHIP_PRIMARY}
+                          onClick={() =>
+                            run(`meal-${meal.slotKey}`, () =>
+                              coachCheckin({ action: "as_planned", slot_key: meal.slotKey }, date)
+                            )
+                          }
+                        >
+                          Ate it
+                        </button>
+                        <button
+                          type="button"
+                          disabled={Boolean(busy)}
+                          className={CHIP_SECONDARY}
+                          onClick={() => void openInterview(meal, "meal_other")}
+                        >
+                          Something else
+                        </button>
+                        <button
+                          type="button"
+                          disabled={Boolean(busy)}
+                          className={CHIP_SECONDARY}
+                          onClick={() => void openInterview(meal, "meal_dislike")}
+                        >
+                          Swap
+                        </button>
+                      </div>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        ) : null}
+
+        {board?.session ? (
+          <section className={`${fyte.card} mt-4`}>
+            <h2 className={fyte.title}>Session</h2>
+            <div className={ROW}>
+              <div className="min-w-0">
+                <p className="truncate font-semibold text-fyte-ink">{board.session.title}</p>
+                <p className="text-sm text-fyte-muted">
+                  {board.session.isRest
+                    ? "Rest day. Tomorrow is the work."
+                    : statusLine(board.session) || "Tell us how it went."}
                 </p>
-                {board.daily.extraStepsDone < board.daily.extraStepsTarget ? (
+              </div>
+              {!board.session.isRest && !statusLine(board.session) ? (
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     disabled={Boolean(busy)}
-                    className={`${fyte.primary} mt-4`}
-                    onClick={() =>
-                      run("steps", () =>
-                        coachCheckin({ action: "steps", extra_steps_done: board.daily.extraStepsTarget }, date)
-                      )
-                    }
+                    className={CHIP_PRIMARY}
+                    onClick={() => run("session", () => coachCheckin({ action: "session_done", feel }, date))}
                   >
-                    I walked it
+                    Trained
                   </button>
-                ) : null}
-              </section>
+                  <button
+                    type="button"
+                    disabled={Boolean(busy)}
+                    className={CHIP_SECONDARY}
+                    onClick={() => run("skip", () => coachCheckin({ action: "session_skipped" }, date))}
+                  >
+                    Skipped
+                  </button>
+                  <button
+                    type="button"
+                    disabled={Boolean(busy)}
+                    className={CHIP_SECONDARY}
+                    onClick={() => void openInterview(board.session!, "session_dislike")}
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : null}
+            </div>
+            {!board.session.isRest && !statusLine(board.session) ? (
+              <FormSelect label="" compact columns={3} value={feel} onChange={setFeel} options={FEEL_OPTIONS} />
             ) : null}
+          </section>
+        ) : board?.hasDiet ? (
+          <section className={`${fyte.card} mt-4 flex flex-wrap items-center justify-between gap-3`}>
+            <p className="text-sm text-fyte-muted">No workout yet.</p>
+            <Link href="/workout" className={CHIP_SECONDARY}>
+              Make a workout
+            </Link>
+          </section>
+        ) : null}
 
-            {board?.meals.length ? (
-              <section className={fyte.card}>
-                <p className={fyte.kicker}>Meals</p>
-                <p className={`mt-1 ${fyte.body}`}>As planned, something else, or replace this slot only.</p>
-                <ul className="mt-5 space-y-4">
-                  {board.meals.map((meal) => {
-                    const done = meal.status !== "planned";
-                    return (
-                      <li key={meal.id} className={fyte.panel}>
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div>
-                            <p className="font-semibold text-fyte-ink">{meal.title}</p>
-                            <p className="text-sm text-fyte-muted">
-                              ~{meal.budgetKcal} kcal
-                              {meal.budgetProteinG ? ` · ${Math.round(meal.budgetProteinG)} g protein` : ""}
-                            </p>
-                            {statusLine(meal) ? (
-                              <p className="mt-1 text-sm font-medium text-fyte-ink">{statusLine(meal)}</p>
-                            ) : null}
-                          </div>
-                        </div>
-                        {!done ? (
-                          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                            <button
-                              type="button"
-                              disabled={Boolean(busy)}
-                              className={fyte.primary}
-                              onClick={() =>
-                                run(`meal-${meal.slotKey}`, () =>
-                                  coachCheckin({ action: "as_planned", slot_key: meal.slotKey }, date)
-                                )
-                              }
-                            >
-                              As planned
-                            </button>
-                            <button
-                              type="button"
-                              disabled={Boolean(busy)}
-                              className={fyte.secondary}
-                              onClick={() => openInterview(meal, "meal_other")}
-                            >
-                              Something else
-                            </button>
-                            <button
-                              type="button"
-                              disabled={Boolean(busy)}
-                              className={fyte.ghost}
-                              onClick={() => openInterview(meal, "meal_dislike")}
-                            >
-                              Don&apos;t like this
-                            </button>
-                          </div>
-                        ) : null}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            ) : null}
-
-            {board?.session ? (
-              <section className={fyte.card}>
-                <p className={fyte.kicker}>Session</p>
-                <p className={`mt-1 font-semibold text-fyte-ink`}>{board.session.title}</p>
-                {board.session.isRest ? (
-                  <p className={`mt-2 ${fyte.body}`}>Rest day. Showing up tomorrow is the work.</p>
-                ) : (
-                  <>
-                    {statusLine(board.session) ? (
-                      <p className="mt-2 text-sm font-medium text-fyte-ink">{statusLine(board.session)}</p>
-                    ) : (
-                      <>
-                        <div className="mt-4">
-                          <FormSelect
-                            label="How did it feel?"
-                            compact
-                            columns={3}
-                            value={feel}
-                            onChange={setFeel}
-                            options={FEEL_OPTIONS}
-                          />
-                        </div>
-                        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                          <button
-                            type="button"
-                            disabled={Boolean(busy)}
-                            className={fyte.primary}
-                            onClick={() =>
-                              run("session", () =>
-                                coachCheckin({ action: "session_done", feel }, date)
-                              )
-                            }
-                          >
-                            I trained
-                          </button>
-                          <button
-                            type="button"
-                            disabled={Boolean(busy)}
-                            className={fyte.secondary}
-                            onClick={() => run("skip", () => coachCheckin({ action: "session_skipped" }, date))}
-                          >
-                            Skipped
-                          </button>
-                          <button
-                            type="button"
-                            disabled={Boolean(busy)}
-                            className={fyte.ghost}
-                            onClick={() => openInterview(board.session!, "session_dislike")}
-                          >
-                            Don&apos;t like this
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </>
-                )}
-              </section>
-            ) : board?.hasDiet ? (
-              <section className={fyte.card}>
-                <p className={fyte.kicker}>Session</p>
-                <p className={`mt-1 ${fyte.body}`}>Make a workout so we can watch the week.</p>
-                <Link href="/workout" className={`${fyte.secondary} mt-4`}>
-                  Make a workout
-                </Link>
-              </section>
-            ) : null}
-
-            <section className={fyte.card}>
-              <p className={fyte.kicker}>Check-in</p>
-              <p className={`mt-1 ${fyte.body}`}>Weekly average comes from a few morning weigh-ins — not a daily verdict.</p>
+        {board && !board.setupRequired ? (
+          <section className={`${fyte.card} mt-4`}>
+            <button
+              type="button"
+              onClick={() => setCheckinOpen((open) => !open)}
+              className="flex w-full items-center justify-between text-left"
+            >
+              <span>
+                <span className={fyte.title}>Check-in</span>
+                <span className="block text-sm text-fyte-muted">
+                  {checkinSaved
+                    ? [
+                        daily?.weightKg ? `${daily.weightKg} kg` : null,
+                        daily?.sleepHours ? `${daily.sleepHours} h sleep` : null,
+                        daily?.energy ? `energy ${daily.energy}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")
+                    : "Weight, sleep, energy. Thirty seconds."}
+                </span>
+              </span>
+              <span className="text-sm font-semibold text-fyte-ink">{checkinOpen ? "Close" : "Open"}</span>
+            </button>
+            <Collapse open={checkinOpen}>
               <div className="mt-5 grid gap-5 sm:grid-cols-2">
-                <FormInput
-                  label="Weight (kg)"
-                  type="number"
-                  placeholder="e.g. 72.4"
-                  value={weight}
-                  onChange={setWeight}
-                />
-                <FormInput
-                  label="Sleep (hours)"
-                  type="number"
-                  placeholder="e.g. 7"
-                  value={sleep}
-                  onChange={setSleep}
-                />
+                <FormInput label="Weight (kg)" type="number" placeholder="72.4" value={weight} onChange={setWeight} />
+                <FormInput label="Sleep (hours)" type="number" placeholder="7" value={sleep} onChange={setSleep} />
               </div>
               <div className="mt-5">
-                <FormSelect
-                  label="Energy today"
-                  compact
-                  columns={3}
-                  value={energy}
-                  onChange={setEnergy}
-                  options={ENERGY_OPTIONS}
-                />
+                <FormSelect label="Energy" compact columns={3} value={energy} onChange={setEnergy} options={ENERGY_OPTIONS} />
               </div>
               <button
                 type="button"
@@ -356,57 +362,46 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
                       },
                       date
                     )
-                  )
+                  ).then(() => setCheckinOpen(false))
                 }
               >
-                Save check-in
+                Save
               </button>
-            </section>
+            </Collapse>
+          </section>
+        ) : null}
 
-            {board?.review ? (
-              <section className={fyte.card}>
-                <p className={fyte.kicker}>This week</p>
-                <h2 className={`mt-1 ${fyte.title}`}>{board.review.headline}</h2>
-                <p className={`mt-2 ${fyte.body}`}>{board.review.body}</p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-3">
-                  <div className={fyte.panel}>
-                    <dt className="text-fyte-muted">Sessions</dt>
-                    <dd className="mt-1 font-semibold text-fyte-ink">
-                      {board.review.attendancePct == null ? "—" : `${Math.round(board.review.attendancePct)}%`}
-                    </dd>
-                  </div>
-                  <div className={fyte.panel}>
-                    <dt className="text-fyte-muted">Meals followed</dt>
-                    <dd className="mt-1 font-semibold text-fyte-ink">
-                      {board.review.mealAdherencePct == null ? "—" : `${Math.round(board.review.mealAdherencePct)}%`}
-                    </dd>
-                  </div>
-                  <div className={fyte.panel}>
-                    <dt className="text-fyte-muted">Weight vs last week</dt>
-                    <dd className="mt-1 font-semibold text-fyte-ink">
-                      {board.review.weightDeltaKg == null
-                        ? "—"
-                        : `${board.review.weightDeltaKg > 0 ? "+" : ""}${board.review.weightDeltaKg} kg`}
-                    </dd>
-                  </div>
-                </dl>
-              </section>
-            ) : null}
-          </div>
-
-          <aside>
-            <section className={fyte.card}>
-              <p className={fyte.kicker}>Day</p>
-              <div className="mt-4">
-                <DayCalendar
-                  value={date}
-                  max={today}
-                  onChange={(next) => setDate(clampIsoDateToToday(next, today))}
-                />
-              </div>
-            </section>
-          </aside>
-        </div>
+        {board?.review ? (
+          <section className="mt-8 rounded-2xl bg-fyte-ink p-6 text-white shadow-card sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">This week</p>
+            <h2 className="mt-2 text-xl font-bold leading-snug">{board.review.headline}</h2>
+            <p className="mt-2 text-sm leading-6 text-white/75">{board.review.body}</p>
+            <dl className="mt-6 grid grid-cols-3 gap-3">
+              {[
+                {
+                  label: "Sessions",
+                  value: board.review.attendancePct == null ? "—" : `${Math.round(board.review.attendancePct)}%`,
+                },
+                {
+                  label: "Meals",
+                  value: board.review.mealAdherencePct == null ? "—" : `${Math.round(board.review.mealAdherencePct)}%`,
+                },
+                {
+                  label: "Weight",
+                  value:
+                    board.review.weightDeltaKg == null
+                      ? "—"
+                      : `${board.review.weightDeltaKg > 0 ? "+" : ""}${board.review.weightDeltaKg} kg`,
+                },
+              ].map((item) => (
+                <div key={item.label} className={fyte.stat}>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-white/60">{item.label}</dt>
+                  <dd className="mt-1 text-2xl font-extrabold">{item.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ) : null}
       </div>
 
       <InterviewModal
@@ -416,20 +411,13 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
         interview={interview}
         busy={Boolean(busy)}
         error={error}
-        onClose={() => {
-          setModalKind(null);
-          setModalSlot(null);
-        }}
+        onClose={closeModal}
         onStart={async ({ text, image }) => {
           if (!modalSlot || !modalKind) return;
           setBusy("interview");
           setError("");
           try {
-            const next = await startCoachInterview(
-              { slot_key: modalSlot.slotKey, kind: modalKind, text, image },
-              date
-            );
-            setInterview(next);
+            setInterview(await startCoachInterview({ slot_key: modalSlot.slotKey, kind: modalKind, text, image }, date));
           } catch (err) {
             setError(err instanceof Error ? err.message : "Could not start.");
           } finally {
@@ -441,8 +429,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
           setBusy("answer");
           setError("");
           try {
-            const next = await answerCoachInterview(interview.id, questionId, value);
-            setInterview(next);
+            setInterview(await answerCoachInterview(interview.id, questionId, value));
           } catch (err) {
             setError(err instanceof Error ? err.message : "Could not save.");
           } finally {
@@ -455,11 +442,10 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
           setError("");
           try {
             const result = await completeCoachInterview(interview.id, optionId, date);
-            setBoard(result.board);
+            applyBoard(result.board);
             setNote(result.note);
             setInterview(null);
-            setModalKind(null);
-            setModalSlot(null);
+            closeModal();
           } catch (err) {
             setError(err instanceof Error ? err.message : "Could not save.");
           } finally {

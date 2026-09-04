@@ -4,16 +4,58 @@ export function Skeleton({ className = "" }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-gray-200 ${className}`} aria-hidden />;
 }
 
-function PageShell({ children }: { children: ReactNode }) {
+/** Dark hero placeholder matching PageHero's footprint. */
+export function HeroSkeleton({ size = "md", aside = false }: { size?: "sm" | "md"; aside?: boolean }) {
+  return (
+    <div className={`bg-[#161616] ${size === "sm" ? "pt-28 pb-10 lg:pt-32 lg:pb-12" : "pt-32 pb-14 lg:pt-36 lg:pb-20"}`}>
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 sm:px-8 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="h-3 w-20 animate-pulse rounded bg-white/15" />
+          <div className="mt-4 h-10 w-72 max-w-full animate-pulse rounded-lg bg-white/15 sm:h-12" />
+          <div className="mt-4 h-4 w-96 max-w-full animate-pulse rounded bg-white/10" />
+        </div>
+        {aside ? <div className="h-16 w-full animate-pulse rounded-2xl bg-white/10 lg:w-80" /> : null}
+      </div>
+    </div>
+  );
+}
+
+function PageShell({
+  children,
+  hero = "md",
+  aside = false,
+  width = "max-w-6xl",
+}: {
+  children: ReactNode;
+  hero?: "sm" | "md";
+  aside?: boolean;
+  width?: string;
+}) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">{children}</div>
+      <HeroSkeleton size={hero} aside={aside} />
+      <div className={`relative z-10 mx-auto -mt-8 ${width} px-5 pb-20 sm:px-8`}>{children}</div>
     </div>
   );
 }
 
 function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 ${className}`}>{children}</div>;
+  return <div className={`rounded-2xl border border-gray-200 bg-white p-5 shadow-card sm:p-6 ${className}`}>{children}</div>;
+}
+
+function Row() {
+  return (
+    <div className="flex items-center justify-between gap-4 py-4">
+      <div className="flex-1">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="mt-2 h-3.5 w-28" />
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-16 rounded-lg" />
+        <Skeleton className="h-9 w-24 rounded-lg" />
+      </div>
+    </div>
+  );
 }
 
 export function CoachSkeleton() {
@@ -53,109 +95,54 @@ export function ReviewsSkeleton() {
       </div>
       <Skeleton className="h-28 w-full rounded-xl" />
       <Skeleton className="h-20 w-full rounded-xl" />
-      <Skeleton className="h-20 w-full rounded-xl" />
     </div>
   );
 }
 
 export function DashboardSkeleton() {
-  return (
-    <PageShell>
-      <Skeleton className="h-8 w-48 sm:h-9" />
-      <Skeleton className="mt-2 h-4 w-28" />
-      <CoachSkeleton />
-      <Card className="mb-5">
-        <Skeleton className="h-4 w-16" />
-        <div className="mt-4">
-          <FillBarsSkeleton />
-        </div>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2">
-          <Skeleton className="h-16 w-full rounded-xl" />
-          <Skeleton className="h-16 w-full rounded-xl" />
-        </div>
-      </Card>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <Skeleton className="h-16 w-full rounded-xl" />
-        <Skeleton className="h-16 w-full rounded-xl" />
-      </div>
-    </PageShell>
-  );
+  return <ProgressSkeleton />;
 }
 
 export function ProgressSkeleton() {
   return (
-    <PageShell>
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="mt-6 h-8 w-40 sm:h-9" />
-      <Skeleton className="mt-2 h-4 w-72 max-w-full" />
-      <div className="mt-8 border-b border-gray-200 pb-6" />
-      <Card className="mb-6">
-        <Skeleton className="h-5 w-28" />
-        <Skeleton className="mt-2 h-4 w-64 max-w-full" />
-        <Skeleton className="mt-4 h-12 w-full max-w-sm rounded-xl" />
-      </Card>
-      <Card className="mb-6">
-        <Skeleton className="h-5 w-40" />
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-full rounded-xl" />
-            <Skeleton className="h-12 w-full rounded-xl" />
-          </div>
-          <Skeleton className="h-48 w-full rounded-2xl" />
+    <PageShell aside width="max-w-2xl">
+      <Card>
+        <div className="flex items-baseline justify-between">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-4 w-10" />
+        </div>
+        <div className="mt-2 divide-y divide-gray-200">
+          <Row />
+          <Row />
+          <Row />
         </div>
       </Card>
-      <div className="mt-6 grid max-w-xl grid-cols-2 gap-3">
-        <Skeleton className="h-28 w-full rounded-2xl" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
-      </div>
-      <Card className="mt-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:justify-between">
-          <div>
-            <Skeleton className="h-5 w-44" />
-            <Skeleton className="mt-2 h-4 w-64 max-w-full" />
-          </div>
-          <div className="grid w-full grid-cols-3 gap-2 lg:w-auto lg:min-w-[24rem]">
-            <Skeleton className="h-11 w-full rounded-xl" />
-            <Skeleton className="h-11 w-full rounded-xl" />
-            <Skeleton className="h-11 w-full rounded-xl" />
-          </div>
-        </div>
-        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <Skeleton className="h-20 w-full rounded-xl" />
-        </div>
-        <Skeleton className="mt-4 h-64 w-full rounded-xl" />
+      <Card className="mt-4">
+        <Skeleton className="h-5 w-20" />
+        <Row />
       </Card>
-      <div className="mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Skeleton className="h-28 w-full rounded-2xl" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
-      </div>
+      <Card className="mt-4">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="mt-2 h-4 w-56" />
+      </Card>
     </PageShell>
   );
 }
 
 export function TrainersSkeleton() {
   return (
-    <PageShell>
-      <Skeleton className="h-4 w-28" />
-      <Skeleton className="mt-6 h-8 w-36 sm:h-9" />
-      <Skeleton className="mt-2 h-4 w-80 max-w-full" />
-      <div className="mt-8 border-b border-gray-200 pb-6" />
-      <div className="mb-10 grid gap-4 sm:grid-cols-2">
-        <Skeleton className="h-48 w-full rounded-2xl" />
-        <Skeleton className="h-48 w-full rounded-2xl" />
-      </div>
-      <Skeleton className="mb-4 h-6 w-36" />
+    <PageShell aside>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }, (_, i) => (
           <Card key={i}>
-            <Skeleton className="h-11 w-11 rounded-xl" />
-            <Skeleton className="mt-4 h-5 w-32" />
-            <Skeleton className="mt-2 h-4 w-full" />
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div>
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="mt-1.5 h-3 w-20" />
+              </div>
+            </div>
+            <Skeleton className="mt-4 h-4 w-full" />
             <Skeleton className="mt-1 h-4 w-2/3" />
             <div className="mt-4 flex gap-2">
               <Skeleton className="h-6 w-16 rounded-full" />
@@ -171,31 +158,22 @@ export function TrainersSkeleton() {
 
 export function TrainerProfileSkeleton() {
   return (
-    <PageShell>
-      <Skeleton className="h-4 w-40" />
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr,1fr]">
-        <div>
-          <div className="mb-5 flex items-start gap-4">
-            <Skeleton className="h-14 w-14 shrink-0 rounded-xl" />
-            <div className="min-w-0 flex-1">
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="mt-2 h-4 w-40" />
-            </div>
-          </div>
-          <Skeleton className="h-4 w-full" />
+    <PageShell aside>
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <Card>
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="mt-3 h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-5/6" />
-          <div className="mt-6 flex gap-2">
+          <div className="mt-5 flex gap-2">
             <Skeleton className="h-7 w-20 rounded-full" />
             <Skeleton className="h-7 w-24 rounded-full" />
-            <Skeleton className="h-7 w-16 rounded-full" />
           </div>
-        </div>
+        </Card>
         <Card>
           <Skeleton className="h-5 w-36" />
-          <Skeleton className="mt-2 h-4 w-full" />
-          <Skeleton className="mt-4 h-11 w-full rounded-xl" />
+          <Skeleton className="mt-5 h-12 w-full rounded-xl" />
           <Skeleton className="mt-4 h-24 w-full rounded-xl" />
-          <Skeleton className="mt-4 h-11 w-full rounded-xl" />
+          <Skeleton className="mt-5 h-11 w-full rounded-xl" />
         </Card>
       </div>
     </PageShell>
@@ -204,91 +182,51 @@ export function TrainerProfileSkeleton() {
 
 export function FormPageSkeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 text-left">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-10 w-40 rounded-xl" />
-        </div>
-        <aside className="mb-6 rounded-2xl border border-gray-200 bg-white p-5">
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="mt-2 h-4 w-full max-w-xl" />
-          <Skeleton className="mt-2 h-4 w-4/5 max-w-lg" />
-        </aside>
-        <div className="flex flex-col lg:flex-row lg:gap-16">
-          <aside className="hidden lg:flex lg:w-72 lg:flex-col lg:border-r lg:border-gray-200 lg:pr-10">
-            <div className="mb-12 border-b border-gray-200 pb-4">
-              <Skeleton className="h-8 w-56" />
-            </div>
-            <div className="space-y-8 pt-20">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div key={i} className="flex items-start gap-4">
-                  <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
-                  <div className="min-w-0 flex-1">
-                    <Skeleton className="h-4 w-36" />
-                    <Skeleton className="mt-1.5 h-3.5 w-28" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-          <main className="flex-1 lg:pt-4">
-            <div className="-mx-4 mb-8 border-b border-gray-200 bg-white pb-3 shadow-sm lg:hidden sm:mx-0">
-              <div className="flex items-center gap-6 overflow-hidden px-6 py-2">
-                {Array.from({ length: 4 }, (_, i) => (
-                  <div key={i} className="flex shrink-0 items-center gap-2">
-                    <Skeleton className="h-8 w-8 rounded-full" />
-                    <Skeleton className="h-4 w-24" />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <header className="mb-8 flex flex-col items-center gap-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="mt-1 h-8 w-64 max-w-full sm:h-9" />
-              <Skeleton className="mt-2 h-4 w-72 max-w-full" />
-            </header>
-            <div className="space-y-6">
-              <div>
-                <Skeleton className="mb-2.5 h-4 w-24" />
-                <Skeleton className="h-14 w-full rounded-2xl" />
-              </div>
-              <div>
-                <Skeleton className="mb-3 h-4 w-40" />
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Skeleton className="h-40 w-full rounded-xl" />
-                  <Skeleton className="h-40 w-full rounded-xl" />
-                </div>
-              </div>
-            </div>
-            <div className="mt-10">
+    <PageShell hero="sm" aside width="max-w-2xl">
+      <Card className="p-6 sm:p-8">
+        <Skeleton className="mb-8 h-1 w-full rounded-full" />
+        <div className="space-y-7">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <Skeleton className="mb-2 h-4 w-16" />
               <Skeleton className="h-12 w-full rounded-xl" />
             </div>
-          </main>
+            <div>
+              <Skeleton className="mb-2 h-4 w-16" />
+              <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+          </div>
+          <div>
+            <Skeleton className="mb-2 h-4 w-24" />
+            <div className="grid grid-cols-3 gap-2">
+              <Skeleton className="h-11 w-full rounded-xl" />
+              <Skeleton className="h-11 w-full rounded-xl" />
+              <Skeleton className="h-11 w-full rounded-xl" />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+        <div className="mt-10 flex justify-end">
+          <Skeleton className="h-11 w-40 rounded-xl" />
+        </div>
+      </Card>
+    </PageShell>
   );
 }
 
 export function ProfileSkeleton() {
   return (
-    <PageShell>
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="mt-6 h-8 w-40 sm:h-9" />
-      <Skeleton className="mt-2 h-4 w-72 max-w-full" />
-      <div className="mt-8 border-b border-gray-200 pb-6" />
-      <Card>
-        <div className="grid gap-4 sm:grid-cols-2">
+    <PageShell aside width="max-w-3xl">
+      <Card className="p-6 sm:p-8">
+        <div className="grid gap-5 sm:grid-cols-2">
           {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className={i === 0 ? "sm:col-span-2" : ""}>
+            <div key={i} className={i === 0 || i === 5 ? "sm:col-span-2" : ""}>
               <Skeleton className="h-4 w-24" />
               <Skeleton className="mt-2 h-12 w-full rounded-xl" />
             </div>
           ))}
         </div>
         <Skeleton className="mt-6 h-24 w-full rounded-xl" />
-        <Skeleton className="mt-6 h-11 w-40 rounded-xl" />
+        <Skeleton className="mt-8 h-11 w-40 rounded-xl" />
       </Card>
     </PageShell>
   );
@@ -297,13 +235,9 @@ export function ProfileSkeleton() {
 export function BecomeTrainerSkeleton() {
   return (
     <PageShell>
-      <Skeleton className="h-4 w-48" />
-      <Skeleton className="mt-6 h-8 w-56 sm:h-9" />
-      <Skeleton className="mt-2 h-4 w-96 max-w-full" />
-      <div className="mt-8 border-b border-gray-200 pb-6" />
-      <div className="grid gap-8 lg:grid-cols-[1fr,1.4fr]">
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.6fr]">
         <Card>
-          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-3 w-24" />
           <Skeleton className="mt-4 h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-5/6" />
           <Skeleton className="mt-2 h-4 w-2/3" />
@@ -317,77 +251,41 @@ export function BecomeTrainerSkeleton() {
             <Skeleton className="h-12 w-full rounded-xl" />
             <Skeleton className="h-12 w-full rounded-xl" />
           </div>
-          <Skeleton className="mt-6 h-11 w-full rounded-xl" />
+          <Skeleton className="mt-8 h-11 w-48 rounded-xl" />
         </Card>
       </div>
     </PageShell>
   );
 }
 
-function PlanItemCardSkeleton() {
-  return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-      <Skeleton className="h-6 w-32" />
-      <Skeleton className="mt-2 h-4 w-56 max-w-full" />
-      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
-          <div key={i} className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-            <Skeleton className="h-3 w-14" />
-            <Skeleton className="mt-1 h-4 w-10" />
-          </div>
-        ))}
-      </div>
-      <Skeleton className="mt-4 h-4 w-28" />
-      <Skeleton className="mt-2 h-4 w-full" />
-      <Skeleton className="mt-2 h-4 w-4/5" />
-    </article>
-  );
-}
-
 export function PlanResultSkeleton() {
   return (
-    <PageShell>
-      <Skeleton className="mb-8 h-4 w-48" />
-      <header className="mb-8 border-b border-gray-200 pb-6">
-        <Skeleton className="h-8 w-52 sm:h-9" />
-        <Skeleton className="mt-2 h-4 w-80 max-w-full" />
-      </header>
-      <aside className="mb-8 rounded-2xl border border-gray-200 bg-white p-5">
-        <Skeleton className="h-5 w-48" />
-        <Skeleton className="mt-2 h-4 w-full max-w-xl" />
-        <Skeleton className="mt-2 h-4 w-2/3 max-w-lg" />
-        <Skeleton className="mt-4 h-10 w-44 rounded-xl" />
-      </aside>
-      <section className="mb-8">
-        <Skeleton className="mb-4 h-6 w-40" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="rounded-2xl border border-gray-200 bg-white p-4">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="mt-1 h-7 w-20" />
-            </div>
+    <PageShell aside>
+      <div className="mb-4 flex items-end justify-between">
+        <Skeleton className="h-7 w-40" />
+        <div className="flex gap-1.5">
+          {Array.from({ length: 7 }, (_, i) => (
+            <Skeleton key={i} className="h-8 w-12 rounded-full" />
           ))}
         </div>
-      </section>
-      <section className="mb-8">
-        <Skeleton className="mb-4 h-6 w-32" />
-        <div className="space-y-4">
-          <PlanItemCardSkeleton />
-          <PlanItemCardSkeleton />
-          <PlanItemCardSkeleton />
-        </div>
-      </section>
-      <section className="mb-8">
-        <Skeleton className="mb-4 h-6 w-16" />
-        <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
-      </section>
-      <div className="flex flex-wrap items-center gap-3 border-t border-gray-200 pt-6">
-        <Skeleton className="h-11 w-36 rounded-xl" />
-        <Skeleton className="h-11 w-36 rounded-xl" />
+      </div>
+      <div className="space-y-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Card key={i}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="mt-2 h-6 w-64 max-w-full" />
+              </div>
+              <Skeleton className="h-7 w-20 rounded-full" />
+            </div>
+            <div className="mt-4 flex gap-6">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20" />
+            </div>
+          </Card>
+        ))}
       </div>
     </PageShell>
   );
@@ -395,19 +293,17 @@ export function PlanResultSkeleton() {
 
 export function CheckoutSkeleton() {
   return (
-    <PageShell>
-      <Skeleton className="h-4 w-48" />
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr,1fr]">
-        <div>
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="mt-3 h-4 w-40" />
-          <Skeleton className="mt-4 h-4 w-full" />
+    <PageShell aside>
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <Card>
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="mt-3 h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-5/6" />
-        </div>
+        </Card>
         <Card>
           <Skeleton className="h-5 w-32" />
-          <Skeleton className="mt-3 h-8 w-28" />
-          <Skeleton className="mt-4 h-11 w-full rounded-xl" />
+          <Skeleton className="mt-3 h-9 w-28" />
+          <Skeleton className="mt-5 h-11 w-full rounded-xl" />
         </Card>
       </div>
     </PageShell>

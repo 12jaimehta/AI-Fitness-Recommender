@@ -1,530 +1,124 @@
 "use client";
 
-import React, { useState } from 'react';
-import { enter, hoverLift, motion } from '@/components/shared/Motion';
-import { 
-  Mail, 
-  Phone, 
-  MessageCircle, 
-  Clock, 
-  Send,
-  User,
-  HelpCircle,
-  ArrowLeft,
-  Home
-} from 'lucide-react';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
+import { Mail, Clock, MessageCircle } from "lucide-react";
+import DocShell from "@/components/docs/DocShell";
+import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";
+import FormTextarea from "@/components/shared/FormTextarea";
+import { fyte } from "@/shared/lib/ui";
+import { cn } from "@/lib/utils";
+
+const SUPPORT_EMAIL = "jaimehtaalerts@gmail.com";
+
+const SUBJECTS = [
+  { value: "general", label: "General question" },
+  { value: "technical", label: "Something is broken" },
+  { value: "billing", label: "Billing" },
+  { value: "feedback", label: "Feedback" },
+];
+
+const QUICK = [
+  {
+    q: "How do I change one meal without redoing the plan?",
+    a: "On the Coach page tap “Swap” on that meal. You get three options inside the same calorie budget.",
+  },
+  {
+    q: "I ate something off-plan. What now?",
+    a: "Tap “Something else”, type it or add a photo, answer two or three questions. The coach tells you the extra steps for today or adjusts tomorrow.",
+  },
+  {
+    q: "Is my data private?",
+    a: "Yes. Your rows are protected by row-level security and never shared. You can ask us to delete everything.",
+  },
+];
 
 export default function ContactUs() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", subject: "general", message: "" });
+  const set = (key: keyof typeof form) => (value: string) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setIsSubmitting(false);
-    setSubmitted(true);
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    }, 3000);
-  };
-
-  const contactMethods = [
-    {
-      icon: Mail,
-      title: "Email Support",
-      description: "Send us an email and we'll respond within 24 hours",
-      contact: "jaimehtaalerts@gmail.com",
-      action: "mailto:jaimehtaalerts@gmail.com"
-    },
-    // {
-    //   icon: Phone,
-    //   title: "Phone Support",
-    //   description: "Call us Monday-Friday, 9AM-6PM EST",
-    //   contact: "1-800-DIET-PLAN",
-    //   action: "tel:18003487752"
-    // },
-    // {
-    //   icon: MessageCircle,
-    //   title: "Live Chat",
-    //   description: "Chat with our support team in real-time",
-    //   contact: "Available 24/7",
-    //   action: "#"
-    // }
-  ];
-
-  const faqItems = [
-    {
-      question: "How do I create a diet plan?",
-      answer: "Simply fill out our multi-step form with your personal information, dietary preferences, and goals. Our AI will generate a personalized plan for you."
-    },
-    {
-      question: "Can I modify my diet plan?",
-      answer: "Yes! You can regenerate your plan at any time or use the alternatives provided in the weekly view to customize your meals."
-    },
-    {
-      question: "Is my data secure?",
-      answer: "Absolutely. We use industry-standard encryption and never share your personal information with third parties."
-    }
-  ];
+  const subjectLabel = SUBJECTS.find((item) => item.value === form.subject)?.label || "Question";
+  const mailto = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`[fyteAI] ${subjectLabel}`)}&body=${encodeURIComponent(
+    `${form.message}\n\n— ${form.name || "Anonymous"}${form.email ? ` (${form.email})` : ""}`
+  )}`;
+  const ready = form.message.trim().length > 0;
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#ffffff',
-      padding: '40px 20px'
-    }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Navigation */}
-        <motion.div
-          {...enter()}
-          style={{ marginBottom: '40px' }}
-        >
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px',
-            color: '#6b7280'
-          }}>
-            <Link href="/" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              textDecoration: 'none',
-              color: '#6b7280',
-              fontSize: '16px',
-              fontWeight: '500'
-            }}>
-              <Home size={20} />
-              Home
-            </Link>
-            <span>/</span>
-            <Link href="/help" style={{
-              textDecoration: 'none',
-              color: '#6b7280',
-              fontSize: '16px',
-              fontWeight: '500'
-            }}>
-              Help
-            </Link>
-            <span>/</span>
-            <span style={{ fontSize: '16px', fontWeight: '600', color: '#282828' }}>Contact Us</span>
-          </div>
-        </motion.div>
-
-        {/* Header */}
-        <motion.div
-          {...enter(0.1)}
-          style={{
-            textAlign: 'center',
-            marginBottom: '60px'
+    <DocShell
+      kicker="Help"
+      title="Talk to a person"
+      subtitle="One inbox, read by the people who build fyteAI. Replies within a day."
+      aside={
+        <a href={`mailto:${SUPPORT_EMAIL}`} className={cn(fyte.stat, "flex items-center gap-3 text-white transition hover:bg-white/15")}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-fyte-ink">
+            <Mail size={18} />
+          </span>
+          <span>
+            <span className="block text-xs font-semibold uppercase tracking-wide text-white/60">Email</span>
+            <span className="block font-semibold">{SUPPORT_EMAIL}</span>
+          </span>
+        </a>
+      }
+    >
+      <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (ready) window.location.href = mailto;
           }}
+          className={cn(fyte.card, "p-6 sm:p-8")}
         >
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '80px',
-            height: '80px',
-            background: '#282828',
-            borderRadius: '20px',
-            marginBottom: '20px'
-          }}>
-            <Mail size={40} color="#ffffff" />
+          <h2 className="text-xl font-bold text-fyte-ink">Send a message</h2>
+          <p className={`mt-1 ${fyte.body}`}>Opens in your mail app with everything filled in.</p>
+          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+            <FormInput label="Name" placeholder="Your name" value={form.name} onChange={set("name")} />
+            <FormInput label="Email" type="email" placeholder="you@example.com" value={form.email} onChange={set("email")} />
           </div>
-          <h1 style={{
-            fontSize: '48px',
-            fontWeight: '700',
-            color: '#282828',
-            marginBottom: '16px',
-            margin: 0
-          }}>
-            Contact Us
-          </h1>
-          <p style={{
-            fontSize: '20px',
-            color: '#6b7280',
-            marginBottom: '0',
-            maxWidth: '600px',
-            margin: '0 auto'
-          }}>
-            We're here to help! Reach out to us through any of the following channels
-          </p>
-        </motion.div>
+          <div className="mt-5">
+            <FormSelect label="Topic" compact value={form.subject} onChange={set("subject")} options={SUBJECTS} required />
+          </div>
+          <div className="mt-5">
+            <FormTextarea label="Message" placeholder="What happened, and what you expected." value={form.message} onChange={set("message")} rows={6} required />
+          </div>
+          <button type="submit" disabled={!ready} className={`${fyte.primary} mt-6`}>
+            Send email
+          </button>
+        </form>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '40px',
-          marginBottom: '60px'
-        }}>
-          {/* Contact Methods */}
-          <motion.div
-            {...enter(0.2)}
-          >
-            <h2 style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              color: '#282828',
-              marginBottom: '24px'
-            }}>
-              Get in Touch
-            </h2>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '20px'
-            }}>
-              {contactMethods.map((method, index) => {
-                const Icon = method.icon;
-                return (
-                  <motion.a
-                    key={index}
-                    href={method.action}
-                    {...enter(0.3 + index * 0.1)}
-                    {...hoverLift}
-                    style={{
-                      background: '#ffffff',
-                      borderRadius: '12px',
-                      padding: '24px',
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px',
-                      transition: 'all 0.3s ease',
-                      border: '1px solid rgba(22, 42, 65, 0.1)',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: '48px',
-                      height: '48px',
-                      background: '#282828',
-                      borderRadius: '10px',
-                      flexShrink: 0
-                    }}>
-                      <Icon size={24} color="#ffffff" />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{
-                        fontSize: '18px',
-                        fontWeight: '600',
-                        color: '#282828',
-                        marginBottom: '4px',
-                        margin: 0
-                      }}>
-                        {method.title}
-                      </h3>
-                      <p style={{
-                        fontSize: '14px',
-                        color: '#6b7280',
-                        marginBottom: '8px',
-                        margin: 0
-                      }}>
-                        {method.description}
-                      </p>
-                      <p style={{
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: '#282828',
-                        margin: 0
-                      }}>
-                        {method.contact}
-                      </p>
-                    </div>
-                  </motion.a>
-                );
-              })}
+        <aside className="space-y-4">
+          <div className={fyte.card}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-fyte-ink text-white">
+                <Clock size={18} />
+              </span>
+              <div>
+                <p className="font-bold text-fyte-ink">Response time</p>
+                <p className="text-sm text-fyte-muted">Under 24 hours, every day.</p>
+              </div>
             </div>
-          </motion.div>
-
-          {/* Contact Form */}
-          {/* <motion.div
-            {...enter(0.3)}
-          >
-            <h2 style={{
-              fontSize: '24px',
-              fontWeight: '600',
-              color: '#282828',
-              marginBottom: '24px'
-            }}>
-              Send us a Message
-            </h2>
-            <div style={{
-              background: '#ffffff',
-              borderRadius: '12px',
-              padding: '32px',
-              border: '1px solid rgba(22, 42, 65, 0.1)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
-            }}>
-              {submitted ? (
-                <motion.div
-                  {...enterPop()}
-                  style={{
-                    textAlign: 'center',
-                    padding: '40px 20px'
-                  }}
-                >
-                  <div style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '64px',
-                    height: '64px',
-                    background: '#10b981',
-                    borderRadius: '50%',
-                    marginBottom: '16px'
-                  }}>
-                    <Send size={32} color="#ffffff" />
-                  </div>
-                  <h3 style={{
-                    fontSize: '20px',
-                    fontWeight: '600',
-                    color: '#282828',
-                    marginBottom: '8px'
-                  }}>
-                    Message Sent!
-                  </h3>
-                  <p style={{
-                    fontSize: '16px',
-                    color: '#6b7280',
-                    margin: 0
-                  }}>
-                    We'll get back to you within 24 hours.
-                  </p>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleSubmit}>
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#282828',
-                      marginBottom: '8px'
-                    }}>
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid rgba(22, 42, 65, 0.2)',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        transition: 'border-color 0.3s ease',
-                        outline: 'none'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#282828'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '20px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#282828',
-                      marginBottom: '8px'
-                    }}>
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid rgba(22, 42, 65, 0.2)',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        transition: 'border-color 0.3s ease',
-                        outline: 'none'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#282828'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '20px' }}>
-                    <FormSelect
-                      label="Subject"
-                      value={formData.subject}
-                      onChange={(value) => setFormData({ ...formData, subject: value })}
-                      options={[
-                        { value: "general", label: "General inquiry" },
-                        { value: "technical", label: "Technical support" },
-                        { value: "billing", label: "Billing question" },
-                        { value: "feedback", label: "Feedback" },
-                        { value: "other", label: "Other" },
-                      ]}
-                      required
-                      variant="dropdown"
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: '24px' }}>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#282828',
-                      marginBottom: '8px'
-                    }}>
-                      Message
-                    </label>
-                    <textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        border: '2px solid rgba(22, 42, 65, 0.2)',
-                        borderRadius: '8px',
-                        fontSize: '16px',
-                        transition: 'border-color 0.3s ease',
-                        outline: 'none',
-                        resize: 'vertical'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#282828'}
-                      onBlur={(e) => e.target.style.borderColor = 'rgba(22, 42, 65, 0.2)'}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    style={{
-                      width: '100%',
-                      background: isSubmitting ? '#9ca3af' : '#282828',
-                      color: '#ffffff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '14px 24px',
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.3s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Clock size={18} />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send size={18} />
-                        Send Message
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
+          </div>
+          <div className={fyte.card}>
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-fyte-ink text-white">
+                <MessageCircle size={18} />
+              </span>
+              <p className="font-bold text-fyte-ink">Quick answers</p>
             </div>
-          </motion.div> */}
-        </div>
-
-        {/* Quick FAQ */}
-        <motion.div
-          {...enter(0.4)}
-        >
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '600',
-            color: '#282828',
-            marginBottom: '24px',
-            textAlign: 'center'
-          }}>
-            Frequently Asked Questions
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '20px'
-          }}>
-            {faqItems.map((item, index) => (
-              <motion.div
-                key={index}
-                {...enter(0.5 + index * 0.1)}
-                style={{
-                  background: 'rgba(22, 42, 65, 0.05)',
-                  borderRadius: '12px',
-                  padding: '24px',
-                  border: '1px solid rgba(22, 42, 65, 0.1)'
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '12px'
-                }}>
-                  <HelpCircle size={20} color="#282828" style={{ flexShrink: 0, marginTop: '2px' }} />
-                  <div>
-                    <h3 style={{
-                      fontSize: '16px',
-                      fontWeight: '600',
-                      color: '#282828',
-                      marginBottom: '8px'
-                    }}>
-                      {item.question}
-                    </h3>
-                    <p style={{
-                      fontSize: '14px',
-                      color: '#6b7280',
-                      lineHeight: '1.6',
-                      margin: 0
-                    }}>
-                      {item.answer}
-                    </p>
-                  </div>
+            <dl className="mt-4 space-y-4">
+              {QUICK.map((item) => (
+                <div key={item.q}>
+                  <dt className="text-sm font-semibold text-fyte-ink">{item.q}</dt>
+                  <dd className="mt-1 text-sm leading-6 text-fyte-muted">{item.a}</dd>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+            </dl>
+            <Link href="/help/faqs" className="mt-4 inline-block text-sm font-semibold text-fyte-ink underline-offset-4 hover:underline">
+              All questions →
+            </Link>
           </div>
-        </motion.div>
+        </aside>
       </div>
-    </div>
+    </DocShell>
   );
 }
