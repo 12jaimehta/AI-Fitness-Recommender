@@ -251,7 +251,7 @@ export default function HomePage() {
                     className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white max-w-[900px] px-5">
+                <div className="absolute top-1/2 left-1/2 w-full max-w-[900px] -translate-x-1/2 -translate-y-1/2 px-5 text-center text-white">
                     <motion.h1
                         {...enter(0.04)}
                         className="font-extrabold leading-tight mb-6 text-shadow-lg text-[clamp(36px,8vw,72px)]"
@@ -260,7 +260,7 @@ export default function HomePage() {
                     </motion.h1>
                     <motion.p
                         {...enter(0.08)}
-                        className="font-normal mb-12 leading-relaxed text-shadow-md text-[clamp(18px,3vw,24px)]"
+                        className="font-normal mb-8 sm:mb-12 leading-relaxed text-shadow-md text-[clamp(18px,3vw,24px)]"
                     >
                         {hero.subtitle}
                     </motion.p>
@@ -274,10 +274,10 @@ export default function HomePage() {
                             }
                             router.push("/diet");
                         }}
-                        className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white rounded-full border border-white/30 bg-white/20 backdrop-blur-md hover:bg-white/30 hover:border-white/50 transition-all"
+                        className="inline-flex max-w-full items-center justify-center gap-2 whitespace-nowrap rounded-full border border-white/30 bg-white/20 px-5 py-3 text-sm font-bold text-white backdrop-blur-md transition-all hover:border-white/50 hover:bg-white/30 sm:gap-3 sm:px-8 sm:py-4 sm:text-lg"
                     >
                         {hero.cta}
-                        <ArrowRight size={20} />
+                        <ArrowRight size={18} className="shrink-0" />
                     </motion.button>
                 </div>
             </div>
