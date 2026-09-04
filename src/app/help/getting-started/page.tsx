@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { enter, hoverLift, motion } from '@/components/shared/Motion';
 import { 
   Play, 
   CheckCircle, 
@@ -97,8 +97,7 @@ export default function GettingStarted() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...enter()}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -135,9 +134,7 @@ export default function GettingStarted() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          {...enter(0.1)}
           style={{
             textAlign: 'center',
             marginBottom: '60px'
@@ -177,9 +174,7 @@ export default function GettingStarted() {
 
         {/* Steps */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          {...enter(0.2)}
           style={{ marginBottom: '60px' }}
         >
           <h2 style={{
@@ -201,10 +196,8 @@ export default function GettingStarted() {
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, x: index % 2 === 0 ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
+                  {...enter(0.3 + index * 0.1)}
+                  {...hoverLift}
                   style={{
                     background: '#ffffff',
                     borderRadius: '16px',
@@ -306,9 +299,7 @@ export default function GettingStarted() {
 
         {/* Features */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          {...enter(0.7)}
           style={{ marginBottom: '60px' }}
         >
           <h2 style={{
@@ -331,10 +322,8 @@ export default function GettingStarted() {
               return (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                  whileHover={{ scale: 1.05, y: -4 }}
+                  {...enter(0.8 + index * 0.1)}
+                  {...hoverLift}
                   style={{
                     background: '#ffffff',
                     borderRadius: '12px',
@@ -380,9 +369,7 @@ export default function GettingStarted() {
 
         {/* CTA Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
+          {...enter(0.9)}
           style={{
             background: 'rgba(22, 42, 65, 0.05)',
             borderRadius: '16px',

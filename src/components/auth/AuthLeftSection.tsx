@@ -1,7 +1,7 @@
 // components/auth/AuthLeftSection.tsx
 "use client";
 
-import { motion } from "framer-motion";
+import { delay, FadeIn } from "@/components/shared/Motion";
 import { Dumbbell, Apple, Heart } from "lucide-react";
 
 export default function AuthLeftSection() {
@@ -30,12 +30,7 @@ export default function AuthLeftSection() {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -50 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6 }}
-      className="text-white p-8"
-    >
+    <FadeIn className="text-white p-8">
       <h1 className="text-[3.5rem] font-extrabold leading-[1.1] mb-4 bg-clip-text text-transparent bg-[linear-gradient(135deg,#ffffff_0%,rgba(255,255,255,0.8)_100%)]">
         Start Your Fitness Journey
       </h1>
@@ -48,11 +43,9 @@ export default function AuthLeftSection() {
         {features.map((feature, idx) => {
           const Icon = feature.icon;
           return (
-            <motion.div
+            <FadeIn
               key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 + idx * 0.08 }}
+              delay={delay(idx, 0.08)}
               className="flex items-center gap-4"
             >
               <div className="w-[60px] h-[60px] rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
@@ -63,15 +56,13 @@ export default function AuthLeftSection() {
                 <h3 className="text-lg font-bold mb-1">{feature.title}</h3>
                 <p className="text-sm opacity-80">{feature.description}</p>
               </div>
-            </motion.div>
+            </FadeIn>
           );
         })}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
+      <FadeIn
+        delay={0.16}
         className="mt-12 p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 flex gap-6 md:gap-10 justify-between"
       >
         {stats.map((stat) => (
@@ -80,7 +71,7 @@ export default function AuthLeftSection() {
             <div className="text-xs md:text-sm opacity-80">{stat.label}</div>
           </div>
         ))}
-      </motion.div>
-    </motion.div>
+      </FadeIn>
+    </FadeIn>
   );
 }

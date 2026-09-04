@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, press } from "@/components/shared/Motion";
 import { cn } from "@/lib/utils";
 import OptionMenu from "@/components/shared/OptionMenu";
 
@@ -50,8 +50,7 @@ export default function OptionChipGrid({
                 type="button"
                 key={opt.value}
                 onClick={() => onToggle(opt.value)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                {...press}
                 className={cn(
                   "rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-colors duration-200",
                   active

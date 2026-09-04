@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { FadeIn, motion, modalBackdrop, modalPanel, press, pressWhen, transition } from "@/components/shared/Motion";
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { Save, FolderOpen, Trash2, Check } from "lucide-react";
 
@@ -75,9 +75,7 @@ export default function SavedPlanActions({
 
   if (!isSignedIn) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <FadeIn
         style={{
           textAlign: "center",
           padding: "20px",
@@ -97,16 +95,14 @@ export default function SavedPlanActions({
         >
           {unsignedMessage}
         </p>
-      </motion.div>
+      </FadeIn>
     );
   }
 
   return (
     <div style={{ margin: "20px 0" }}>
       {saveMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <FadeIn
           style={{
             padding: "12px 20px",
             background: saveMessage.includes("success") ? "#10b981" : "#ef4444",
@@ -122,7 +118,7 @@ export default function SavedPlanActions({
         >
           <Check size={16} />
           {saveMessage}
-        </motion.div>
+        </FadeIn>
       )}
 
       <div
@@ -136,6 +132,7 @@ export default function SavedPlanActions({
         <motion.button
           onClick={handleSavePlan}
           disabled={isSaving}
+          {...pressWhen(!isSaving)}
           style={{
             display: "flex",
             alignItems: "center",
@@ -150,8 +147,6 @@ export default function SavedPlanActions({
             cursor: isSaving ? "not-allowed" : "pointer",
             opacity: isSaving ? 0.7 : 1,
           }}
-          whileHover={!isSaving ? { scale: 1.05 } : {}}
-          whileTap={!isSaving ? { scale: 0.95 } : {}}
         >
           <Save size={16} />
           {isSaving ? "Saving..." : "Save Plan"}
@@ -159,6 +154,7 @@ export default function SavedPlanActions({
 
         <motion.button
           onClick={handleLoadSavedPlans}
+          {...press}
           style={{
             display: "flex",
             alignItems: "center",
@@ -172,8 +168,6 @@ export default function SavedPlanActions({
             fontWeight: "600",
             cursor: "pointer",
           }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
         >
           <FolderOpen size={16} />
           My Saved Plans
@@ -182,8 +176,8 @@ export default function SavedPlanActions({
 
       {showSaved && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          {...modalBackdrop}
+          transition={transition}
           style={{
             position: "fixed",
             top: 0,
@@ -200,8 +194,8 @@ export default function SavedPlanActions({
           onClick={() => setShowSaved(false)}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            {...modalPanel}
+            transition={transition}
             style={{
               background: "#ffffff",
               borderRadius: "24px",
@@ -260,13 +254,13 @@ export default function SavedPlanActions({
                 {savedPlans.map((plan) => (
                   <motion.div
                     key={plan.id}
+                    {...press}
                     style={{
                       padding: "16px",
                       border: "2px solid rgba(102, 126, 234, 0.2)",
                       borderRadius: "12px",
                       background: "rgba(102, 126, 234, 0.05)",
                     }}
-                    whileHover={{ scale: 1.02 }}
                   >
                     <div
                       style={{

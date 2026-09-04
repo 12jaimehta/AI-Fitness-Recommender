@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, enter, popIn, fadeUp, press, transition, crossfade } from "@/components/shared/Motion";
 import {
     ArrowRight,
     ChevronLeft,
@@ -91,7 +91,7 @@ export default function HomePage() {
                 <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
                     {/* Logo */}
                     <div
-                        className="text-white font-extrabold text-[28px] cursor-pointer transition-all duration-300 hover:scale-105 text-shadow-md"
+                        className="text-white font-extrabold text-[28px] cursor-pointer transition-transform duration-200 hover:scale-[1.015] text-shadow-md"
                         onClick={() => router.push(homeHref)}
                     >
                         fyteAI
@@ -123,10 +123,8 @@ export default function HomePage() {
                                 <AnimatePresence>
                                     {isUserMenuOpen && (
                                         <motion.div
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            transition={{ duration: 0.2 }}
+                                            {...popIn}
+                                            transition={transition}
                                             className="absolute right-0 mt-2 w-56 rounded-xl border border-white/20 bg-[#282828]/90 backdrop-blur-xl shadow-2xl overflow-hidden py-2"
                                         >
                                             <div className="px-4 py-3 border-b border-white/10 mb-2">
@@ -154,7 +152,7 @@ export default function HomePage() {
                         ) : (
                             <button 
                                 onClick={() => router.push("/sign-in")} 
-                                className="px-6 py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur text-white text-sm font-semibold hover:bg-white/20 transition-all hover:scale-105 cursor-pointer"
+                                className="px-6 py-3 rounded-full border border-white/30 bg-white/10 backdrop-blur text-white text-sm font-semibold hover:bg-white/20 transition-all duration-200 hover:scale-[1.015] cursor-pointer"
                             >
                                 Login
                             </button>
@@ -165,20 +163,23 @@ export default function HomePage() {
                     <motion.button
                         className="md:hidden p-3 rounded-xl border-2 border-white/40 bg-white/10 backdrop-blur-xl relative overflow-hidden"
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        whileTap={{ scale: 0.95 }}
+                        {...press}
                     >
                         <div className="relative flex flex-col items-center justify-center gap-[5px] w-[26px] h-[26px]">
                             <motion.div
                                 className="w-[22px] h-[3px] rounded bg-white"
                                 animate={{ rotate: isMobileMenuOpen ? 45 : 0, y: isMobileMenuOpen ? 8 : 0 }}
+                                transition={transition}
                             />
                             <motion.div
                                 className="w-[22px] h-[3px] rounded bg-white"
                                 animate={{ opacity: isMobileMenuOpen ? 0 : 1 }}
+                                transition={transition}
                             />
                             <motion.div
                                 className="w-[22px] h-[3px] rounded bg-white"
                                 animate={{ rotate: isMobileMenuOpen ? -45 : 0, y: isMobileMenuOpen ? -8 : 0 }}
+                                transition={transition}
                             />
                         </div>
                     </motion.button>
@@ -189,10 +190,8 @@ export default function HomePage() {
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: 100 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 100 }}
-                        transition={{ duration: 0.4 }}
+                        {...fadeUp}
+                        transition={transition}
                         className="fixed top-[80px] left-0 right-0 bottom-0 z-[999] bg-white border-t border-[#282828]/10 shadow-xl flex flex-col"
                     >
                         <div className="flex-1 p-6 overflow-y-auto">
@@ -237,14 +236,14 @@ export default function HomePage() {
                                             router.push("/my-profile");
                                             setIsMobileMenuOpen(false);
                                         }}
-                                        className="w-full flex items-center justify-center gap-2 bg-white text-[#282828] font-bold px-6 py-4 rounded-xl transition-all active:scale-95 border border-gray-200"
+                                        className="w-full flex items-center justify-center gap-2 bg-white text-[#282828] font-bold px-6 py-4 rounded-xl transition-transform duration-200 active:scale-[0.985] border border-gray-200"
                                     >
                                         <User size={20} />
                                         My profile
                                     </button>
                                     <button
                                         onClick={handleSignOut}
-                                        className="w-full flex items-center justify-center gap-2 bg-[#282828] text-white font-bold px-6 py-4 rounded-xl transition-all active:scale-95"
+                                        className="w-full flex items-center justify-center gap-2 bg-[#282828] text-white font-bold px-6 py-4 rounded-xl transition-transform duration-200 active:scale-[0.985]"
                                     >
                                         <LogOut size={20} />
                                         Log out
@@ -256,7 +255,7 @@ export default function HomePage() {
                                         router.push("/sign-in");
                                         setIsMobileMenuOpen(false);
                                     }}
-                                    className="w-full bg-[#282828] text-white text-[18px] font-semibold px-6 py-4 rounded-xl shadow-lg active:scale-95 transition-all"
+                                    className="w-full bg-[#282828] text-white text-[18px] font-semibold px-6 py-4 rounded-xl shadow-lg active:scale-[0.985] transition-transform duration-200"
                                 >
                                     Login
                                 </button>
@@ -275,7 +274,7 @@ export default function HomePage() {
                         animate={{
                             opacity: slide.type === "video" || currentSlide === index ? 1 : 0,
                         }}
-                        transition={{ duration: 0.8 }}
+                        transition={crossfade}
                         className={`absolute inset-0 w-full h-full ${currentSlide === index ? "z-10" : "z-0"}`}
                     >
                         {slide.type === "video" ? (
@@ -287,25 +286,20 @@ export default function HomePage() {
                         {currentSlide === index && (
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white max-w-[900px] px-5">
                                 <motion.h1
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 1, delay: 0.2 }}
+                                    {...enter(0.04)}
                                     className="font-extrabold leading-tight mb-6 text-shadow-lg text-[clamp(36px,8vw,72px)]"
                                 >
                                     {slide.title}
                                 </motion.h1>
                                 <motion.p
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 1, delay: 0.4 }}
+                                    {...enter(0.08)}
                                     className="font-normal mb-12 leading-relaxed text-shadow-md text-[clamp(18px,3vw,24px)]"
                                 >
                                     {slide.subtitle}
                                 </motion.p>
                                 <motion.button
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 1, delay: 0.6 }}
+                                    {...enter(0.12)}
+                                    {...press}
                                     onClick={() => {
                                         if (isSignedIn && profileComplete) {
                                             router.push("/progress");
@@ -325,10 +319,10 @@ export default function HomePage() {
                     </motion.div>
                 ))}
 
-                <button onClick={prevSlide} className="absolute left-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-110 transition-all">
+                <button onClick={prevSlide} className="absolute left-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-[1.015] transition-transform duration-200">
                     <ChevronLeft size={24} className="text-white" />
                 </button>
-                <button onClick={nextSlide} className="absolute right-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-110 transition-all">
+                <button onClick={nextSlide} className="absolute right-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-[1.015] transition-transform duration-200">
                     <ChevronRight size={24} className="text-white" />
                 </button>
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] flex gap-3">

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FadeIn, delay, enter, hoverLift, motion } from "@/components/shared/Motion";
 import type { LucideIcon } from "lucide-react";
 import { clampSize, isMobile } from "./planDisplayUtils";
 
@@ -18,12 +18,7 @@ export default function PlanStatGrid({
   items: PlanStatItem[];
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      style={{ marginBottom: "50px" }}
-    >
+    <FadeIn delay={0.08} style={{ marginBottom: "50px" }}>
       <h2
         style={{
           fontSize: clampSize(24, 28),
@@ -48,21 +43,14 @@ export default function PlanStatGrid({
         {items.map((item, index) => (
           <motion.div
             key={item.label}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 + index * 0.1 }}
+            {...enter(delay(index, 0.04))}
+            {...hoverLift}
             style={{
               background: "rgba(22, 42, 65, 0.05)",
               border: "2px solid rgba(22, 42, 65, 0.1)",
               borderRadius: "16px",
               padding: "24px",
               textAlign: "center",
-              transition: "all 0.3s ease",
-            }}
-            whileHover={{
-              scale: 1.05,
-              borderColor: "#282828",
-              boxShadow: "0 8px 25px rgba(22, 42, 65, 0.15)",
             }}
           >
             <div
@@ -101,6 +89,6 @@ export default function PlanStatGrid({
           </motion.div>
         ))}
       </div>
-    </motion.div>
+    </FadeIn>
   );
 }

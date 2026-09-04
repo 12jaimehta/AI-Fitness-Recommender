@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FillX } from "@/components/shared/Motion";
 import {ProgressBarProps} from "@/lib/types";
 
 
@@ -66,15 +66,13 @@ export default function ProgressBar({ steps, currentStep }: ProgressBarProps) {
         marginTop: '20px',
         position: 'relative'
       }}>
-        <motion.div
+        <FillX
+          pct={((currentStep + 1) / steps.length) * 100}
           style={{
             height: '100%',
             background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)',
             borderRadius: '1px'
           }}
-          initial={{ width: '0%' }}
-          animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
         />
       </div>
     </div>

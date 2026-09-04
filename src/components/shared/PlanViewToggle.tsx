@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FadeIn, Press } from "@/components/shared/Motion";
 import { Sun, Calendar } from "lucide-react";
 
 export default function PlanViewToggle({
@@ -16,12 +16,7 @@ export default function PlanViewToggle({
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-      style={{ marginBottom: "40px" }}
-    >
+    <FadeIn delay={0.08} style={{ marginBottom: "40px" }}>
       <div
         style={{
           display: "flex",
@@ -33,7 +28,7 @@ export default function PlanViewToggle({
         }}
       >
         {tabs.map((tab) => (
-          <motion.button
+          <Press
             key={tab.id}
             onClick={() => onViewChange(tab.id)}
             style={{
@@ -46,20 +41,17 @@ export default function PlanViewToggle({
               fontSize: "14px",
               fontWeight: "600",
               cursor: "pointer",
-              transition: "all 0.3s ease",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: "6px",
             }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             <tab.icon size={16} />
             {tab.label}
-          </motion.button>
+          </Press>
         ))}
       </div>
-    </motion.div>
+    </FadeIn>
   );
 }

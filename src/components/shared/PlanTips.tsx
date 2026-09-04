@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FadeIn, delay, enter, motion } from "@/components/shared/Motion";
 import { CheckCircle2, type LucideIcon } from "lucide-react";
 import { clampSize, isMobile } from "./planDisplayUtils";
 
@@ -16,11 +16,7 @@ export default function PlanTips({
   if (!tips || tips.length === 0) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8 }}
-    >
+    <FadeIn delay={0.12}>
       <div
         style={{
           background: "rgba(22, 42, 65, 0.02)",
@@ -54,9 +50,7 @@ export default function PlanTips({
           {tips.map((tip, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.9 + index * 0.1 }}
+              {...enter(delay(index, 0.04))}
               style={{
                 display: "flex",
                 gap: "10px",
@@ -81,6 +75,6 @@ export default function PlanTips({
           ))}
         </div>
       </div>
-    </motion.div>
+    </FadeIn>
   );
 }

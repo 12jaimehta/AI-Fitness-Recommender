@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { FillY } from "@/components/shared/Motion";
 
 const WATER_STEP_ML = 250;
 
@@ -135,11 +135,9 @@ export default function QuickVitals({
               className="relative h-48 w-20 shrink-0 overflow-hidden rounded-2xl border-2 border-[#282828] bg-gray-100"
               aria-label={`Add ${WATER_STEP_ML} millilitres of water`}
             >
-              <motion.div
+              <FillY
+                pct={fillPct}
                 className="absolute bottom-0 left-0 right-0 bg-[#282828]"
-                initial={false}
-                animate={{ height: `${fillPct}%` }}
-                transition={{ type: "spring", stiffness: 260, damping: 22 }}
               />
               <div className="absolute inset-1 flex flex-col-reverse gap-[3px]">
                 {Array.from({ length: blocks }, (_, index) => (

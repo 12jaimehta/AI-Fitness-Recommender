@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Collapse, delay, enter, FadeIn, motion, press, pressWhen } from "@/components/shared/Motion";
 import { 
   Printer,
   Dumbbell,
@@ -175,12 +175,7 @@ function WorkoutPlansSection({
   const currentWorkout = workoutPlan.weeklyPlan?.[selectedDay] || workoutPlan.dailyWorkout;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6 }}
-      style={{ marginBottom: '50px' }}
-    >
+    <FadeIn delay={0.08} style={{ marginBottom: '50px' }}>
       <h2 style={{
         fontSize: clampSize(24, 28),
         fontWeight: '700',
@@ -208,7 +203,7 @@ function WorkoutPlansSection({
         showAlternatives={showAlternatives}
         onAlternativesToggle={onAlternativesToggle}
       />
-    </motion.div>
+    </FadeIn>
   );
 }
 
@@ -242,8 +237,7 @@ function DaySelector({ days, selectedDay, onDaySelect, workouts }: any) {
               textTransform: 'capitalize',
               opacity: hasWorkout ? 1 : 0.5
             }}
-            whileHover={{ scale: hasWorkout ? 1.05 : 1 }}
-            whileTap={{ scale: hasWorkout ? 0.95 : 1 }}
+            {...pressWhen(hasWorkout)}
           >
             {day.slice(0, 3)}
             {hasWorkout && <Zap size={12} style={{ marginLeft: '4px' }} />}
@@ -282,18 +276,12 @@ function WorkoutCard({ workout, day, isExpanded, onToggle, showAlternatives, onA
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      {...enter()}
       style={{
         background: 'rgba(22, 42, 65, 0.02)',
         border: '2px solid rgba(22, 42, 65, 0.1)',
         borderRadius: '16px',
         overflow: 'hidden',
-        transition: 'all 0.3s ease'
-      }}
-      whileHover={{ 
-        borderColor: '#282828',
-        boxShadow: '0 8px 25px rgba(22, 42, 65, 0.1)'
       }}
     >
       <div
@@ -372,23 +360,13 @@ function WorkoutCard({ workout, day, isExpanded, onToggle, showAlternatives, onA
         </div>
       </div>
 
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ overflow: 'hidden' }}
-          >
+      <Collapse open={isExpanded}>
             <WorkoutContent 
               workout={workout}
               showAlternatives={showAlternatives}
               onAlternativesToggle={onAlternativesToggle}
             />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </Collapse>
     </motion.div>
   );
 }
@@ -470,19 +448,12 @@ function WorkoutContent({ workout, showAlternatives, onAlternativesToggle }: any
 function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives }: any) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      {...enter(delay(index))}
       style={{
         background: 'rgba(255, 255, 255, 0.8)',
         border: '2px solid rgba(22, 42, 65, 0.1)',
         borderRadius: '16px',
         padding: '20px',
-        transition: 'all 0.3s ease'
-      }}
-      whileHover={{ 
-        borderColor: '#282828',
-        boxShadow: '0 8px 25px rgba(22, 42, 65, 0.1)'
       }}
     >
       <div style={{
@@ -556,6 +527,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
       {exercise.alternatives && exercise.alternatives.length > 0 && (
         <motion.button
           onClick={onToggleAlternatives}
+          {...press}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -568,31 +540,14 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
             fontSize: '12px',
             fontWeight: '600',
             cursor: 'pointer',
-            transition: 'all 0.3s ease'
           }}
-          whileHover={{ 
-            background: 'rgba(22, 42, 65, 0.1)',
-            borderColor: '#282828'
-          }}
-          whileTap={{ scale: 0.98 }}
         >
           <AlertCircle size={14} />
           {showAlternatives ? 'Hide' : 'Show'} Alternatives ({exercise.alternatives.length})
         </motion.button>
       )}
 
-      <AnimatePresence>
-        {showAlternatives && exercise.alternatives && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ 
-              overflow: 'hidden',
-              marginTop: '15px'
-            }}
-          >
+      <Collapse open={Boolean(showAlternatives && exercise.alternatives)} className="overflow-hidden mt-[15px]">
             <div style={{
               background: 'rgba(22, 42, 65, 0.03)',
               border: '1px solid rgba(22, 42, 65, 0.1)',
@@ -641,9 +596,7 @@ function ExerciseCard({ exercise, index, showAlternatives, onToggleAlternatives 
                 ))}
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </Collapse>
     </motion.div>
   );
 }

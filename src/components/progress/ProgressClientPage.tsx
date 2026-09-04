@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { FillX } from "@/components/shared/Motion";
 import { Apple, Check, ChevronRight, Dumbbell } from "lucide-react";
 import { useUser } from "@/lib/hooks/use-user";
 import {
@@ -104,12 +104,7 @@ function FillBar({
         </p>
       </div>
       <div className="mt-2 h-3 overflow-hidden rounded-full bg-gray-100">
-        <motion.div
-          className="h-full rounded-full bg-[#282828]"
-          initial={false}
-          animate={{ width: `${pct}%` }}
-          transition={{ type: "spring", stiffness: 260, damping: 22 }}
-        />
+        <FillX pct={pct} className="h-full rounded-full bg-[#282828]" />
       </div>
     </div>
   );
@@ -798,12 +793,7 @@ function WorkoutPanel({
                   <ChevronRight size={18} className="shrink-0 text-gray-400" />
                 </div>
                 <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
-                  <motion.div
-                    className="h-full rounded-full bg-[#282828]"
-                    initial={false}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ type: "spring", stiffness: 260, damping: 22 }}
-                  />
+                  <FillX pct={pct} className="h-full rounded-full bg-[#282828]" />
                 </div>
               </button>
             );

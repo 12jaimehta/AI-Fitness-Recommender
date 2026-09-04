@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, Collapse, enter, enterPop, motion, press, transition } from '@/components/shared/Motion';
 import { 
   MessageCircle, 
   ChevronDown, 
@@ -195,8 +195,7 @@ export default function FAQs() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...enter()}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -233,9 +232,7 @@ export default function FAQs() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          {...enter(0.1)}
           style={{
             textAlign: 'center',
             marginBottom: '60px'
@@ -275,9 +272,7 @@ export default function FAQs() {
 
         {/* Search Bar */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          {...enter(0.2)}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -326,9 +321,7 @@ export default function FAQs() {
 
         {/* Categories */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          {...enter(0.3)}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -343,11 +336,8 @@ export default function FAQs() {
                 <motion.button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + faqCategories.indexOf(category) * 0.05 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  {...enterPop(0.08)}
+                  {...press}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -377,9 +367,7 @@ export default function FAQs() {
 
         {/* FAQ Items */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          {...enter(0.5)}
           style={{
             maxWidth: '800px',
             margin: '0 auto'
@@ -389,8 +377,7 @@ export default function FAQs() {
             {filteredFAQs.length === 0 ? (
               <motion.div
                 key="no-results"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                {...enter()}
                 exit={{ opacity: 0 }}
                 style={{
                   textAlign: 'center',
@@ -422,9 +409,7 @@ export default function FAQs() {
                 {filteredFAQs.map((item, index) => (
                   <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
+                    {...enter(0.6 + index * 0.1)}
                     style={{
                       background: '#ffffff',
                       borderRadius: '12px',
@@ -447,7 +432,6 @@ export default function FAQs() {
                         justifyContent: 'space-between',
                         textAlign: 'left'
                       }}
-                      whileHover={{ background: 'rgba(22, 42, 65, 0.05)' }}
                     >
                       <h3 style={{
                         fontSize: '16px',
@@ -461,23 +445,13 @@ export default function FAQs() {
                       </h3>
                       <motion.div
                         animate={{ rotate: expandedItems[`${selectedCategory}-${index}`] ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
+                        transition={transition}
                       >
                         <ChevronDown size={20} color="#282828" />
                       </motion.div>
                     </motion.button>
                     
-                    <AnimatePresence>
-                      {expandedItems[`${selectedCategory}-${index}`] && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: 'auto', opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          style={{
-                            overflow: 'hidden'
-                          }}
-                        >
+                    <Collapse open={Boolean(expandedItems[`${selectedCategory}-${index}`])}>
                           <div style={{
                             padding: '0 24px 20px',
                             borderTop: '1px solid rgba(22, 42, 65, 0.1)'
@@ -491,9 +465,7 @@ export default function FAQs() {
                               {item.answer}
                             </p>
                           </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    </Collapse>
                   </motion.div>
                 ))}
               </div>
@@ -503,9 +475,7 @@ export default function FAQs() {
 
         {/* Still Need Help */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
+          {...enter(0.8)}
           style={{
             background: 'rgba(22, 42, 65, 0.05)',
             borderRadius: '16px',

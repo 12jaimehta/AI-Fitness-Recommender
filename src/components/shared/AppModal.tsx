@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, modalBackdrop, modalPanel, transition } from "@/components/shared/Motion";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -19,16 +19,14 @@ export default function AppModal({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          {...modalBackdrop}
+          transition={transition}
           className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-5"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
+            {...modalPanel}
+            transition={transition}
             className="w-full max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[20px] bg-white p-8"
             style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
             onClick={(e) => e.stopPropagation()}

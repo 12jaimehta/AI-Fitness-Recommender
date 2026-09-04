@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Collapse, delay, enter, FadeIn, motion, press } from "@/components/shared/Motion";
 import { 
   Mail,
   Sun,
@@ -190,12 +190,7 @@ function MealPlansSection({
     : dietPlan.meals || {};
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6 }}
-      style={{ marginBottom: '50px' }}
-    >
+    <FadeIn delay={0.08} style={{ marginBottom: '50px' }}>
       <h2 style={{
         fontSize: clampSize(24, 28),
         fontWeight: '700',
@@ -231,7 +226,7 @@ function MealPlansSection({
           />
         ))}
       </div>
-    </motion.div>
+    </FadeIn>
   );
 }
 
@@ -262,8 +257,7 @@ function DaySelector({ days, selectedDay, onDaySelect }: any) {
             whiteSpace: 'nowrap',
             textTransform: 'capitalize'
           }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          {...press}
         >
           {day.slice(0, 3)}
         </motion.button>
@@ -275,19 +269,12 @@ function DaySelector({ days, selectedDay, onDaySelect }: any) {
 function MealCard({ mealType, mealData, isExpanded, onToggle, index, getMealIcon }: any) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      {...enter(delay(index))}
       style={{
         background: 'rgba(22, 42, 65, 0.02)',
         border: '2px solid rgba(22, 42, 65, 0.1)',
         borderRadius: '16px',
         overflow: 'hidden',
-        transition: 'all 0.3s ease'
-      }}
-      whileHover={{ 
-        borderColor: '#282828',
-        boxShadow: '0 8px 25px rgba(22, 42, 65, 0.1)'
       }}
     >
       <div
@@ -366,19 +353,9 @@ function MealCard({ mealType, mealData, isExpanded, onToggle, index, getMealIcon
         </div>
       </div>
 
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            style={{ overflow: 'hidden' }}
-          >
-            <MealContent mealData={mealData} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Collapse open={isExpanded}>
+        <MealContent mealData={mealData} />
+      </Collapse>
     </motion.div>
   );
 }

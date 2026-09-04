@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, popIn, press, transition } from "@/components/shared/Motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image"; 
 
@@ -64,12 +64,7 @@ export default function GenderSelectCard({ options = defaultGenderOptions, value
             type="button"
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            whileHover={{ scale: 1.02, boxShadow: active ? undefined : "0 8px 15px rgba(22,42,65,0.1)" }}
-            whileTap={{ scale: 0.98 }}
-            animate={{
-                borderColor: active ? "#282828" : "#e5e7eb",
-            }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            {...press}
             className={cn(
               "relative rounded-xl p-6 text-left border-2 transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-[#282828]/20",
               active
@@ -92,8 +87,8 @@ export default function GenderSelectCard({ options = defaultGenderOptions, value
             {/* Active Checkmark */}
             {active && (
                 <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
+                    {...popIn}
+                    transition={transition}
                     className="absolute top-4 right-4 w-6 h-6 rounded-full bg-white flex items-center justify-center text-[#282828]"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { enter, hoverLift, motion } from '@/components/shared/Motion';
 import { 
   HelpCircle, 
   Mail, 
@@ -64,8 +64,7 @@ export default function HelpCenter() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...enter()}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -93,9 +92,7 @@ export default function HelpCenter() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          {...enter(0.1)}
           style={{
             textAlign: 'center',
             marginBottom: '60px'
@@ -135,9 +132,7 @@ export default function HelpCenter() {
 
         {/* Help Items Grid */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          {...enter(0.2)}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
@@ -149,10 +144,8 @@ export default function HelpCenter() {
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -4 }}
+                {...enter(0.3 + index * 0.1)}
+                {...hoverLift}
                 style={{
                   background: '#ffffff',
                   borderRadius: '16px',
@@ -212,9 +205,7 @@ export default function HelpCenter() {
 
         {/* Quick Help Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
+          {...enter(0.8)}
           style={{
             background: 'rgba(22, 42, 65, 0.05)',
             borderRadius: '16px',

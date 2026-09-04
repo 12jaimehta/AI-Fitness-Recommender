@@ -48,11 +48,11 @@ body {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-in {
-  animation: fadeIn 0.5s ease-in;
+  animation: fadeIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-clip::-webkit-media-controls-start-playback-button,

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { enter, hoverLift, motion } from '@/components/shared/Motion';
 import { 
   Mail, 
   Phone, 
@@ -98,8 +98,7 @@ export default function ContactUs() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...enter()}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -136,9 +135,7 @@ export default function ContactUs() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          {...enter(0.1)}
           style={{
             textAlign: 'center',
             marginBottom: '60px'
@@ -184,9 +181,7 @@ export default function ContactUs() {
         }}>
           {/* Contact Methods */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
+            {...enter(0.2)}
           >
             <h2 style={{
               fontSize: '24px',
@@ -207,10 +202,8 @@ export default function ContactUs() {
                   <motion.a
                     key={index}
                     href={method.action}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    whileHover={{ scale: 1.02 }}
+                    {...enter(0.3 + index * 0.1)}
+                    {...hoverLift}
                     style={{
                       background: '#ffffff',
                       borderRadius: '12px',
@@ -272,9 +265,7 @@ export default function ContactUs() {
 
           {/* Contact Form */}
           {/* <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
+            {...enter(0.3)}
           >
             <h2 style={{
               fontSize: '24px',
@@ -293,8 +284,7 @@ export default function ContactUs() {
             }}>
               {submitted ? (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  {...enterPop()}
                   style={{
                     textAlign: 'center',
                     padding: '40px 20px'
@@ -478,9 +468,7 @@ export default function ContactUs() {
 
         {/* Quick FAQ */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          {...enter(0.4)}
         >
           <h2 style={{
             fontSize: '24px',
@@ -499,9 +487,7 @@ export default function ContactUs() {
             {faqItems.map((item, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + index * 0.1 }}
+                {...enter(0.5 + index * 0.1)}
                 style={{
                   background: 'rgba(22, 42, 65, 0.05)',
                   borderRadius: '12px',

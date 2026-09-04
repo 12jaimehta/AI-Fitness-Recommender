@@ -20,5 +20,18 @@ export { default as PlanViewToggle } from './PlanViewToggle';
 export { default as PlanTips } from './PlanTips';
 export { default as SurfaceCard } from './SurfaceCard';
 export { default as AppModal } from './AppModal';
+export {
+  MotionProvider,
+  FadeIn,
+  Fade,
+  FadeInView,
+  StepSwap,
+  Collapse,
+  FillX,
+  FillY,
+  Press,
+  motion,
+  AnimatePresence,
+} from './Motion';
 export { default as InlineLoader } from './InlineLoader';
 export { default as TrendChart } from './TrendChart';

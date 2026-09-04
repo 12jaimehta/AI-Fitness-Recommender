@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { StepSwap } from "@/components/shared/Motion";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { workoutPlanSchema, type WorkoutPlanFormData } from "@/lib/validation/workoutPlanSchema";
@@ -169,17 +169,9 @@ export default function WorkoutMultiStepForm({
         description={workoutSteps[currentStep].description}
       />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -24 }}
-          transition={{ duration: 0.25 }}
-        >
+      <StepSwap id={currentStep}>
           {renderStep()}
-        </motion.div>
-      </AnimatePresence>
+      </StepSwap>
 
       <div className="mt-10 flex justify-end">
         <FormNavigation

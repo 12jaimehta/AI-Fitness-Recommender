@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, pressWhen } from "@/components/shared/Motion";
 import { cn } from "@/lib/utils";
 import { FormSelectProps } from "../../lib/types";
 import OptionMenu from "@/components/shared/OptionMenu";
@@ -69,8 +69,7 @@ export default function FormSelect({
                   if (option.disabled) return;
                   pick(option.value);
                 }}
-                whileHover={{ scale: disabled || option.disabled ? 1 : 1.02 }}
-                whileTap={{ scale: disabled || option.disabled ? 1 : 0.98 }}
+                {...pressWhen(!(disabled || option.disabled))}
                 className={cn(
                   "rounded-xl border-2 text-left font-semibold transition",
                   compact ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm",

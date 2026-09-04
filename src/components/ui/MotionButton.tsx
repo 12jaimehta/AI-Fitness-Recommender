@@ -1,7 +1,8 @@
 // components/ui/motion-button.tsx
 "use client";
 
-import { motion, MotionProps } from "framer-motion";
+import { motion, pressWhen } from "@/components/shared/Motion";
+import type { MotionProps } from "framer-motion";
 import React, { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +24,7 @@ export default function MotionButton({ children, loading = false, icon, variant 
     <motion.button
       {...(props as any)}
       disabled={disabled || loading}
-      whileHover={{ scale: loading ? 1 : 1.03 }}
-      whileTap={{ scale: loading ? 1 : 0.98 }}
+      {...pressWhen(!loading)}
       className={cn("w-full px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition whitespace-nowrap", variants[variant], loading ? "opacity-70 cursor-not-allowed" : "", className)}
     >
       {loading && <span className="w-4 h-4 rounded-full border-2 border-transparent border-t-white animate-spin mr-2" />}

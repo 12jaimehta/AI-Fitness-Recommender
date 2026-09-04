@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { enter, hoverLift, motion } from '@/components/shared/Motion';
 import { 
   Building, 
   Users, 
@@ -100,8 +100,7 @@ export default function AboutUs() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...enter()}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -129,9 +128,7 @@ export default function AboutUs() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          {...enter(0.1)}
           style={{
             textAlign: 'center',
             marginBottom: '60px'
@@ -171,9 +168,7 @@ export default function AboutUs() {
 
         {/* Mission Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          {...enter(0.2)}
           style={{
             background: '#ffffff',
             borderRadius: '16px',
@@ -219,9 +214,7 @@ export default function AboutUs() {
 
         {/* Stats */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          {...enter(0.3)}
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -232,10 +225,8 @@ export default function AboutUs() {
           {companyStats.map((stat, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + index * 0.1 }}
-              whileHover={{ scale: 1.05, y: -4 }}
+              {...enter(0.4 + index * 0.1)}
+              {...hoverLift}
               style={{
                 background: '#ffffff',
                 borderRadius: '12px',
@@ -273,9 +264,7 @@ export default function AboutUs() {
 
         {/* Team Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          {...enter(0.5)}
           style={{ marginBottom: '60px' }}
         >
           <div style={{
@@ -320,10 +309,8 @@ export default function AboutUs() {
             {teamMembers.map((member, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 + index * 0.1 }}
-                whileHover={{ scale: 1.02, y: -4 }}
+                {...enter(0.6 + index * 0.1)}
+                {...hoverLift}
                 style={{
                   background: '#ffffff',
                   borderRadius: '12px',
@@ -382,9 +369,7 @@ export default function AboutUs() {
 
         {/* Milestones */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          {...enter(0.7)}
           style={{ marginBottom: '60px' }}
         >
           <div style={{
@@ -429,10 +414,8 @@ export default function AboutUs() {
             {milestones.map((milestone, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 + index * 0.1 }}
-                whileHover={{ scale: 1.02 }}
+                {...enter(0.8 + index * 0.1)}
+                {...hoverLift}
                 style={{
                   background: 'rgba(22, 42, 65, 0.05)',
                   borderRadius: '12px',
@@ -472,9 +455,7 @@ export default function AboutUs() {
 
         {/* Contact Info */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
+          {...enter(0.9)}
           style={{
             background: 'rgba(22, 42, 65, 0.05)',
             borderRadius: '16px',

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { enter, motion } from '@/components/shared/Motion';
 import { 
   Shield, 
   Lock, 
@@ -161,8 +161,7 @@ export default function PrivacyPolicy() {
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         {/* Navigation */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          {...enter()}
           style={{ marginBottom: '40px' }}
         >
           <div style={{
@@ -190,9 +189,7 @@ export default function PrivacyPolicy() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          {...enter(0.1)}
           style={{
             textAlign: 'center',
             marginBottom: '60px'
@@ -232,9 +229,7 @@ export default function PrivacyPolicy() {
 
         {/* Last Updated */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          {...enter(0.2)}
           style={{
             background: 'rgba(22, 42, 65, 0.05)',
             borderRadius: '12px',
@@ -259,9 +254,7 @@ export default function PrivacyPolicy() {
           return (
             <motion.div
               key={sectionIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + sectionIndex * 0.1 }}
+              {...enter(0.3 + sectionIndex * 0.1)}
               style={{
                 background: '#ffffff',
                 borderRadius: '16px',
@@ -330,9 +323,7 @@ export default function PrivacyPolicy() {
 
         {/* Contact Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
+          {...enter(0.9)}
           style={{
             background: 'rgba(22, 42, 65, 0.05)',
             borderRadius: '16px',

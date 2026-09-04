@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { FadeIn, Press } from "@/components/shared/Motion";
 import { RefreshCw, RotateCcw, type LucideIcon } from "lucide-react";
 import { clampSize, isMobile } from "./planDisplayUtils";
 
@@ -11,6 +11,18 @@ export type PlanHeaderExtraAction = {
   icon: LucideIcon;
   onClick: () => void;
 };
+
+const actionStyle = {
+  padding: "14px 28px",
+  borderRadius: "12px",
+  fontSize: "15px",
+  fontWeight: "600",
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  minWidth: "140px",
+  justifyContent: "center",
+} as const;
 
 export default function PlanResultHeader({
   icon: Icon,
@@ -30,11 +42,7 @@ export default function PlanResultHeader({
   extraAction?: PlanHeaderExtraAction;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      style={{ textAlign: "center", marginBottom: "50px" }}
-    >
+    <FadeIn style={{ textAlign: "center", marginBottom: "50px" }}>
       <div
         style={{
           display: "inline-flex",
@@ -64,7 +72,8 @@ export default function PlanResultHeader({
         {subtitle}
       </p>
 
-      <motion.div
+      <FadeIn
+        delay={0.08}
         style={{
           display: "flex",
           gap: "15px",
@@ -73,107 +82,51 @@ export default function PlanResultHeader({
           flexDirection: isMobile() ? "column" : "row",
           alignItems: "center",
         }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
       >
-        <motion.button
-          whileHover={
-            !loading
-              ? {
-                  scale: 1.05,
-                  boxShadow: "0 15px 35px rgba(22, 42, 65, 0.3)",
-                }
-              : {}
-          }
-          whileTap={!loading ? { scale: 0.95 } : {}}
+        <Press
+          enabled={!loading}
           onClick={onRegenerate}
           disabled={loading}
           style={{
+            ...actionStyle,
             background: loading ? "#9ca3af" : "#282828",
             color: "#ffffff",
             border: "none",
-            padding: "14px 28px",
-            borderRadius: "12px",
-            fontSize: "15px",
-            fontWeight: "600",
             cursor: loading ? "not-allowed" : "pointer",
             opacity: loading ? 0.7 : 1,
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            transition: "all 0.3s ease",
-            minWidth: "140px",
-            justifyContent: "center",
           }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, type: "spring", stiffness: 400, damping: 10 }}
         >
           <RefreshCw size={18} style={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
           {loading ? "Generating..." : "Regenerate"}
-        </motion.button>
+        </Press>
 
-        <motion.button
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 8px 25px rgba(22, 42, 65, 0.2)",
-          }}
-          whileTap={{ scale: 0.95 }}
+        <Press
           onClick={onNewPlan}
           style={{
+            ...actionStyle,
             background: "#ffffff",
             color: "#282828",
             border: "2px solid #282828",
-            padding: "14px 28px",
-            borderRadius: "12px",
-            fontSize: "15px",
-            fontWeight: "600",
             cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            transition: "all 0.3s ease",
-            minWidth: "140px",
-            justifyContent: "center",
           }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.6, type: "spring", stiffness: 400, damping: 10 }}
         >
           <RotateCcw size={18} />
           New Plan
-        </motion.button>
+        </Press>
 
         {extraAction && (
-          <motion.button
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 8px 25px rgba(22, 42, 65, 0.2)",
-            }}
-            whileTap={{ scale: 0.95 }}
+          <Press
+            enabled={!extraAction.loading}
             onClick={extraAction.onClick}
             disabled={extraAction.loading}
             style={{
+              ...actionStyle,
               background: extraAction.loading ? "#9ca3af" : "#ffffff",
               color: extraAction.loading ? "#666666" : "#282828",
               border: "2px solid #282828",
-              padding: "14px 28px",
-              borderRadius: "12px",
-              fontSize: "15px",
-              fontWeight: "600",
               cursor: extraAction.loading ? "not-allowed" : "pointer",
               opacity: extraAction.loading ? 0.7 : 1,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              transition: "all 0.3s ease",
-              minWidth: "140px",
-              justifyContent: "center",
             }}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.7, type: "spring", stiffness: 400, damping: 10 }}
           >
             <extraAction.icon
               size={18}
@@ -182,9 +135,9 @@ export default function PlanResultHeader({
             {extraAction.loading
               ? extraAction.loadingLabel || extraAction.label
               : extraAction.label}
-          </motion.button>
+          </Press>
         )}
-      </motion.div>
-    </motion.div>
+      </FadeIn>
+    </FadeIn>
   );
 }

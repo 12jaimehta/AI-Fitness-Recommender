@@ -1,12 +1,7 @@
 "use client";
 import { footerSections, socialLinks } from "@/lib/constant";
-import { motion } from "framer-motion";
-import {
-  Heart,
-  Mail,
-  Phone,
-  MapPin,
-} from "lucide-react";
+import { delay, FadeInView, motion, press } from "@/components/shared/Motion";
+import { Mail } from "lucide-react";
 
 export default function UnifiedFooter() {
 
@@ -17,12 +12,7 @@ export default function UnifiedFooter() {
         {/* Main Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16 mb-16">
           {/* Brand Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="min-w-[250px]"
-          >
+          <FadeInView className="min-w-[250px]">
             <div className="flex items-center gap-3 mb-5">
               <h3 className="text-2xl font-extrabold">fyteAI</h3>
             </div>
@@ -43,32 +33,19 @@ export default function UnifiedFooter() {
                 <MapPin size={16} /> Gurugram, India
               </div> */}
             </div>
-          </motion.div>
+          </FadeInView>
 
           {/* Link Sections */}
           {footerSections.map((section, sectionIndex) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: sectionIndex * 0.1 }}
-            >
+            <FadeInView key={section.title} delay={delay(sectionIndex)}>
               <h4 className="text-lg font-bold mb-6 relative">
                 {section.title}
                 <div className="absolute -bottom-2 left-0 w-10 h-[3px] bg-white/30 rounded"></div>
               </h4>
 
               <ul className="flex flex-col gap-4">
-                {section.items.map((item, index) => (
-                  <motion.li
-                    key={item.name}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{
-                      delay: sectionIndex * 0.1 + index * 0.05,
-                    }}
-                    whileHover={{ x: 3 }}
-                  >
+                {section.items.map((item) => (
+                  <li key={item.name}>
                     <a
                       href={item.href}
                       className="flex items-center gap-2 text-white opacity-80 hover:opacity-100 hover:translate-x-1 transition-all text-sm"
@@ -76,50 +53,36 @@ export default function UnifiedFooter() {
                       {/* <item.icon size={16} /> */}
                       {item.name}
                     </a>
-                  </motion.li>
+                  </li>
                 ))}
               </ul>
-            </motion.div>
+            </FadeInView>
           ))}
         </div>
 
         {/* Bottom Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="border-t border-white/10 pt-10 flex items-center justify-between flex-wrap gap-6"
-        >
+        <FadeInView delay={0.08} className="border-t border-white/10 pt-10 flex items-center justify-between flex-wrap gap-6">
           <div className="text-sm opacity-80">
             © 2026 fyteAI. All rights reserved.
           </div>
 
           {/* Social Links */}
           <div className="flex gap-4">
-            {socialLinks.map((social, index) => (
+            {socialLinks.map((social) => (
               <motion.a
                 key={social.name}
                 href={social.href}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 + index * 0.1 }}
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.9 }}
+                {...press}
                 className="w-11 h-11 rounded-full bg-white/10 border border-white/20 backdrop-blur flex items-center justify-center hover:bg-white/20 transition-all"
               >
                 <social.icon size={20} />
               </motion.a>
             ))}
           </div>
-        </motion.div>
+        </FadeInView>
 
         {/* Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="mt-6 p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur"
-        >
+        <FadeInView delay={0.12} className="mt-6 p-5 bg-white/5 border border-white/10 rounded-xl backdrop-blur">
           <p className="text-xs opacity-70 leading-relaxed text-center">
             <strong>Disclaimer:</strong> fyteAI provides personalized
             recommendations for informational purposes only. Always consult with
@@ -127,7 +90,7 @@ export default function UnifiedFooter() {
             diet or exercise routine. Our AI-generated plans are not substitutes
             for professional medical advice, diagnosis, or treatment.
           </p>
-        </motion.div>
+        </FadeInView>
       </div>
     </footer>
   );
