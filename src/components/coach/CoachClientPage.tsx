@@ -203,7 +203,7 @@ export default function CoachClientPage({
             <div>
               <p className={fyte.title}>Unlock the noticing</p>
               <p className={`mt-1 ${fyte.body}`}>
-                Ate as planned stays free. Different meal, swap, and the weekly review are the 30-day pass.
+              Start for free — your first diet and workout plans are on us. Upgrade to the 30-day pass for continuous updates, meal swaps, workout adjustments, and personalized coaching.
               </p>
             </div>
             <Link href="/billing" className={CHIP_PRIMARY}>
