@@ -264,7 +264,7 @@ export default function WorkoutPlanResultPage() {
             ].map(([label, value]) => (
               <div key={String(label)} className={fyte.stat}>
                 <dt className="text-xs font-semibold uppercase tracking-wide text-white/60">{label}</dt>
-                <dd className="mt-1 text-xl font-extrabold">{value}</dd>
+                <dd className="mt-1 text-sm font-extrabold break-words">{value}</dd>
               </div>
             ))}
           </dl>

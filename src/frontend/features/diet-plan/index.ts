@@ -14,6 +14,7 @@ import {
   type GeneratedDietSession,
 } from "./generated-session";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
+import { redirectIfPaywall } from "@frontend/features/billing";
 import type { CalorieStallResult } from "@/shared/lib/calorie-stall";
 
 export type { DietPlanData, MealData, DailyMeals } from "@/shared/types";
@@ -90,6 +91,10 @@ export function beginDietFromLogs() {
       clearPendingDietGeneration();
     })
     .catch((err) => {
+      if (redirectIfPaywall(err)) {
+        clearPendingDietGeneration();
+        return;
+      }
       setPendingDietError(
         err instanceof Error ? err.message : "Could not build next week's diet from your logs. Try again."
       );
@@ -113,6 +118,10 @@ export async function resolveDietPlan(userId?: string): Promise<DietPlanResolveR
       clearPendingDietGeneration();
       return { status: "ready", session };
     } catch (err) {
+      if (redirectIfPaywall(err)) {
+        clearPendingDietGeneration();
+        return { status: "error", error: "Unlock the coach to rebuild next week." };
+      }
       const error =
         err instanceof Error
           ? err.message

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/hooks/use-user";
 import {
   answerCoachInterview,
@@ -11,11 +12,14 @@ import {
   seedCoachToday,
   startCoachInterview,
 } from "@/lib/service/coach";
+import { getMembership } from "@/lib/service/billing";
+import { ApiRequestError } from "@frontend/shared/api/http";
 import { clampIsoDateToToday, localIsoDate } from "@/shared/lib/plan-tracking";
 import { extraStepsCard } from "@/shared/lib/coach/copy";
 import { ENERGY_OPTIONS, FEEL_OPTIONS } from "@/shared/lib/coach/questions";
 import { fyte } from "@/shared/lib/ui";
 import type { CoachInterviewKind, CoachInterviewView, CoachSlotView, CoachToday } from "@/shared/types/coach";
+import type { MembershipView } from "@/shared/types/billing";
 import { ProgressSkeleton } from "@/components/ui/Skeleton";
 import FormInput from "@/components/shared/FormInput";
 import FormSelect from "@/components/shared/FormSelect";
@@ -42,11 +46,19 @@ const CHIP = "inline-flex h-9 items-center justify-center rounded-lg px-3 text-s
 const CHIP_PRIMARY = `${CHIP} bg-fyte-ink text-white disabled:opacity-60`;
 const CHIP_SECONDARY = `${CHIP} border border-fyte-line bg-fyte-card text-fyte-ink hover:border-fyte-ink disabled:opacity-40`;
 
-export default function CoachClientPage({ initial = null }: { initial?: CoachToday | null }) {
+export default function CoachClientPage({
+  initial = null,
+  membership: initialMembership = null,
+}: {
+  initial?: CoachToday | null;
+  membership?: MembershipView | null;
+}) {
+  const router = useRouter();
   const { isSignedIn, isLoading: userLoading } = useUser();
   const today = localIsoDate();
   const [date, setDate] = useState(() => clampIsoDateToToday(initial?.date || today, today));
   const [board, setBoard] = useState<CoachToday | null>(initial);
+  const [membership, setMembership] = useState<MembershipView | null>(initialMembership);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState("");
   const [note, setNote] = useState("");
@@ -93,6 +105,23 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, isSignedIn, userLoading]);
 
+  useEffect(() => {
+    if (userLoading || !isSignedIn || initialMembership) return;
+    getMembership()
+      .then(setMembership)
+      .catch(() => {});
+  }, [isSignedIn, userLoading, initialMembership]);
+
+  const needsPass = Boolean(membership?.checkoutReady && !membership.active && !membership.setupRequired);
+
+  const paywall = (err: unknown) => {
+    if (err instanceof ApiRequestError && (err.status === 402 || err.code === "membership_required")) {
+      router.push("/billing");
+      return true;
+    }
+    return false;
+  };
+
   const run = async (id: string, work: () => Promise<{ board: CoachToday; note: string }>) => {
     setBusy(id);
     setError("");
@@ -101,6 +130,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
       applyBoard(result.board);
       setNote(result.note);
     } catch (err) {
+      if (paywall(err)) return;
       setError(err instanceof Error ? err.message : "Could not save.");
     } finally {
       setBusy("");
@@ -108,6 +138,10 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
   };
 
   const openInterview = async (slot: CoachSlotView, kind: CoachInterviewKind) => {
+    if (needsPass) {
+      router.push("/billing");
+      return;
+    }
     setModalSlot(slot);
     setModalKind(kind);
     setError("");
@@ -119,6 +153,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
     try {
       setInterview(await startCoachInterview({ slot_key: slot.slotKey, kind }, date));
     } catch (err) {
+      if (paywall(err)) return;
       setError(err instanceof Error ? err.message : "Could not start.");
       setModalKind(null);
       setModalSlot(null);
@@ -161,6 +196,20 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
         {error ? <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-fyte-danger">{error}</p> : null}
         {note ? (
           <p className="rounded-xl bg-fyte-ink px-4 py-3 text-sm font-medium text-white shadow-card">{note}</p>
+        ) : null}
+
+        {needsPass ? (
+          <section className={`${fyte.card} mt-4 flex flex-wrap items-center justify-between gap-4`}>
+            <div>
+              <p className={fyte.title}>Unlock the noticing</p>
+              <p className={`mt-1 ${fyte.body}`}>
+                Ate as planned stays free. Different meal, swap, and the weekly review are the 30-day pass.
+              </p>
+            </div>
+            <Link href="/billing" className={CHIP_PRIMARY}>
+              {membership?.plan.amountLabel || "₹299"} / 30 days
+            </Link>
+          </section>
         ) : null}
 
         {board?.setupRequired ? (
@@ -371,7 +420,18 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
           </section>
         ) : null}
 
-        {board?.review ? (
+        {needsPass && board && !board.setupRequired ? (
+          <section className="mt-8 rounded-2xl bg-fyte-ink p-6 text-white shadow-card sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">This week</p>
+            <h2 className="mt-2 text-xl font-bold leading-snug">The weekly review is part of the pass</h2>
+            <p className="mt-2 text-sm leading-6 text-white/75">
+              Attendance, weight trend, and whether to hold or change a slot. Logging as planned stays free.
+            </p>
+            <Link href="/billing" className={`${fyte.glassSolid} mt-5`}>
+              Unlock for {membership?.plan.amountLabel || "₹299"}
+            </Link>
+          </section>
+        ) : board?.review ? (
           <section className="mt-8 rounded-2xl bg-fyte-ink p-6 text-white shadow-card sm:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">This week</p>
             <h2 className="mt-2 text-xl font-bold leading-snug">{board.review.headline}</h2>
@@ -419,6 +479,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
           try {
             setInterview(await startCoachInterview({ slot_key: modalSlot.slotKey, kind: modalKind, text, image }, date));
           } catch (err) {
+            if (paywall(err)) return;
             setError(err instanceof Error ? err.message : "Could not start.");
           } finally {
             setBusy("");
@@ -431,6 +492,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
           try {
             setInterview(await answerCoachInterview(interview.id, questionId, value));
           } catch (err) {
+            if (paywall(err)) return;
             setError(err instanceof Error ? err.message : "Could not save.");
           } finally {
             setBusy("");
@@ -447,6 +509,7 @@ export default function CoachClientPage({ initial = null }: { initial?: CoachTod
             setInterview(null);
             closeModal();
           } catch (err) {
+            if (paywall(err)) return;
             setError(err instanceof Error ? err.message : "Could not save.");
           } finally {
             setBusy("");

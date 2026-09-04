@@ -55,7 +55,7 @@ export default function PageHero({
         className="object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/45 to-black/80" />
-      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-fyte-page/90 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-fyte-page/30 to-transparent" />
 
       <div className={cn("relative mx-auto max-w-6xl px-5 sm:px-8", pad)}>
         <div className={cn("flex flex-col gap-8", centered ? "items-center text-center" : "lg:flex-row lg:items-end lg:justify-between")}>

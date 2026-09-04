@@ -34,8 +34,15 @@ yarn-error.log*
 .env*
 !.env.example
 
-# local working notes (not for git)
+# local documentation (not for git)
+/documentation/
+keys.md
+PRODUCT.md
+PAYMENTS.md
+COACH.md
 PERFORMANCE.md
+progress-reference.md
+supabase-updates.md
 
 # vercel
 .vercel

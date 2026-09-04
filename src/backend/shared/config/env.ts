@@ -1,7 +1,7 @@
 function required(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`Missing ${name}. Add it in .env — see keys.md`);
+    throw new Error(`Missing ${name}. Add it in .env — see documentation/keys.md`);
   }
   return value;
 }
@@ -26,4 +26,21 @@ export function getEmailEnv() {
     resendKey: process.env.RESEND_API_KEY,
     from: process.env.EMAIL_FROM || "FyteAI <noreply@fyteai.co.in>",
   };
+}
+
+/** Checkout is live only when key id + secret exist. Key id may be NEXT_PUBLIC_ or RAZORPAY_KEY_ID. */
+export function getRazorpayEnv() {
+  const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || "";
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || "";
+  return {
+    keyId,
+    keySecret,
+    webhookSecret,
+    configured: Boolean(keyId && keySecret),
+  };
+}
+
+export function getServiceRoleKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 }

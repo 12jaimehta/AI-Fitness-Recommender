@@ -1,7 +1,7 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, Menu, User, X } from "lucide-react";
+import { ChevronDown, CreditCard, LogOut, Menu, User, X } from "lucide-react";
 import { useUser, signOutAndClearCache } from "@frontend/features/auth";
 import { navItems } from "@/lib/constant";
 import { getUserProfile } from "@/lib/service/progress-database";
@@ -153,6 +153,13 @@ export default function Navbar() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => go("/billing")}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-white/10"
+                    >
+                      <CreditCard size={16} /> Membership
+                    </button>
+                    <button
+                      type="button"
                       onClick={handleSignOut}
                       className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-red-300 hover:bg-red-500/10"
                     >
@@ -208,6 +215,13 @@ export default function Navbar() {
                     className="w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-white/80 hover:bg-white/10"
                   >
                     My profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => go("/billing")}
+                    className="w-full rounded-xl px-4 py-3 text-left text-base font-semibold text-white/80 hover:bg-white/10"
+                  >
+                    Membership
                   </button>
                   <button
                     type="button"

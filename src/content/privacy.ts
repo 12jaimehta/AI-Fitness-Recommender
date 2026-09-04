@@ -77,7 +77,11 @@ export const privacySections = [
       },
       {
         heading: "Service Providers",
-        text: "We work with trusted third-party service providers for hosting, analytics, and customer support. These providers are contractually obligated to protect your data and only use it for specified purposes."
+        text: "We work with trusted third-party service providers for hosting, email, and customer support. These providers are contractually obligated to protect your data and only use it for specified purposes."
+      },
+      {
+        heading: "Payments",
+        text: "Membership checkout is processed by Razorpay. We send Razorpay the amount, order id, and the name and email you use on fyteAI so they can complete UPI or card payment. We store payment ids, amount, method (UPI or card), and membership dates. We do not store full card numbers or UPI PINs. Razorpay's privacy policy applies to data they process as the payment processor."
       },
       {
         heading: "Legal Requirements",

@@ -13,8 +13,13 @@ export function jsonOk<T>(data: T, status = 200) {
 
 export function jsonError(error: unknown) {
   if (error instanceof ApiError) {
+    const details = error.details;
+    const code =
+      details && typeof details === "object" && details !== null && "code" in details
+        ? String((details as { code: unknown }).code)
+        : undefined;
     return NextResponse.json(
-      { error: error.message, details: error.details },
+      { error: error.message, code, details },
       { status: error.status }
     );
   }

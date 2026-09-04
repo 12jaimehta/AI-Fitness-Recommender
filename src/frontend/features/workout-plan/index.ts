@@ -14,6 +14,7 @@ import {
   type GeneratedWorkoutSession,
 } from "./generated-session";
 import { hydratePlanCache } from "@frontend/features/plan-cache";
+import { redirectIfPaywall } from "@frontend/features/billing";
 
 export type { WorkoutPlanData, DailyWorkout, Exercise } from "@/shared/types";
 export {
@@ -92,6 +93,10 @@ export function beginWorkoutFromLogs() {
       clearPendingWorkoutGeneration();
     })
     .catch((err) => {
+      if (redirectIfPaywall(err)) {
+        clearPendingWorkoutGeneration();
+        return;
+      }
       setPendingWorkoutError(
         err instanceof Error
           ? err.message
@@ -117,6 +122,10 @@ export async function resolveWorkoutPlan(userId?: string): Promise<WorkoutPlanRe
       clearPendingWorkoutGeneration();
       return { status: "ready", session };
     } catch (err) {
+      if (redirectIfPaywall(err)) {
+        clearPendingWorkoutGeneration();
+        return { status: "error", error: "Unlock the coach to rebuild next week." };
+      }
       const error =
         err instanceof Error
           ? err.message

@@ -114,20 +114,24 @@ export const faqData = {
   ],
   billing: [
     {
-      question: "What payment methods do you accept?",
-      answer: "We accept all major credit cards, debit cards, and PayPal. All payments are processed securely through our payment partners."
+      question: "What am I paying for?",
+      answer: "A 30-day coach pass. We watch the week and change the meal or session that slipped. First diet, first workout, and logging as planned (ate it / trained / skipped / weight / sleep) stay free. We do not sell AI tokens."
     },
     {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Yes, you can cancel your subscription at any time from your account settings. Your access will continue until the end of your current billing period."
+      question: "What payment methods do you accept?",
+      answer: "UPI and cards only, through Razorpay. No netbanking, wallets, EMI, PayPal, or Apple/Google in-app purchases."
+    },
+    {
+      question: "Is this a monthly subscription?",
+      answer: "Phase 1 is a 30-day pass: one payment, 30 days of coach access. Pay again when it lapses. Autopay (cards, then UPI) comes later. There is no token meter to recharge."
     },
     {
       question: "Do you offer refunds?",
-      answer: "We offer a 30-day money-back guarantee for new subscriptions. If you're not satisfied with our service, contact our support team within 30 days of your initial purchase for a full refund."
+      answer: "First purchase: email us within 7 days for a refund. After that, 30-day passes are not prorated. Contact us from Help if something went wrong with checkout."
     },
     {
-      question: "How do I update my payment information?",
-      answer: "You can update your payment method in the billing section of your account settings. Simply add your new payment method and remove the old one."
+      question: "How do I manage membership?",
+      answer: "Open Membership from your profile menu or the footer. When the pass is active, that page shows the end date. When it lapses, pay again with UPI or card."
     }
   ],
   technical: [

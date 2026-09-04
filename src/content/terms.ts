@@ -72,20 +72,20 @@ export const termsSections = [
     title: "Payment and Subscription",
     content: [
       {
-        heading: "Subscription Fees",
-        text: "Some features of fyteAI may require payment. All fees are non-refundable unless otherwise specified. Payment terms will be clearly disclosed before purchase."
+        heading: "Coach pass",
+        text: "Paid access is a 30-day coach pass (currently ₹299 unless a different amount is shown at checkout). You pay once for that period. It is not a token wallet and is not billed by AI model usage. First diet, first workout, and logging as planned remain free."
       },
       {
-        heading: "Billing Cycle",
-        text: "Subscriptions are billed on a recurring basis (monthly or annually) as selected during signup. You will be billed at the beginning of each billing cycle."
+        heading: "Payment",
+        text: "Checkout is processed by Razorpay. We accept UPI and cards only. Prices are in Indian rupees. Access starts after Razorpay confirms the payment."
       },
       {
-        heading: "Cancellation",
-        text: "You can cancel your subscription at any time through your account settings. Cancellation takes effect at the end of the current billing period. No refunds are provided for partial months."
+        heading: "Renewal and expiry",
+        text: "The pass does not auto-renew in this phase. When the 30 days end, paid coach actions lock until you buy another pass. There is no prorated refund if you stop using the coach mid-period."
       },
       {
-        heading: "Price Changes",
-        text: "We reserve the right to modify subscription fees at any time. Price changes will be communicated in advance and will take effect at the next billing cycle."
+        heading: "Refunds",
+        text: "First purchase: email us within 7 days and we will refund that payment. Later purchases and remaining days on a pass are not refunded. Price changes apply to the next purchase, not a period already paid."
       }
     ]
   },

@@ -17,6 +17,7 @@ const EXACT_PATHS = new Set([
   "/workout",
   "/workout/plan",
   "/progress",
+  "/billing",
   "/my-profile",
   "/fyte-connect",
   "/fyte-connect/become-trainer",

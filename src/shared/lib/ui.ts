@@ -2,7 +2,7 @@ export const fyte = {
   page: "min-h-screen bg-fyte-page",
   shell: "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12",
   /** Content container that sits directly under a PageHero and pulls up over its fade. */
-  content: "relative z-10 mx-auto -mt-8 max-w-6xl px-5 pb-20 sm:px-8",
+  content: "relative z-10 mx-auto -mt-8 max-w-6xl px-5 pb-20 sm:px-8 mt-10",
   card: "rounded-2xl border border-fyte-line/80 bg-fyte-card p-5 shadow-card sm:p-6",
   cardHover: "transition hover:-translate-y-0.5 hover:shadow-card-hover",
   panel: "rounded-xl border border-fyte-line bg-fyte-panel p-4",

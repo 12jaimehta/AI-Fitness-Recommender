@@ -2,8 +2,6 @@ import {
   Heart,
   Dumbbell,
   Apple,
-  Github,
-  Twitter,
   Instagram,
   Contact,
   TableOfContents,
@@ -14,6 +12,7 @@ import {
   User,
   Activity,
   Target,
+  CreditCard,
 } from "lucide-react";
 import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
 
@@ -48,6 +47,7 @@ export const footerSections = [
       { name: "Diet Plan", icon: Apple, href: "/diet" },
       { name: "Workout Plan", icon: Dumbbell, href: "/workout" },
       { name: "Coach", icon: Activity, href: "/progress" },
+      { name: "Membership", icon: CreditCard, href: "/billing" },
       // Marketplace paused — restore when checkout works.
       // { name: "Trainers", icon: Users, href: "/fyte-connect" },
     ],

@@ -22,6 +22,7 @@ import type {
   CoachQuestion,
   CoachSwapOption,
 } from "@/shared/types/coach";
+import { requirePaidCoach } from "@backend/features/billing";
 import { parseMeal, proposeMealSwaps } from "./ai";
 import { getTodayBoard, listSlots, projectDaily, bumpCoachCache, ensureDay } from "./board";
 import { throwIfCoachSchemaMissing } from "./db";
@@ -75,6 +76,7 @@ export async function startInterview(input: {
   image?: string;
 }) {
   const auth = await resolveAuth();
+  await requirePaidCoach(auth);
   const date = parseLogDate(input.date);
   await ensureDay(date, auth);
   const slots = await listSlots(auth, date);
@@ -192,6 +194,7 @@ export async function answerInterview(input: { interview_id: string; question_id
 
 export async function completeInterview(input: { interview_id: string; option_id?: string }) {
   const auth = await resolveAuth();
+  await requirePaidCoach(auth);
   const row = await loadOpen(auth, input.interview_id);
   const date = String(row.date).slice(0, 10);
   const answers = (row.answers as Record<string, string>) || {};

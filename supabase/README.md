@@ -20,6 +20,7 @@ Each file is safe to re-run (`IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS`, `DROP 
 | [`schema/09_user_coaching.sql`](schema/09_user_coaching.sql) | Coaching memory + advice history | Legacy dashboard coach (kept; Today uses 11) |
 | [`schema/10_daily_track.sql`](schema/10_daily_track.sql) | Daily snapshot totals | Charts / old tracker |
 | [`schema/11_coach.sql`](schema/11_coach.sql) | AI trainer: slots, events, interviews, ledger | **Required for Coach (`/progress`)** |
+| [`schema/12_billing.sql`](schema/12_billing.sql) | Plans, payments, memberships (₹299 / 30-day pass) | **Required for `/billing`** |
 
 ## Already pasted old SQL?
 
@@ -35,11 +36,12 @@ If you already ran the “Personal Fitness Data Schema” or “User Profiles & 
 8. Run **09** so the legacy coach memory exists.
 9. Run **10** if you use the old daily snapshot table.
 10. Run **11** for Coach Today (slots, interviews, ledger).
+11. Run **12** for Membership (`/billing`, Razorpay).
 
 Do **not** drop tables. These files only add.
 
 ## New empty project
 
-Paste 00 → 11 in order. That is the full app schema.
+Paste 00 → 12 in order. That is the full app schema.
 
-If the app was already set up, paste **11** once so Coach Today can store slots. Product spec: [`COACH.md`](../COACH.md).
+If the app was already set up, paste **11** once so Coach Today can store slots, then **12** for the 30-day pass. Product spec: [`COACH.md`](../documentation/COACH.md). Payments: [`PAYMENTS.md`](../documentation/PAYMENTS.md).

@@ -115,6 +115,12 @@ export default function HomePage() {
                                             >
                                                 <User size={16} /> My Profile
                                             </button>
+                                            <button 
+                                                onClick={() => router.push('/billing')}
+                                                className="w-full px-4 py-2 text-left text-sm text-white hover:bg-white/10 flex items-center gap-2 transition-colors"
+                                            >
+                                                Membership
+                                            </button>
                                             
                                             <button 
                                                 onClick={handleSignOut}

@@ -1,4 +1,4 @@
-import { requireUser } from "@backend/shared/api/supabase";
+import { requirePaidCoach } from "@backend/features/billing";
 import { ApiError } from "@backend/shared/lib/errors";
 import { getCurrentDiet, getCurrentWorkout, setCurrentDiet, setCurrentWorkout } from "@backend/features/plan-cache";
 import { generateDietPlan } from "@backend/features/generate-diet";
@@ -33,7 +33,7 @@ function withCurrentWeight(formData: DietPlanFormData, kg: number | undefined): 
 }
 
 export async function advanceDietFromLogs(): Promise<AdvanceDietResult> {
-  const auth = await requireUser();
+  const auth = await requirePaidCoach();
   const current = await getCurrentDiet(auth.user.id, auth);
   if (!current?.formData || !current.plan) {
     throw new ApiError("Save a diet plan first. Next week is built from that plan plus your logs.", 400);
@@ -83,7 +83,7 @@ export async function advanceDietFromLogs(): Promise<AdvanceDietResult> {
 }
 
 export async function advanceWorkoutFromLogs(): Promise<AdvanceWorkoutResult> {
-  const auth = await requireUser();
+  const auth = await requirePaidCoach();
   const current = await getCurrentWorkout(auth.user.id, auth);
   if (!current?.formData || !current.plan) {
     throw new ApiError(
