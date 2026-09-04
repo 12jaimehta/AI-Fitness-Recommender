@@ -18,36 +18,12 @@ import {
 import { PROGRAM_GOAL_OPTIONS } from "@/shared/lib/program-goals";
 
 
-export const slides = [
-  {
-    type: "video",
-    src: "/home/videos/video1.mp4",
-    title: "Fuel Your Training Energy",
-    subtitle: "Personalized AI-powered diet and workout plans tailored to your unique goals",
-    cta: "Start Your Journey",
-  },
-  {
-    type: "image",
-    src: "/home/photos/photo1.jpg",
-    title: "Achieve Your Fitness Goals",
-    subtitle: "Expert-designed workout plans that adapt to your progress and push your limits",
-    cta: "Explore Workouts",
-  },
-  {
-    type: "image",
-    src: "/home/photos/photo2.jpg",
-    title: "Nutrition Made Simple",
-    subtitle: "Custom meal plans that respect your preferences and deliver real results",
-    cta: "Discover Diets",
-  },
-  {
-    type: "video",
-    src: "/home/videos/video2.mp4",
-    title: "Your Health, Our Mission",
-    subtitle: "Join thousands who have transformed their lives with personalized wellness plans",
-    cta: "Get Started Now",
-  },
-];
+export const hero = {
+  src: "/home/photos/photo3.jpg",
+  title: "Fuel Your Training Energy",
+  subtitle: "Personalized AI-powered diet and workout plans tailored to your unique goals",
+  cta: "Start Your Journey",
+};
 export const navItems = [
   { name: "Home", href: "/" },
   { name: "Diet Plan", href: "/diet" },

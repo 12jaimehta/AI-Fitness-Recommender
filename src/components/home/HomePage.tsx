@@ -1,42 +1,29 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, enter, popIn, fadeUp, press, transition, crossfade } from "@/components/shared/Motion";
+import { motion, AnimatePresence, enter, popIn, fadeUp, press, transition } from "@/components/shared/Motion";
 import {
     ArrowRight,
-    ChevronLeft,
-    ChevronRight,
     User,
     LogOut,
-    Settings,
     ChevronDown
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { menuItems, slides } from "@/lib/constant";
+import { hero } from "@/lib/constant";
 import { useCurrentUser, signOutAndClearCache } from "@frontend/features/auth";
 import { getUserProfile } from "@/lib/service/progress-database";
 import { isProfileComplete } from "@/shared/lib/profile";
 import { signedInHomeHref } from "@/shared/lib/app-home";
-import HeroVideo from "@/components/home/HeroVideo";
 
 export default function HomePage() {
-    const [currentSlide, setCurrentSlide] = useState(0);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-    const [profileComplete, setProfileComplete] = useState(true);
+    const [loadedProfileComplete, setLoadedProfileComplete] = useState(true);
     
     const router = useRouter();
     const { isSignedIn, user } = useCurrentUser();
     const userMenuRef = useRef<HTMLDivElement>(null);
+    const profileComplete = !isSignedIn || loadedProfileComplete;
 
-    // Carousel Timer
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 8000);
-        return () => clearInterval(timer);
-    }, [slides.length]);
-
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
@@ -46,18 +33,6 @@ export default function HomePage() {
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
-
-    const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-    };
-
-    const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    };
-
-    const goToSlide = (index: number) => {
-        setCurrentSlide(index);
-    };
 
     const handleSignOut = async () => {
         try {
@@ -70,18 +45,20 @@ export default function HomePage() {
         }
     };
 
-    // Extract display name from email if name isn't available
     const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
     const homeHref = isSignedIn ? signedInHomeHref(profileComplete) : "/";
 
     useEffect(() => {
-        if (!isSignedIn) {
-            setProfileComplete(true);
-            return;
-        }
+        if (!isSignedIn) return;
+        let cancelled = false;
         getUserProfile()
-            .then((profile) => setProfileComplete(isProfileComplete(profile)))
+            .then((profile) => {
+                if (!cancelled) setLoadedProfileComplete(isProfileComplete(profile));
+            })
             .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
     }, [isSignedIn, user?.id]);
 
     return (
@@ -265,74 +242,43 @@ export default function HomePage() {
                 )}
             </AnimatePresence>
 
-            {/* Carousel (Existing Code) */}
             <div className="relative w-full h-screen overflow-hidden bg-black">
-                {slides.map((slide, index) => (
-                    <motion.div
-                        key={index}
-                        initial={{ opacity: slide.type === "video" ? 1 : 0 }}
-                        animate={{
-                            opacity: slide.type === "video" || currentSlide === index ? 1 : 0,
-                        }}
-                        transition={crossfade}
-                        className={`absolute inset-0 w-full h-full ${currentSlide === index ? "z-10" : "z-0"}`}
+                <img
+                    src={hero.src}
+                    alt=""
+                    fetchPriority="high"
+                    decoding="sync"
+                    className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white max-w-[900px] px-5">
+                    <motion.h1
+                        {...enter(0.04)}
+                        className="font-extrabold leading-tight mb-6 text-shadow-lg text-[clamp(36px,8vw,72px)]"
                     >
-                        {slide.type === "video" ? (
-                            <HeroVideo src={slide.src} active={currentSlide === index} />
-                        ) : (
-                            <img src={slide.src} alt={slide.title} className="w-full h-full object-cover" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/50" />
-                        {currentSlide === index && (
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-white max-w-[900px] px-5">
-                                <motion.h1
-                                    {...enter(0.04)}
-                                    className="font-extrabold leading-tight mb-6 text-shadow-lg text-[clamp(36px,8vw,72px)]"
-                                >
-                                    {slide.title}
-                                </motion.h1>
-                                <motion.p
-                                    {...enter(0.08)}
-                                    className="font-normal mb-12 leading-relaxed text-shadow-md text-[clamp(18px,3vw,24px)]"
-                                >
-                                    {slide.subtitle}
-                                </motion.p>
-                                <motion.button
-                                    {...enter(0.12)}
-                                    {...press}
-                                    onClick={() => {
-                                        if (isSignedIn && profileComplete) {
-                                            router.push("/progress");
-                                            return;
-                                        }
-                                        if (currentSlide === 0) router.push("/diet");
-                                        else if (currentSlide === 1) router.push("/workout");
-                                        else router.push("/diet");
-                                    }}
-                                    className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white rounded-full border border-white/30 bg-white/20 backdrop-blur-md hover:bg-white/30 hover:border-white/50 transition-all"
-                                >
-                                    {slide.cta}
-                                    <ArrowRight size={20} />
-                                </motion.button>
-                            </div>
-                        )}
-                    </motion.div>
-                ))}
-
-                <button onClick={prevSlide} className="absolute left-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-[1.015] transition-transform duration-200">
-                    <ChevronLeft size={24} className="text-white" />
-                </button>
-                <button onClick={nextSlide} className="absolute right-5 top-1/2 -translate-y-1/2 z-[100] w-[50px] h-[50px] rounded-full flex items-center justify-center bg-white/20 backdrop-blur-md hover:bg-white/30 hover:scale-[1.015] transition-transform duration-200">
-                    <ChevronRight size={24} className="text-white" />
-                </button>
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[100] flex gap-3">
-                    {slides.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => goToSlide(index)}
-                            className={`h-3 rounded-full transition-all ${currentSlide === index ? "w-10 bg-white/80" : "w-3 bg-white/40"}`}
-                        />
-                    ))}
+                        {hero.title}
+                    </motion.h1>
+                    <motion.p
+                        {...enter(0.08)}
+                        className="font-normal mb-12 leading-relaxed text-shadow-md text-[clamp(18px,3vw,24px)]"
+                    >
+                        {hero.subtitle}
+                    </motion.p>
+                    <motion.button
+                        {...enter(0.12)}
+                        {...press}
+                        onClick={() => {
+                            if (isSignedIn && profileComplete) {
+                                router.push("/progress");
+                                return;
+                            }
+                            router.push("/diet");
+                        }}
+                        className="inline-flex items-center gap-3 px-8 py-4 text-lg font-bold text-white rounded-full border border-white/30 bg-white/20 backdrop-blur-md hover:bg-white/30 hover:border-white/50 transition-all"
+                    >
+                        {hero.cta}
+                        <ArrowRight size={20} />
+                    </motion.button>
                 </div>
             </div>
         </div>
