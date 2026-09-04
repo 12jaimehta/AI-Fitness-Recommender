@@ -7,7 +7,7 @@ export default function UnifiedFooter() {
 
 
   return (
-    <footer className="bg-[#282828] text-white pt-20 pb-10 mt-20">
+    <footer className="bg-[#282828] text-white pt-20 pb-10">
       <div className="max-w-[1200px] mx-auto px-4">
         {/* Main Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16 mb-16">
