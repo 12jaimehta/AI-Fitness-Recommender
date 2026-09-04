@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { api } from "@frontend/shared/api/http";
+import { postSsePlan } from "@frontend/shared/api/sse";
+import { createThoughtBus } from "@frontend/shared/lib/thought-bus";
 import type { DietPlanFormData } from "@/shared/validation/dietPlanSchema";
 import type { DietPlanData } from "@/shared/types";
 import {
@@ -25,6 +27,16 @@ export {
   type GeneratedDietSession,
 };
 
+const dietThoughts = createThoughtBus();
+
+export function subscribeDietThoughts(listener: (thoughts: string[]) => void) {
+  return dietThoughts.subscribe(listener);
+}
+
+export function readDietThoughts() {
+  return dietThoughts.read();
+}
+
 let inFlight: Promise<DietPlanData> | null = null;
 let inFlightKey = "";
 
@@ -40,9 +52,10 @@ export async function generateAIDietPlan(userData: DietPlanFormData): Promise<Di
   if (inFlight && inFlightKey === key) return inFlight;
 
   inFlightKey = key;
-  inFlight = api<DietPlanData>("/api/generate-diet", {
-    method: "POST",
-    body: JSON.stringify(userData),
+  dietThoughts.reset();
+  dietThoughts.push("Reading your details.");
+  inFlight = postSsePlan<DietPlanData>("/api/generate-diet", userData, (text) => {
+    dietThoughts.push(text);
   }).finally(() => {
     inFlight = null;
     inFlightKey = "";
@@ -89,6 +102,8 @@ export async function generateDietFromLogs(): Promise<AdvanceDietResult> {
 export function beginDietFromLogs() {
   clearGeneratedDietPlan();
   setPendingDietFromLogs();
+  dietThoughts.reset();
+  dietThoughts.push("Rebuilding next week from your logs.");
   void generateDietFromLogs()
     .then((result) => {
       storeGeneratedDietPlan({ formData: result.formData, plan: result.plan });

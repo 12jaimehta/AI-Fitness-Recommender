@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { api } from "@frontend/shared/api/http";
+import { postSsePlan } from "@frontend/shared/api/sse";
+import { createThoughtBus } from "@frontend/shared/lib/thought-bus";
 import type { WorkoutPlanFormData } from "@/shared/validation/workoutPlanSchema";
 import type { WorkoutPlanData } from "@/shared/types";
 import {
@@ -24,6 +26,16 @@ export {
   type GeneratedWorkoutSession,
 };
 
+const workoutThoughts = createThoughtBus();
+
+export function subscribeWorkoutThoughts(listener: (thoughts: string[]) => void) {
+  return workoutThoughts.subscribe(listener);
+}
+
+export function readWorkoutThoughts() {
+  return workoutThoughts.read();
+}
+
 let inFlight: Promise<WorkoutPlanData> | null = null;
 let inFlightKey = "";
 
@@ -41,9 +53,10 @@ export async function generateAIWorkoutPlan(
   if (inFlight && inFlightKey === key) return inFlight;
 
   inFlightKey = key;
-  inFlight = api<WorkoutPlanData>("/api/generate-workout", {
-    method: "POST",
-    body: JSON.stringify(userData),
+  workoutThoughts.reset();
+  workoutThoughts.push("Reading your training week.");
+  inFlight = postSsePlan<WorkoutPlanData>("/api/generate-workout", userData, (text) => {
+    workoutThoughts.push(text);
   }).finally(() => {
     inFlight = null;
     inFlightKey = "";
@@ -91,6 +104,8 @@ export async function generateWorkoutFromLogs(): Promise<AdvanceWorkoutResult> {
 export function beginWorkoutFromLogs() {
   clearGeneratedWorkoutPlan();
   setPendingWorkoutFromLogs();
+  workoutThoughts.reset();
+  workoutThoughts.push("Rebuilding next week from your logs.");
   void generateWorkoutFromLogs()
     .then((result) => {
       storeGeneratedWorkoutPlan({ formData: result.formData, plan: result.plan });

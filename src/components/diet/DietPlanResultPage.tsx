@@ -9,9 +9,10 @@ import { resolveDietPlan, saveDietPlan, beginDietPlanGeneration, beginDietFromLo
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
 import PageHero from "@/components/shared/PageHero";
+import AiThoughtStream from "@/components/shared/AiThoughtStream";
 import { delay, FadeIn } from "@/components/shared/Motion";
 import { readGeneratedWorkoutPlan } from "@frontend/features/workout-plan";
-import { readPendingDietGeneration } from "@frontend/features/diet-plan";
+import { readPendingDietGeneration, subscribeDietThoughts, readDietThoughts } from "@frontend/features/diet-plan";
 import { coerceProgramGoal, programGoalLabel } from "@/shared/lib/program-goals";
 import { fyte } from "@/shared/lib/ui";
 import { cn } from "@/lib/utils";
@@ -163,6 +164,9 @@ export default function DietPlanResultPage() {
   const [otherExists, setOtherExists] = useState(false);
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
+  const [thoughts, setThoughts] = useState(readDietThoughts);
+
+  useEffect(() => subscribeDietThoughts(setThoughts), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -243,7 +247,21 @@ export default function DietPlanResultPage() {
     );
   }
 
-  if (!plan) return <PlanResultSkeleton />;
+  if (!plan) {
+    const pending = readPendingDietGeneration();
+    if (pending?.formData || pending?.fromLogs || thoughts.length) {
+      return (
+        <AiThoughtStream
+          photo="diet"
+          kicker="Diet plan"
+          title="Writing your meals"
+          subtitle="The coach is thinking through your numbers, then locking the week."
+          thoughts={thoughts}
+        />
+      );
+    }
+    return <PlanResultSkeleton />;
+  }
 
   const goal = coerceProgramGoal(formData?.goal) ? programGoalLabel(formData?.goal) : "";
 

@@ -14,9 +14,14 @@ import {
 import { useCurrentUser } from "@/lib/hooks/use-current-user";
 import { PlanResultSkeleton } from "@/components/ui/Skeleton";
 import PageHero from "@/components/shared/PageHero";
+import AiThoughtStream from "@/components/shared/AiThoughtStream";
 import { delay, FadeIn } from "@/components/shared/Motion";
 import { readGeneratedDietPlan } from "@frontend/features/diet-plan";
-import { readPendingWorkoutGeneration } from "@frontend/features/workout-plan";
+import {
+  readPendingWorkoutGeneration,
+  subscribeWorkoutThoughts,
+  readWorkoutThoughts,
+} from "@frontend/features/workout-plan";
 import { coerceProgramGoal, programGoalLabel } from "@/shared/lib/program-goals";
 import { fyte } from "@/shared/lib/ui";
 import { cn } from "@/lib/utils";
@@ -148,6 +153,9 @@ export default function WorkoutPlanResultPage() {
   const [otherExists, setOtherExists] = useState(false);
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
+  const [thoughts, setThoughts] = useState(readWorkoutThoughts);
+
+  useEffect(() => subscribeWorkoutThoughts(setThoughts), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -225,7 +233,21 @@ export default function WorkoutPlanResultPage() {
     );
   }
 
-  if (!plan) return <PlanResultSkeleton />;
+  if (!plan) {
+    const pending = readPendingWorkoutGeneration();
+    if (pending?.formData || pending?.fromLogs || thoughts.length) {
+      return (
+        <AiThoughtStream
+          photo="workout"
+          kicker="Workout plan"
+          title="Writing your sessions"
+          subtitle="The coach is thinking through your week, then locking the work."
+          thoughts={thoughts}
+        />
+      );
+    }
+    return <PlanResultSkeleton />;
+  }
 
   const rest = isRestDay(currentWorkout);
   const sessionCalories = currentWorkout?.estimatedCalories || plan.estimatedCaloriesBurn;

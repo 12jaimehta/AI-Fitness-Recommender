@@ -5,6 +5,13 @@ import { ApiError, isRateLimitError } from "@backend/shared/lib/errors";
 import { applyCalorieOverride, calculateNutritionTargets, type NutritionTargets } from "@backend/ai/nutrition";
 import { buildDietPrompt } from "@backend/ai/prompts/diet";
 import { generateFallbackPlan } from "@backend/ai/fallbacks/diet";
+import { programGoalLabel } from "@/shared/lib/program-goals";
+import {
+  createThoughtNote,
+  scanDietPlanJson,
+  withThoughtHeartbeats,
+  type StreamThoughtScan,
+} from "@backend/shared/lib/plan-thoughts";
 
 const WEEKDAYS = [
   "monday",
@@ -16,10 +23,19 @@ const WEEKDAYS = [
   "sunday",
 ] as const;
 
+const DIET_PREF: Record<DietPlanFormData["dietaryPreference"], string> = {
+  vegetarian: "Vegetarian",
+  "non-vegetarian": "Non-vegetarian",
+  eggetarian: "Eggetarian",
+  vegan: "Vegan",
+  pescatarian: "Pescatarian",
+};
+
 export type DietGenerateOptions = {
   nutrition?: NutritionTargets;
   calorieOverride?: number;
   logNotes?: string;
+  onThought?: (text: string) => void;
 };
 
 function hasCoreMeals(meals?: DailyMeals | null): meals is DailyMeals {
@@ -48,19 +64,65 @@ export async function generateDietPlan(input: unknown, options?: DietGenerateOpt
   }
 
   const userData = parsed.data as DietPlanFormData;
+  const note = createThoughtNote(options?.onThought);
+  note("Reading your details.");
+
   let nutrition = options?.nutrition || calculateNutritionTargets(userData);
   if (options?.calorieOverride != null) {
     nutrition = applyCalorieOverride(nutrition, options.calorieOverride);
   }
-  const prompt = buildDietPrompt(userData, nutrition, options?.logNotes);
+
   const weekly = userData.planType === "weekly";
+  const weight =
+    userData.weightUnit === "lbs" ? `${userData.weight} lb` : `${userData.weight} kg`;
+  note(`${weight}. ${programGoalLabel(userData.goal)}. ${userData.mealsPerDay} meals a day.`);
+  note(`${DIET_PREF[userData.dietaryPreference]} meals. ${weekly ? "Building a full week." : "Building a daily template."}`);
+  if (userData.allergies?.trim()) {
+    note(`Keeping out: ${userData.allergies.trim().slice(0, 48)}.`);
+  }
+  if (userData.favoriteFoods?.trim()) {
+    note("Working in foods you already like.");
+  }
+  note(`Calories set to ${nutrition.calories} kcal, ${nutrition.protein} g protein.`);
+  note("Asking the coach to write the meals.");
+  if (options?.onThought) {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
+  const prompt = buildDietPrompt(userData, nutrition, options?.logNotes);
+  const scan: StreamThoughtScan = { left: 12, seen: new Set() };
+  const jsonOptions = {
+    maxTokens: weekly ? 16000 : 4000,
+    system:
+      "You are an expert nutritionist. Reply with compact valid JSON only. Keep ingredientBreakdown to one short line. Two alternatives per weekly meal, one-line description.",
+  };
 
   try {
-    const plan = await completeJson<DietPlanData>(prompt, {
-      maxTokens: weekly ? 16000 : 4000,
-      system:
-        "You are an expert nutritionist. Reply with compact valid JSON only. Keep ingredientBreakdown to one short line. Two alternatives per weekly meal, one-line description.",
-    });
+    const plan = options?.onThought
+      ? await withThoughtHeartbeats(
+          note,
+          weekly
+            ? [
+                "Balancing breakfast, lunch, and dinner around your training.",
+                "Checking each plate hits the macros.",
+                "Writing swaps for days you cannot cook the same thing.",
+                "Filling the rest of the week.",
+              ]
+            : [
+                "Balancing breakfast, lunch, and dinner around your training.",
+                "Checking each plate hits the macros.",
+                "Writing simple swaps.",
+              ],
+          (stopHeartbeats) =>
+            completeJson<DietPlanData>(prompt, {
+              ...jsonOptions,
+              onDelta: (text) => {
+                stopHeartbeats();
+                scanDietPlanJson(text, note, scan);
+              },
+            })
+        )
+      : await completeJson<DietPlanData>(prompt, jsonOptions);
 
     if (!isValidDietPlan(plan, weekly)) {
       const fallback = generateFallbackPlan(
