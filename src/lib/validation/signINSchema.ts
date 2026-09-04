@@ -1,6 +1,6 @@
 export {
   signInSchema,
-  magicLinkSchema,
+  forgotPasswordSchema,
   type SignInForm,
-  type MagicLinkForm,
+  type ForgotPasswordForm,
 } from "@/shared/validation/signINSchema";

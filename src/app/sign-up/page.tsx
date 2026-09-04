@@ -3,29 +3,22 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Mail, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/supabase-client";
 import { useUser } from "@/lib/hooks/use-user";
-import Tabs from "@/components/ui/Tabs";
 import PageLoader from "@/components/ui/PageLoader";
 import PasswordStrength from "@/components/auth/PasswordStrength";
-import { magicLinkSchema, type MagicLinkForm } from "@/lib/validation/signINSchema";
 import { signUpSchema, type SignUpForm } from "@/lib/validation/signUpSchema";
-import { UnifiedFooter } from "@/components";
+import { AuthAlert, AuthDivider, AuthShell, authInputClass } from "@/components/auth/AuthShell";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 export default function SignUpPage() {
   const router = useRouter();
   const supabase = createClient();
   const { isSignedIn, isLoading: authLoading } = useUser();
-  const [active, setActive] = useState<"password" | "magic">("magic");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const magicForm = useForm<MagicLinkForm>({
-    resolver: zodResolver(magicLinkSchema),
-    defaultValues: { email: "" },
-  });
   const passwordForm = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
     defaultValues: { fullName: "", email: "", password: "", confirmPassword: "" },
@@ -38,20 +31,6 @@ export default function SignUpPage() {
       router.replace("/progress");
     }
   }, [authLoading, isSignedIn, router]);
-
-  const doMagic = async (vals: MagicLinkForm) => {
-    setLoading(true);
-    setMessage(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: vals.email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    setLoading(false);
-    if (error) setMessage(error.message);
-    else setMessage("Check your email for a sign-in link.");
-  };
 
   const doSignUp = async (values: SignUpForm) => {
     setLoading(true);
@@ -72,9 +51,6 @@ export default function SignUpPage() {
     }
   };
 
-  const inputClass =
-    "mt-1 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-[#282828]";
-
   const success =
     message?.toLowerCase().includes("check your email") ||
     message?.toLowerCase().includes("account created");
@@ -84,161 +60,88 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="text-2xl font-bold text-[#282828]"
-          >
-            fyteAI
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            className="rounded-xl border-2 border-[#282828] bg-white px-5 py-2.5 text-sm font-semibold text-[#282828] transition hover:bg-[#282828] hover:text-white"
-          >
-            Back to home
-          </button>
-        </div>
-      </header>
+    <AuthShell title="Create an account" subtitle="Use Google, or sign up with email and a password.">
+      <GoogleAuthButton label="Continue with Google" onError={setMessage} />
+      <AuthDivider />
 
-      <main className="mx-auto max-w-md px-4 py-12 sm:py-16">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 sm:p-8">
-          <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Use a magic link if you do not want a password yet.
-          </p>
-
-          <div className="mt-6">
-            <Tabs
-              active={active}
-              onChange={(key) => setActive(key as "magic" | "password")}
-              tabs={[
-                { key: "magic", label: "Magic link", icon: <Mail size={16} /> },
-                { key: "password", label: "Password", icon: <Lock size={16} /> },
-              ]}
-            />
-          </div>
-
-          {active === "magic" ? (
-            <form onSubmit={magicForm.handleSubmit(doMagic)} className="flex flex-col gap-4">
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Email</label>
-                <input
-                  type="email"
-                  autoComplete="email"
-                  {...magicForm.register("email")}
-                  placeholder="you@example.com"
-                  className={inputClass}
-                />
-                {magicForm.formState.errors.email ? (
-                  <p className="mt-1 text-xs text-red-600">{magicForm.formState.errors.email.message}</p>
-                ) : null}
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
-              >
-                {loading ? "Sending..." : "Send magic link"}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={passwordForm.handleSubmit(doSignUp)} className="flex flex-col gap-4">
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Full name</label>
-                <input
-                  type="text"
-                  autoComplete="name"
-                  {...passwordForm.register("fullName")}
-                  placeholder="Your name"
-                  className={inputClass}
-                />
-                {passwordForm.formState.errors.fullName ? (
-                  <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.fullName.message}</p>
-                ) : null}
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Email</label>
-                <input
-                  type="email"
-                  autoComplete="email"
-                  {...passwordForm.register("email")}
-                  placeholder="you@example.com"
-                  className={inputClass}
-                />
-                {passwordForm.formState.errors.email ? (
-                  <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.email.message}</p>
-                ) : null}
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Password</label>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  {...passwordForm.register("password")}
-                  placeholder="Create a password"
-                  className={inputClass}
-                />
-                {passwordForm.formState.errors.password ? (
-                  <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.password.message}</p>
-                ) : null}
-                {watchedPassword.length > 0 ? <PasswordStrength value={watchedPassword} /> : null}
-              </div>
-              <div>
-                <label className="text-sm font-semibold text-[#282828]">Confirm password</label>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  {...passwordForm.register("confirmPassword")}
-                  placeholder="Repeat password"
-                  className={inputClass}
-                />
-                {passwordForm.formState.errors.confirmPassword ? (
-                  <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.confirmPassword.message}</p>
-                ) : null}
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
-              >
-                {loading ? "Creating account..." : "Create account"}
-              </button>
-            </form>
-          )}
-
-          {message ? (
-            <p
-              className={`mt-4 rounded-xl px-4 py-3 text-sm ${
-                success
-                  ? "border border-gray-200 bg-gray-50 text-gray-700"
-                  : "border border-red-200 bg-red-50 text-red-700"
-              }`}
-            >
-              {message}
-            </p>
+      <form onSubmit={passwordForm.handleSubmit(doSignUp)} className="flex flex-col gap-4">
+        <div>
+          <label className="text-sm font-semibold text-[#282828]">Full name</label>
+          <input
+            type="text"
+            autoComplete="name"
+            {...passwordForm.register("fullName")}
+            placeholder="Your name"
+            className={authInputClass}
+          />
+          {passwordForm.formState.errors.fullName ? (
+            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.fullName.message}</p>
           ) : null}
-
-          <p className="mt-6 border-t border-gray-200 pt-6 text-center text-xs text-gray-500">
-            By creating an account, you agree to our Terms and Privacy Policy.
-          </p>
-          <p className="mt-4 text-center text-sm text-gray-600">
-            Already have an account?{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/sign-in")}
-              className="font-semibold text-[#282828]"
-            >
-              Sign in
-            </button>
-          </p>
         </div>
-      </main>
+        <div>
+          <label className="text-sm font-semibold text-[#282828]">Email</label>
+          <input
+            type="email"
+            autoComplete="email"
+            {...passwordForm.register("email")}
+            placeholder="you@example.com"
+            className={authInputClass}
+          />
+          {passwordForm.formState.errors.email ? (
+            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.email.message}</p>
+          ) : null}
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-[#282828]">Password</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            {...passwordForm.register("password")}
+            placeholder="Create a password"
+            className={authInputClass}
+          />
+          {passwordForm.formState.errors.password ? (
+            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.password.message}</p>
+          ) : null}
+          {watchedPassword.length > 0 ? <PasswordStrength value={watchedPassword} /> : null}
+        </div>
+        <div>
+          <label className="text-sm font-semibold text-[#282828]">Confirm password</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            {...passwordForm.register("confirmPassword")}
+            placeholder="Repeat password"
+            className={authInputClass}
+          />
+          {passwordForm.formState.errors.confirmPassword ? (
+            <p className="mt-1 text-xs text-red-600">{passwordForm.formState.errors.confirmPassword.message}</p>
+          ) : null}
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded-xl bg-[#282828] px-5 py-3 text-sm font-semibold text-white hover:bg-[#454545] disabled:opacity-60"
+        >
+          {loading ? "Creating account..." : "Create account"}
+        </button>
+      </form>
 
-      <UnifiedFooter />
-    </div>
+      <AuthAlert message={message} tone={success ? "success" : "error"} />
+
+      <p className="mt-6 border-t border-gray-200 pt-6 text-center text-xs text-gray-500">
+        By creating an account, you agree to our Terms and Privacy Policy.
+      </p>
+      <p className="mt-4 text-center text-sm text-gray-600">
+        Already have an account?{" "}
+        <button
+          type="button"
+          onClick={() => router.push("/sign-in")}
+          className="font-semibold text-[#282828]"
+        >
+          Sign in
+        </button>
+      </p>
+    </AuthShell>
   );
 }

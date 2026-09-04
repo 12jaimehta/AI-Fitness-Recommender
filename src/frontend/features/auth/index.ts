@@ -6,6 +6,7 @@ import { clearQueryCache } from "@frontend/shared/lib/query-cache";
 import { useAuthContext } from "./AuthProvider";
 
 export { AuthProvider } from "./AuthProvider";
+export { startGoogleOAuth, requestPasswordReset, resetPassword } from "./api";
 
 export function useUser() {
   return useAuthContext();

@@ -9,6 +9,8 @@ const EXACT_PATHS = new Set([
   "/help/getting-started",
   "/sign-up",
   "/sign-in",
+  "/forgot-password",
+  "/reset-password",
   "/dashboard",
   "/diet",
   "/diet/plan",

@@ -153,7 +153,7 @@ export default function ProfileClientPage() {
 
         {!complete ? (
           <p className="mb-6 rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm text-gray-700">
-            You signed in with a magic link. Fill this once so your plans can use your age, height, weight, and goals.
+            You signed in. Fill this once so your plans can use your age, height, weight, and goals.
           </p>
         ) : null}
 

@@ -80,11 +80,11 @@ const faqData = {
   account: [
     {
       question: "How do I create an account?",
-      answer: "Click on the 'Sign Up' button on our homepage, fill in your email address and create a password. You'll receive a confirmation email to verify your account. Once verified, you can start using all our features."
+      answer: "Click Sign Up, then continue with Google or create an account with your email and a password. Once you are in, complete your profile and you can start using the app."
     },
     {
       question: "How do I reset my password?",
-      answer: "Click on 'Forgot Password' on the sign-in page, enter your email address, and we'll send you a password reset link. Follow the instructions in the email to create a new password."
+      answer: "On the sign-in page, tap Forgot password, enter your email, and we will send a reset link. Open that email, then choose a new password."
     },
     {
       question: "Can I change my email address?",

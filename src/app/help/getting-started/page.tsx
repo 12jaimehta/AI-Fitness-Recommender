@@ -21,11 +21,11 @@ const steps = [
   {
     number: 1,
     title: "Create Your Account",
-    description: "Sign up with your email and create a secure password. Your account will be your personal hub for all diet and fitness planning.",
+    description: "Sign up with Google, or with your email and a password. Your account will be your personal hub for all diet and fitness planning.",
     icon: User,
     tips: [
-      "Use a strong password with at least 8 characters",
-      "Verify your email address to unlock all features",
+      "Continue with Google for the fastest start",
+      "Or use a strong password with at least 8 characters",
       "Complete your profile for better recommendations"
     ]
   },

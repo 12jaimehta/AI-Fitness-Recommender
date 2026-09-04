@@ -76,6 +76,17 @@ export function parseJsonObject<T>(text: string): T {
   }
 }
 
+export function requestOrigin(request: Request) {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const host = forwardedHost || request.headers.get("host");
+  if (host) {
+    const proto = forwardedProto || (host.includes("localhost") ? "http" : "https");
+    return `${proto}://${host}`;
+  }
+  return new URL(request.url).origin;
+}
+
 export async function readJsonBody(request: Request): Promise<unknown> {
   const contentType = request.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {

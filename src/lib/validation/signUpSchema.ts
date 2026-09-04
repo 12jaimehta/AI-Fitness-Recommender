@@ -1,1 +1,6 @@
-export { signUpSchema, type SignUpForm } from "@/shared/validation/signUpSchema";
+export {
+  signUpSchema,
+  resetPasswordSchema,
+  type SignUpForm,
+  type ResetPasswordForm,
+} from "@/shared/validation/signUpSchema";
