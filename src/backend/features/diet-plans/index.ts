@@ -46,12 +46,14 @@ export async function createDietPlan(input: {
     .single();
 
   if (error) throw new ApiError(error.message, 400);
-  await setCurrentDiet(user.id, {
+    await setCurrentDiet(user.id, {
     formData: input.formData,
     plan: input.dietPlan,
     id: data.id,
     title: data.title,
   });
+  const { seedCoachFromPlans } = await import("@backend/features/coach");
+  await seedCoachFromPlans(user.id, { supabase, user });
   return data;
 }
 

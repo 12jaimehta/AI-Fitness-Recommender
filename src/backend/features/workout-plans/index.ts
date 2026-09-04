@@ -34,6 +34,8 @@ export async function createWorkoutPlan(input: {
     id: data.id,
     title: data.title,
   });
+  const { seedCoachFromPlans } = await import("@backend/features/coach");
+  await seedCoachFromPlans(user.id, { supabase, user });
   return data;
 }
 

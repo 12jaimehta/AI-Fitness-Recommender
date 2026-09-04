@@ -6,15 +6,15 @@ Today: no real money path. Connect checkout writes `plan_purchases` with no gate
 
 ## What we are selling
 
-Charge for the **membership** that makes Tracking worth money, not for a one-shot diet form.
+Charge for the **membership** that makes the coach worth money, not for a one-shot diet form. Product spec: [`COACH.md`](COACH.md).
 
 | Free | Paid (membership) |
 | --- | --- |
-| Account, profile, first diet, first workout | Next week’s diet/workout from this week’s logs |
-| Daily logging (meals, sessions, weight, water, sleep) | Calorie change when weight stalls 14 days |
-| Charts of those logs | Coach that can actually change the plan |
+| Account, profile, first diet, first workout | Daily coach: slot repair, trainer questions, carry-over |
+| Check-in (meals as planned, session done/skipped, weight, sleep) | Photo / “I ate something else” → walk or next-day meal |
+| | Weekly review from attendance + weekly weight average |
 
-Copy on `/billing` should match Tracking: **“We adjust calories when your weight stalls for 14 days.”** Do not explain logs, forms, or internals.
+Copy on `/billing` should match Coach: **“We watch the week and change the meal or session that slipped.”** Do not explain logs, forms, or internals.
 
 Fyte Connect trainer checkout is a later product. Do not mix Connect SKUs with membership.
 

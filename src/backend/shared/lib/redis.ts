@@ -53,6 +53,18 @@ export function userCacheKeys(userId: string) {
   };
 }
 
+export function coachTodayKey(userId: string, date: string) {
+  return `fyte:${userId}:coach:today:${date}`;
+}
+
+export async function cacheIncr(key: string, ttlSeconds: number): Promise<number | null> {
+  const redis = getRedis();
+  if (!redis) return null;
+  const n = await withBudget(redis.incr(key));
+  if (n === 1) await withBudget(redis.expire(key, ttlSeconds));
+  return n;
+}
+
 async function withBudget<T>(work: Promise<T>): Promise<T | null> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {

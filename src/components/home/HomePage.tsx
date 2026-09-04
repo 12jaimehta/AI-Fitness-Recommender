@@ -80,7 +80,7 @@ export default function HomePage() {
                         <button onClick={() => router.push("/diet")} className="nav-link text-white font-semibold hover:text-white/80 transition">Diet Plan</button>
                         <button onClick={() => router.push("/workout")} className="nav-link text-white font-semibold hover:text-white/80 transition">Workout Plan</button>
                         {!(isSignedIn && profileComplete) ? (
-                        <button onClick={() => router.push("/progress")} className="nav-link text-white font-semibold hover:text-white/80 transition">Track Progress</button>
+                        <button onClick={() => router.push("/progress")} className="nav-link text-white font-semibold hover:text-white/80 transition">Coach</button>
                         ) : null}
 
                         {/* Modern Auth Section */}
@@ -174,7 +174,7 @@ export default function HomePage() {
                         <div className="flex-1 p-6 overflow-y-auto">
                             {(isSignedIn && profileComplete
                                 ? ["Home", "Diet Plan", "Workout Plan"]
-                                : ["Home", "Diet Plan", "Workout Plan", "Track Progress"]
+                                : ["Home", "Diet Plan", "Workout Plan", "Coach"]
                             ).map((item, index) => (
                                 <button
                                     key={index}
@@ -183,7 +183,7 @@ export default function HomePage() {
                                             Home: homeHref,
                                             "Diet Plan": "/diet",
                                             "Workout Plan": "/workout",
-                                            "Track Progress": "/progress",
+                                            Coach: "/progress",
                                         };
                                         router.push(paths[item] || "/");
                                         setIsMobileMenuOpen(false);

@@ -28,7 +28,7 @@ export const navItems = [
   { name: "Home", href: "/" },
   { name: "Diet Plan", href: "/diet" },
   { name: "Workout Plan", href: "/workout" },
-  { name: "Progress", href: "/progress" },
+  { name: "Coach", href: "/progress" },
   // Marketplace paused — restore when checkout works.
   // { name: "Trainers", href: "/fyte-connect" },
 ];
@@ -47,7 +47,7 @@ export const footerSections = [
     items: [
       { name: "Diet Plan", icon: Apple, href: "/diet" },
       { name: "Workout Plan", icon: Dumbbell, href: "/workout" },
-      { name: "Track", icon: Activity, href: "/progress" },
+      { name: "Coach", icon: Activity, href: "/progress" },
       // Marketplace paused — restore when checkout works.
       // { name: "Trainers", icon: Users, href: "/fyte-connect" },
     ],

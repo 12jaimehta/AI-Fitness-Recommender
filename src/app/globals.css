@@ -36,6 +36,16 @@
   --foreground: 210 40% 98%;
 }
 
+@theme inline {
+  --color-fyte-ink: #282828;
+  --color-fyte-page: #f9fafb;
+  --color-fyte-card: #ffffff;
+  --color-fyte-muted: #6b7280;
+  --color-fyte-line: #e5e7eb;
+  --color-fyte-panel: #f9fafb;
+  --color-fyte-danger: #dc2626;
+}
+
 /* Base Styles */
 * {
   box-sizing: border-box;

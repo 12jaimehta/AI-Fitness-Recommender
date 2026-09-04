@@ -40,12 +40,12 @@ export default function FormSelect({
   return (
     <div className={cn("text-left font-['Montserrat',sans-serif]", disabled && "pointer-events-none opacity-50")}>
       {label ? (
-        <label className="mb-3 block text-sm font-semibold text-[#282828]">
+        <label className="mb-3 block text-sm font-semibold text-fyte-ink">
           {label}
           {required ? <span> *</span> : null}
         </label>
       ) : null}
-      {hint ? <p className="mb-3 text-sm text-gray-500">{hint}</p> : null}
+      {hint ? <p className="mb-3 text-sm text-fyte-muted">{hint}</p> : null}
 
       {variant === "dropdown" ? (
         <OptionMenu
@@ -74,10 +74,10 @@ export default function FormSelect({
                   "rounded-xl border-2 text-left font-semibold transition",
                   compact ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm",
                   active
-                    ? "border-[#282828] bg-[#282828] text-white"
+                    ? "border-fyte-ink bg-fyte-ink text-white"
                     : error
-                      ? "border-red-300 bg-white text-[#282828] hover:border-[#282828]"
-                      : "border-gray-200 bg-white text-[#282828] hover:border-[#282828]",
+                      ? "border-red-300 bg-fyte-card text-fyte-ink hover:border-fyte-ink"
+                      : "border-fyte-line bg-fyte-card text-fyte-ink hover:border-fyte-ink",
                   option.disabled && "cursor-not-allowed opacity-50"
                 )}
               >

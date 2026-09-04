@@ -13,10 +13,10 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & MotionProps & {
 };
 
 const variants = {
-  primary: "bg-[#282828] text-white hover:bg-[#262626]",
+  primary: "bg-fyte-ink text-white hover:bg-[#262626]",
   ghost: "bg-white/10 text-white hover:bg-white/20",
   outline: "border border-white/30 text-white bg-transparent",
-  secondary: "bg-gray-100 text-gray-800 hover:bg-gray-200",
+  secondary: "bg-fyte-panel text-fyte-ink hover:bg-fyte-line",
 } as const;
 
 export default function MotionButton({ children, loading = false, icon, variant = "primary", className = "", disabled, ...props }: Props) {
