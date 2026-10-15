@@ -29,6 +29,7 @@ export function profileAllowedPath(pathname: string) {
     pathname.startsWith("/my-profile") ||
     pathname.startsWith("/sign-in") ||
     pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/verify-email") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth") ||

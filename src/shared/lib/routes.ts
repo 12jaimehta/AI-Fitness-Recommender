@@ -9,6 +9,7 @@ const EXACT_PATHS = new Set([
   "/help/getting-started",
   "/sign-up",
   "/sign-in",
+  "/verify-email",
   "/forgot-password",
   "/reset-password",
   "/dashboard",
@@ -31,10 +32,20 @@ const SINGLE_SEGMENT_PREFIXES = [
   "/fyte-connect/creators/",
 ];
 
+export function isPublicAuthPath(pathname: string) {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  return (
+    path === "/sign-in" ||
+    path.startsWith("/sign-in/") ||
+    path === "/sign-up" ||
+    path === "/verify-email" ||
+    path === "/forgot-password"
+  );
+}
+
 export function isApiPath(pathname: string) {
   return pathname === "/api" || pathname.startsWith("/api/");
 }
-
 export function isConnectPath(pathname: string) {
   return pathname === "/fyte-connect" || pathname.startsWith("/fyte-connect/");
 }

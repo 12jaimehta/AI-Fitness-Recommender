@@ -61,11 +61,11 @@ export const faqData = {
   account: [
     {
       question: "How do I create an account?",
-      answer: "Click Sign Up, then continue with Google or create an account with your email and a password. Once you are in, complete your profile and you can start using the app."
+      answer: "Click Sign Up, then continue with Google or create an account with a real email and a password. We email a 6-digit code to confirm it. Temporary or throwaway inboxes are blocked. Once you are in, complete your profile and you can start using the app."
     },
     {
       question: "How do I reset my password?",
-      answer: "On the sign-in page, tap Forgot password, enter your email, and we will send a reset link. Open that email, then choose a new password."
+      answer: "On the sign-in page, tap Forgot password, enter your email, and we will send a 6-digit code. Enter that code on the site, then choose a new password."
     },
     {
       question: "Can I change my email address?",

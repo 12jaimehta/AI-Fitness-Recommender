@@ -12,7 +12,6 @@ import { AuthAlert, AuthShell } from "@/components/auth/AuthShell";
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const {
@@ -29,13 +28,11 @@ export default function ForgotPasswordPage() {
   const onSubmit = async (values: ForgotPasswordForm) => {
     setLoading(true);
     setMessage(null);
-    setSuccess(false);
     try {
       const result = await requestPasswordReset(values.email);
-      setSuccess(true);
-      setMessage(result.message);
+      router.push(`/verify-email?email=${encodeURIComponent(result.email)}&purpose=recovery`);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not send reset link.");
+      setMessage(error instanceof Error ? error.message : "Could not send a reset code.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +41,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthShell
       title="Forgot password"
-      subtitle="Enter your email and we'll send a link to set a new password."
+      subtitle="Enter your email and we'll send a 6-digit code to set a new password."
     >
       <form noValidate onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4">
         <Controller
@@ -69,11 +66,11 @@ export default function ForgotPasswordPage() {
           disabled={loading}
           className="h-12 rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a] disabled:opacity-60"
         >
-          {loading ? "Sending..." : "Send reset link"}
+          {loading ? "Sending..." : "Send code"}
         </button>
       </form>
 
-      <AuthAlert message={message} tone={success ? "success" : "error"} />
+      <AuthAlert message={message} />
 
       <p className="mt-6 border-t border-fyte-line pt-6 text-center text-sm text-fyte-muted">
         Remember it?{" "}

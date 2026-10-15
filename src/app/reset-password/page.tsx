@@ -36,7 +36,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     if (authLoading) return;
     if (!isSignedIn) {
-      setMessage("This reset link is invalid or has expired.");
+      setMessage("This reset code is invalid or has expired.");
       setReady(true);
       return;
     }
@@ -62,14 +62,14 @@ export default function ResetPasswordPage() {
 
   if (!isSignedIn) {
     return (
-      <AuthShell title="Reset password" subtitle="Open the link from your email to choose a new password.">
+      <AuthShell title="Reset password" subtitle="Enter the code from your email, then choose a new password.">
         <AuthAlert message={message} />
         <button
           type="button"
           onClick={() => router.push("/forgot-password")}
           className="mt-6 h-12 w-full rounded-xl bg-fyte-ink px-5 text-sm font-semibold text-white transition hover:bg-[#3a3a3a]"
         >
-          Send a new link
+          Send a new code
         </button>
       </AuthShell>
     );

@@ -4,6 +4,7 @@ import { getSupabaseEnv } from "../config/env";
 import { ApiError } from "../lib/errors";
 import type { User } from "@supabase/supabase-js";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { timedFetch } from "@/shared/lib/timed-fetch";
 
 export type AuthCtx = {
   supabase: SupabaseClient;
@@ -20,6 +21,7 @@ export async function createServerSupabase() {
   const { url, anonKey } = getSupabaseEnv();
 
   return createServerClient(url, anonKey, {
+    global: { fetch: timedFetch(8_000) },
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -39,22 +41,29 @@ export async function createServerSupabase() {
 
 export async function requireUser(): Promise<AuthCtx> {
   const supabase = await createServerSupabase();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error || !user) {
+      throw new ApiError("Unauthorized", 401);
+    }
+    return { supabase, user };
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
     throw new ApiError("Unauthorized", 401);
   }
-
-  return { supabase, user };
 }
 
 export async function getOptionalUser() {
   const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return { supabase, user };
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return { supabase, user };
+  } catch {
+    return { supabase, user: null };
+  }
 }

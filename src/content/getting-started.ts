@@ -4,9 +4,9 @@ export const steps = [
   {
     number: 1,
     title: "Create your account",
-    description: "Sign up with Google, or with an email and password. Your profile is what every plan is built from.",
+    description: "Sign up with Google, or with a real email and password. We send a 6-digit code — temporary inboxes are blocked. Your profile is what every plan is built from.",
     icon: User,
-    tips: ["Google is the fastest way in", "Or use a password of at least 8 characters", "Fill your profile once; plans reuse it"],
+    tips: ["Google is the fastest way in", "Or use a password of at least 8 characters", "Enter the email code, then fill your profile"],
   },
   {
     number: 2,

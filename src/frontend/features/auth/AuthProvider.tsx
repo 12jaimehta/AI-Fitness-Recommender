@@ -10,6 +10,7 @@ import {
   purgeLegacyPlanStorage,
 } from "@frontend/features/plan-cache";
 import { clearQueryCache } from "@frontend/shared/lib/query-cache";
+import { withTimeout } from "@/shared/lib/timed-fetch";
 
 type AuthValue = {
   user: User | null;
@@ -28,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function load() {
       try {
-        const { data } = await supabase.auth.getSession();
+        const { data } = await withTimeout(supabase.auth.getSession(), 5_000);
         setUser(data.session?.user ?? null);
       } catch (err) {
         console.error("Auth session error:", err);

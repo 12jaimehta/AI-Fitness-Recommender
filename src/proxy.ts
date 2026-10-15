@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { isProfileComplete, profileAllowedPath } from "@/shared/lib/profile";
-import { isApiPath, isConnectPath, isDashboardPath, isKnownAppPath } from "@/shared/lib/routes";
+import { isApiPath, isConnectPath, isDashboardPath, isKnownAppPath, isPublicAuthPath } from "@/shared/lib/routes";
 import { SIGNED_IN_HOME } from "@/shared/lib/app-home";
+import { timedFetch } from "@/shared/lib/timed-fetch";
 
 function redirectWithCookies(request: NextRequest, from: NextResponse, pathname: string) {
   const redirectUrl = request.nextUrl.clone();
@@ -18,7 +19,7 @@ function redirectWithCookies(request: NextRequest, from: NextResponse, pathname:
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (isApiPath(pathname)) {
+  if (isApiPath(pathname) || isPublicAuthPath(pathname)) {
     return NextResponse.next({ request });
   }
 
@@ -34,6 +35,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const supabase = createServerClient(url, anonKey, {
+    global: { fetch: timedFetch(4_000) },
     cookies: {
       getAll() {
         return request.cookies.getAll();
@@ -48,9 +50,13 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const result = await supabase.auth.getUser();
+    user = result.data.user;
+  } catch {
+    user = null;
+  }
 
   if (isConnectPath(pathname) || isDashboardPath(pathname)) {
     return redirectWithCookies(request, supabaseResponse, user ? SIGNED_IN_HOME : "/");
@@ -61,14 +67,18 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && !profileAllowedPath(pathname)) {
-    const { data: profile, error } = await supabase
-      .from("user_profiles")
-      .select("full_name, age, gender, height, initial_weight, fitness_level, goals, profile_completed")
-      .eq("id", user.id)
-      .maybeSingle();
+    try {
+      const { data: profile, error } = await supabase
+        .from("user_profiles")
+        .select("full_name, age, gender, height, initial_weight, fitness_level, goals, profile_completed")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (!error && !isProfileComplete(profile)) {
-      return redirectWithCookies(request, supabaseResponse, "/my-profile");
+      if (!error && !isProfileComplete(profile)) {
+        return redirectWithCookies(request, supabaseResponse, "/my-profile");
+      }
+    } catch {
+      /* auth host unreachable; let the page load */
     }
   }
 

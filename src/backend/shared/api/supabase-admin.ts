@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getServiceRoleKey, getSupabaseEnv } from "../config/env";
+import { timedFetch } from "@/shared/lib/timed-fetch";
 
 let cached: SupabaseClient | null = null;
 
@@ -11,6 +12,7 @@ export function createServiceSupabase(): SupabaseClient | null {
   const { url } = getSupabaseEnv();
   cached = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: timedFetch(8_000) },
   });
   return cached;
 }

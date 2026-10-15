@@ -4,17 +4,18 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/supabase-client";
+import { signInWithEmail } from "@frontend/features/auth";
 import { useUser } from "@/lib/hooks/use-user";
 import PageLoader from "@/components/ui/PageLoader";
 import FormInput from "@/components/shared/FormInput";
 import { signInSchema, type SignInForm } from "@/lib/validation/signINSchema";
 import { AuthAlert, AuthDivider, AuthShell } from "@/components/auth/AuthShell";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import { ApiRequestError } from "@frontend/shared/api/http";
+import { authReachabilityMessage } from "@/shared/lib/timed-fetch";
 
 export default function SignInPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { isSignedIn, isLoading: authLoading } = useUser();
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -46,13 +47,17 @@ export default function SignInPage() {
   const doSignIn = async (vals: SignInForm) => {
     setLoading(true);
     setMessage(null);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: vals.email,
-      password: vals.password,
-    });
-    setLoading(false);
-    if (error) setMessage(error.message);
-    else router.push("/progress");
+    try {
+      await signInWithEmail(vals);
+      window.location.assign("/progress");
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.code === "email_not_confirmed") {
+        router.push(`/verify-email?email=${encodeURIComponent(vals.email)}`);
+        return;
+      }
+      setMessage(error instanceof Error ? authReachabilityMessage(error) : authReachabilityMessage());
+      setLoading(false);
+    }
   };
 
   if (authLoading) {

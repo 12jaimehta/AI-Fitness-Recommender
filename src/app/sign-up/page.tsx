@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/supabase-client";
 import { useUser } from "@/lib/hooks/use-user";
 import PageLoader from "@/components/ui/PageLoader";
 import PasswordStrength from "@/components/auth/PasswordStrength";
@@ -12,10 +11,11 @@ import FormInput from "@/components/shared/FormInput";
 import { signUpSchema, type SignUpForm } from "@/lib/validation/signUpSchema";
 import { AuthAlert, AuthDivider, AuthShell } from "@/components/auth/AuthShell";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import { signUpWithEmail } from "@frontend/features/auth";
+import { ApiRequestError } from "@frontend/shared/api/http";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const supabase = createClient();
   const { isSignedIn, isLoading: authLoading } = useUser();
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,32 +43,29 @@ export default function SignUpPage() {
   const doSignUp = async (values: SignUpForm) => {
     setLoading(true);
     setMessage(null);
-    const { data, error } = await supabase.auth.signUp({
-      email: values.email,
-      password: values.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: { full_name: values.fullName },
-      },
-    });
-    setLoading(false);
-    if (error) setMessage(error.message);
-    else if (data?.user) {
-      setMessage("Account created. Check your email to verify.");
-      setTimeout(() => router.push("/progress"), 3000);
+    try {
+      const result = await signUpWithEmail(values);
+      router.push(`/verify-email?email=${encodeURIComponent(result.email)}`);
+    } catch (error) {
+      if (error instanceof ApiRequestError && error.status === 409) {
+        setMessage("An account with this email already exists. Sign in.");
+      } else {
+        setMessage(error instanceof Error ? error.message : "Could not create your account.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
-
-  const success =
-    message?.toLowerCase().includes("check your email") ||
-    message?.toLowerCase().includes("account created");
 
   if (authLoading) {
     return <PageLoader />;
   }
 
   return (
-    <AuthShell title="Create an account" subtitle="Use Google, or sign up with email and a password.">
+    <AuthShell
+      title="Create an account"
+      subtitle="Use Google, or a real email. We send a 6-digit code — temporary inboxes are blocked."
+    >
       <GoogleAuthButton label="Continue with Google" onError={setMessage} />
       <AuthDivider />
 
@@ -152,7 +149,7 @@ export default function SignUpPage() {
         </button>
       </form>
 
-      <AuthAlert message={message} tone={success ? "success" : "error"} />
+      <AuthAlert message={message} />
 
       <p className="mt-6 border-t border-fyte-line pt-6 text-center text-xs text-fyte-muted">
         By creating an account, you agree to our Terms and Privacy Policy.
